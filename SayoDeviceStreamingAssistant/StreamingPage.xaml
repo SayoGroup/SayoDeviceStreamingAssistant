@@ -1,0 +1,45 @@
+﻿<Page x:Class="SayoDeviceStreamingAssistant.StreamingPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:SayoDeviceStreamingAssistant"
+      xmlns:fa="http://schemas.fontawesome.io/icons/"
+      mc:Ignorable="d"
+      Title="StreamingPage" Height="267" Width="341">
+
+    <Grid Background="#FF6B6B6B">
+        <ComboBox x:Name="TypeCombo" ToolTip="Selecte content type"
+                  HorizontalAlignment="Left" Margin="52,9,0,0" VerticalAlignment="Top" Width="211" SelectionChanged="TypeCombo_SelectionChanged"/>
+        <ComboBox x:Name="ItemCombo" ToolTip="Selecte content"
+                  DisplayMemberPath="MainWindowTitle" HorizontalAlignment="Left" Margin="52,33,0,0" VerticalAlignment="Top" Width="279" SelectionChanged="ItemCombo_SelectionChanged"/>
+        <Image x:Name="Preview"   HorizontalAlignment="Left" Margin="10,60,0,0" VerticalAlignment="Top" Height="160" Width="320" MouseWheel="Preview_MouseWheel" MouseDown="Preview_MouseDown" MouseUp="Preview_MouseUp" MouseMove="Preview_MouseMove" MouseLeave="Preview_MouseLeave"/>
+        <Button x:Name="BackButton" ToolTip="Back"
+                HorizontalAlignment="Left" Margin="10,8,0,0" VerticalAlignment="Top" Width="37" Click="BackButton_Click" Height="22" Background="#00DDDDDD">
+            <Button.Content>
+                <fa:ImageAwesome Icon="AngleLeft"/>
+            </Button.Content>
+        </Button>
+        <Button x:Name="StreamButton" ToolTip="Begin streaming"
+                HorizontalAlignment="Left" Margin="268,11,0,0" VerticalAlignment="Top" Click="StreamButton_Click" Width="30" Foreground="#FF00AD13" Height="20" Background="#00DDDDDD">
+            <Button.Content>
+                <fa:ImageAwesome Icon="Play" Foreground="#FF0C9E00"/>
+            </Button.Content>
+        </Button>
+        <Button x:Name="AddMediaButton" ToolTip="Add media"
+                HorizontalAlignment="Left" Margin="303,11,0,0" VerticalAlignment="Top" Width="28" Click="AddMediaButton_Click" Height="19" Background="Transparent">
+            <Button.Content>
+                <fa:ImageAwesome Icon="Plus" Foreground="#FFC7C7C7"/>
+            </Button.Content>
+        </Button>
+        <Button x:Name="ResetPreviewRect" ToolTip="Reset transform"
+                HorizontalAlignment="Left" Margin="10,33,0,0" VerticalAlignment="Top" Click="ResetPreviewRect_Click" Width="37" Height="21" Background="#00DDDDDD">
+            <Button.Content>
+                <fa:ImageAwesome Icon="Refresh"/>
+            </Button.Content>
+        </Button>
+        <Label x:Name="FrameTimeLabel" Content="Process: 0ms" HorizontalAlignment="Left" Margin="10,220,0,0" VerticalAlignment="Top" Width="140" RenderTransformOrigin="0.636,0.225"/>
+        <Label x:Name="FPSLabel" Content="60 FPS" HorizontalAlignment="Left" Margin="251,220,0,0" VerticalAlignment="Top" Width="80"/>
+
+    </Grid>
+</Page>
