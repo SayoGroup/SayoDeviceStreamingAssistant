@@ -3,93 +3,82 @@ using OpenCvSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
-using static System.Net.Mime.MediaTypeNames;
 using Window = System.Windows.Window;
 
 namespace SayoDeviceStreamingAssistant {
     /// <summary>
     /// SourcesManagePage.xaml 的交互逻辑
     /// </summary>
-    public partial class SourcesManagePage : Page, IDisposable {
-        public static List<string> sourceTypes = new List<string> {
+    public partial class SourcesManagePage : IDisposable {
+        private static readonly List<string> SourceTypes = new List<string> {
             "Monitor",
             "Window",
             "Media",
         };
-        public static ObservableCollection<FrameSource> FrameSources = new ObservableCollection<FrameSource>();
-        public static ObservableCollection<WindowInfo> Windows = new ObservableCollection<WindowInfo>();
-        public static ObservableCollection<MonitorInfo> Monitors = new ObservableCollection<MonitorInfo>();
-        private static Timer contentUpdateTimer;
+        public static readonly ObservableCollection<FrameSource> FrameSources = new ObservableCollection<FrameSource>();
+        private static readonly ObservableCollection<WindowInfo> Windows = new ObservableCollection<WindowInfo>();
+        private static readonly ObservableCollection<MonitorInfo> Monitors = new ObservableCollection<MonitorInfo>();
+        private static Timer _contentUpdateTimer;
 
         private WriteableBitmap previewBitmap;
-        private Mat previewMat = new Mat(80,160,MatType.CV_8UC2);
-        private bool newFrame = false;
+        private Mat previewMat = new Mat(80, 160, MatType.CV_8UC2);
+        private bool newFrame;
         private DispatcherTimer previewTimer = new DispatcherTimer();
 
 
-        private FrameSource _selectedSource;
+        private FrameSource selectedSource;
         private FrameSource SelectedSource {
-            get => _selectedSource;
+            get => selectedSource;
             set {
                 previewMat.SetTo(new Scalar(0, 0, 0));
-                if (_selectedSource != null)
-                    _selectedSource.OnFrameReady -= OnFrameReady;
-                _selectedSource = value;
-                if (_selectedSource == null) return;
-                SourceName.Text = _selectedSource.Name;
-                SourceType.SelectedIndex = sourceTypes.IndexOf(_selectedSource.Type);
-                SetContentUIByType(_selectedSource.Type);
-                if (_selectedSource != null)
-                    _selectedSource.OnFrameReady += OnFrameReady;
+                if (selectedSource != null)
+                    selectedSource.OnFrameReady -= OnFrameReady;
+                selectedSource = value;
+                if (selectedSource == null) return;
+                SourceName.Text = selectedSource.Name;
+                SourceType.SelectedIndex = SourceTypes.IndexOf(selectedSource.Type);
+                SetContentUiByType(selectedSource.Type);
+                if (selectedSource != null)
+                    selectedSource.OnFrameReady += OnFrameReady;
             }
         }
         public SourcesManagePage() {
             InitializeComponent();
-            SourceType.ItemsSource = sourceTypes;
+            SourceType.ItemsSource = SourceTypes;
             SourcesList.ItemsSource = FrameSources;
             SourceConfigPanel.Visibility = Visibility.Collapsed;
 
-            if (contentUpdateTimer != null) return;
-            contentUpdateTimer = new Timer((state) => {
+            if (_contentUpdateTimer != null) return;
+            _contentUpdateTimer = new Timer((state) => {
                 var monitors = MonitorEnumerationHelper.GetMonitors();
-                foreach (var monitor in monitors) {
+                var monitorInfos = monitors as MonitorInfo[] ?? monitors.ToArray();
+                foreach (var monitor in monitorInfos) {
                     if (Monitors.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
                         Dispatcher.Invoke(() => Monitors.Add(monitor));
                     }
                 }
                 foreach (var monitor in Monitors.ToArray()) {
-                    if (monitors.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
+                    if (monitorInfos.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
                         Dispatcher.Invoke(() => Monitors.Remove(monitor));
                     }
                 }
+                
                 var windows = WindowEnumerationHelper.GetWindows();
-
-                foreach (var wnd in windows) {
-                    if (Windows.ToList().Find((p) => p.proc.Id == wnd.proc.Id) == null) {
-                        Dispatcher.Invoke(() => Windows.Add(wnd));
-                    }
+                foreach (var wnd in windows.Where(wnd => Windows.ToList().Find((p) => p.proc.Id == wnd.proc.Id) == null)) {
+                    Dispatcher.Invoke(() => Windows.Add(wnd));
                 }
                 foreach (var wnd in Windows.ToArray()) {
                     if (windows.Find((p) => p.proc.Id == wnd.proc.Id) == null) {
                         Dispatcher.Invoke(() => {
-                            var source = _selectedSource?.Source;
+                            var source = selectedSource?.Source;
                             Windows.Remove(wnd);
                             if (source != null)
                                 SourceContentCombo.Text = source;
@@ -107,7 +96,7 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         public void Dispose() {
-            contentUpdateTimer.Dispose();
+            _contentUpdateTimer.Dispose();
             previewTimer.Stop();
             previewTimer = null;
             previewBitmap = null;
@@ -127,7 +116,7 @@ namespace SayoDeviceStreamingAssistant {
             SourcesList.SelectedIndex = -1;
             //SelectedSource = null;
             var mainWindow = (MainWindow)Window.GetWindow(this);
-            mainWindow.HideSourcesManagePage();
+            mainWindow?.HideSourcesManagePage();
         }
 
         private void AddNewButton_Click(object sender, RoutedEventArgs e) {
@@ -163,44 +152,44 @@ namespace SayoDeviceStreamingAssistant {
         private void SourceType_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             var type = SourceType.SelectedItem as string;
             if (SelectedSource == null || type == null) return;
-            if(SelectedSource.Type != type)
+            if (SelectedSource.Type != type)
                 SelectedSource.Source = null;
             SelectedSource.Type = type;
-            SetContentUIByType(type);
+            SetContentUiByType(type);
         }
 
-        private void SetContentUIByType(string type) {
+        private void SetContentUiByType(string type) {
             SourceContentCombo.Visibility = Visibility.Collapsed;
             SourceContentText.Visibility = Visibility.Collapsed;
             SelecteFileButton.Visibility = Visibility.Collapsed;
             labelContent.Visibility = Visibility.Collapsed;
 
-            if (!sourceTypes.Contains(type)) return;
+            if (!SourceTypes.Contains(type)) return;
 
             labelContent.Visibility = Visibility.Visible;
             if (type == "Media") {
                 SourceContentText.Visibility = Visibility.Visible;
                 SelecteFileButton.Visibility = Visibility.Visible;
                 labelContent.Content = "Video path";
-                SourceContentText.Text = _selectedSource.Source;
+                SourceContentText.Text = selectedSource.Source;
             } else {
                 SourceContentCombo.Visibility = Visibility.Visible;
                 labelContent.Content = "Content";
                 if (type == "Monitor") {
                     SourceContentCombo.ItemsSource = Monitors;
-                    SourceContentCombo.Text = _selectedSource?.Source;
+                    SourceContentCombo.Text = selectedSource?.Source;
                 } else if (type == "Window") {
                     SourceContentCombo.ItemsSource = Windows;
-                    SourceContentCombo.Text = _selectedSource?.Source;
+                    SourceContentCombo.Text = selectedSource?.Source;
                 }
             }
         }
 
         private void SourceContentCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            if(SourceContentCombo.SelectedItem is MonitorInfo mon)
-                _selectedSource.Source = mon.Name;
-            else if(SourceContentCombo.SelectedItem is WindowInfo win)
-                _selectedSource.Source = win.Name;
+            if (SourceContentCombo.SelectedItem is MonitorInfo mon)
+                selectedSource.Source = mon.Name;
+            else if (SourceContentCombo.SelectedItem is WindowInfo win)
+                selectedSource.Source = win.Name;
         }
         private void SourceContentCombo_TextInput(object sender, TextCompositionEventArgs e) {
             var text = SourceContentCombo.Text + e.Text;
@@ -210,23 +199,22 @@ namespace SayoDeviceStreamingAssistant {
 
         private void SourceContentText_TextChanged(object sender, TextChangedEventArgs e) {
             var text = SourceContentText.Text;
-            if (SelectedSource != null &&text != SelectedSource.Source)
+            if (SelectedSource != null && text != SelectedSource.Source)
                 SelectedSource.Source = text;
         }
 
-        private void SelecteFileButton_Click(object sender, RoutedEventArgs e) {
-            var mainWindow = (MainWindow)Window.GetWindow(this);
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "选择视频文件";
+        private void SelectFileButton_Click(object sender, RoutedEventArgs e) {
+            var openFileDialog = new OpenFileDialog {
+                Title = "选择视频文件",
+                // 设置文件类型过滤器
+                Filter = "视频文件 (*.avi; *.mp4; *.mkv; *.mov; *.wmv; *.flv; *.rmvb)|*.avi;*.mp4;*.mkv;*.mov;*.wmv;*.flv;*.rmvb|所有文件 (*.*)|*.*"
+            };
 
-            // 设置文件类型过滤器
-            openFileDialog.Filter = "视频文件 (*.avi; *.mp4; *.mkv; *.mov; *.wmv; *.flv; *.rmvb)|*.avi;*.mp4;*.mkv;*.mov;*.wmv;*.flv;*.rmvb|所有文件 (*.*)|*.*";
             //openFileDialog.Multiselect = true;
-            bool? result = openFileDialog.ShowDialog();
-            if (result == true) {
-                var selectedFilePath = openFileDialog.FileName;
-                SourceContentText.Text = selectedFilePath;
-            }
+            var result = openFileDialog.ShowDialog();
+            if (!result != true) return;
+            var selectedFilePath = openFileDialog.FileName;
+            SourceContentText.Text = selectedFilePath;
         }
 
         private void OnFrameReady(Mat frame) {
@@ -234,14 +222,13 @@ namespace SayoDeviceStreamingAssistant {
             newFrame = true;
         }
         private void UpdatePreview() {
-            if (previewMat != null && newFrame != false) {
-                var len = previewMat.Height * previewMat.Width * 2;
-                previewBitmap.Lock();
-                WinAPI.CopyMemory(previewBitmap.BackBuffer, previewMat.Data, (uint)len);
-                previewBitmap.AddDirtyRect(new Int32Rect(0, 0, previewMat.Width, previewMat.Height));
-                previewBitmap.Unlock();
-                newFrame = false;
-            }
+            if (previewMat == null || !newFrame) return;
+            var len = previewMat.Height * previewMat.Width * 2;
+            previewBitmap.Lock();
+            WinApi.CopyMemory(previewBitmap.BackBuffer, previewMat.Data, (uint)len);
+            previewBitmap.AddDirtyRect(new Int32Rect(0, 0, previewMat.Width, previewMat.Height));
+            previewBitmap.Unlock();
+            newFrame = false;
         }
 
     }

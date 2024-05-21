@@ -1,74 +1,53 @@
-﻿using Composition.WindowsRuntimeHelpers;
-using OpenCvSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Windows.Threading;
-using Windows.Foundation.Metadata;
-using Windows.Graphics.Capture;
-using Windows.Graphics.DirectX.Direct3D11;
-using Windows.UI.Xaml.Controls;
-using Window = System.Windows.Window;
-using Size = OpenCvSharp.Size;
 using System.Windows.Media.Animation;
 
 namespace SayoDeviceStreamingAssistant {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class MainWindow : Window {
-        private DeviceSelectionPage _deviceSelectionPage = new DeviceSelectionPage();
-        private StreamingPage _streamingPage = new StreamingPage();
-        private SourcesManagePage _sourcesManagePage = new SourcesManagePage();
+    public partial class MainWindow {
+        private readonly DeviceSelectionPage deviceSelectionPage = new DeviceSelectionPage();
+        private readonly StreamingPage streamingPage = new StreamingPage();
+        private readonly SourcesManagePage sourcesManagePage = new SourcesManagePage();
 
         public MainWindow() {
             InitializeComponent();
-            deviceSelectePage.Navigate(_deviceSelectionPage);
-            streamingConfigPage.Navigate(_streamingPage);
-            sourcesManagePage.Navigate(_sourcesManagePage);
+            deviceSelecteFrame.Navigate(deviceSelectionPage);
+            streamingConfigFrame.Navigate(streamingPage);
+            sourcesManageFrame.Navigate(sourcesManagePage);
             this.Closing += (sender, e) => {
-                _deviceSelectionPage.Dispose();
+                deviceSelectionPage.Dispose();
                 //_streamingPage.Dispose();
                 //_sourcesManagePage.Dispose();
             };
-            visibility.Add(deviceSelectePage, true);
-            visibility.Add(streamingConfigPage, false);
-            visibility.Add(sourcesManagePage, false);
+            visibility.Add(deviceSelecteFrame, true);
+            visibility.Add(streamingConfigFrame, false);
+            visibility.Add(sourcesManageFrame, false);
         }
         public void ShowStreamingPage(DeviceInfo device) {
-            _streamingPage.BindDevice(device);
-            ToggleFrameVisibility(streamingConfigPage);
+            streamingPage.BindDevice(device);
+            ToggleFrameVisibility(streamingConfigFrame);
         }
         public void HideStreamingPage() {
-            ToggleFrameVisibility(streamingConfigPage);
+            ToggleFrameVisibility(streamingConfigFrame);
         }
 
         public void ShowSourcesManagePage(FrameSource frameSource) {
-            _sourcesManagePage.BindSource(frameSource);
-            ToggleFrameVisibility(sourcesManagePage);
+            sourcesManagePage.BindSource(frameSource);
+            ToggleFrameVisibility(sourcesManageFrame);
         }
         public void HideSourcesManagePage() {
-            ToggleFrameVisibility(sourcesManagePage);
+            ToggleFrameVisibility(sourcesManageFrame);
         }
 
-        private Dictionary<UIElement, bool> visibility = new Dictionary<UIElement, bool>();
-        public void ToggleFrameVisibility(UIElement ui) {
-            ThicknessAnimation animation = new ThicknessAnimation();
-            animation.Duration = TimeSpan.FromSeconds(0.2);
+        private readonly Dictionary<UIElement, bool> visibility = new Dictionary<UIElement, bool>();
+
+        private void ToggleFrameVisibility(UIElement ui) {
+            var animation = new ThicknessAnimation {
+                Duration = TimeSpan.FromSeconds(0.2)
+            };
             if (visibility[ui]) {
                 animation.To = new Thickness(-ActualWidth * 2, 0, 0, 0);
                 visibility[ui] = false;

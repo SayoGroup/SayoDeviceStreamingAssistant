@@ -1,15 +1,13 @@
 ﻿using OpenCvSharp;
 using System;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Threading;
 using static SayoDeviceStreamingAssistant.FrameSource;
 using Rect = OpenCvSharp.Rect;
 
 namespace SayoDeviceStreamingAssistant {
-    
-    public partial class DeviceInfo : UserControl, IDisposable {
+
+    public partial class DeviceInfo : IDisposable {
         public string DeviceName {
             get => labelName.Content.ToString();
             private set => labelName.Content = value;
@@ -20,43 +18,42 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         public SayoHidDevice Device { get; set; }
-        private FrameSource _frameSource;
-        public FrameSource FrameSource { 
-            get => _frameSource;
+        private FrameSource frameSource;
+        public FrameSource FrameSource {
+            get => frameSource;
             set {
-                if (_frameSource != null && _onFrameReady != null) {
-                    _frameSource.OnFrameReady -= HandleFrame;
+                if (frameSource != null && onFrameReady != null) {
+                    frameSource.OnFrameReady -= HandleFrame;
                 }
-                _frameSource = value;
-                if (_frameSource != null && _onFrameReady != null) {
-                    _frameSource.OnFrameReady += HandleFrame;
-                    FrameRect = GetDefaultRect();
-                }
+                frameSource = value;
+                if (frameSource == null || onFrameReady == null) return;
+                frameSource.OnFrameReady += HandleFrame;
+                FrameRect = GetDefaultRect();
             }
         }
-        
-        private event OnFrameReadyDelegate _onFrameReady;
+
+        private event OnFrameReadyDelegate onFrameReady;
         public event OnFrameReadyDelegate OnFrameReady {
             add {
-                if (_frameSource != null && _onFrameReady == null)
-                    _frameSource.OnFrameReady += HandleFrame;
-                _onFrameReady += value;
+                if (frameSource != null && onFrameReady == null)
+                    frameSource.OnFrameReady += HandleFrame;
+                onFrameReady += value;
             }
             remove {
-                _onFrameReady -= value;
-                if (_frameSource != null && _onFrameReady == null)
-                    _frameSource.OnFrameReady -= HandleFrame;
+                onFrameReady -= value;
+                if (frameSource != null && onFrameReady == null)
+                    frameSource.OnFrameReady -= HandleFrame;
             }
         }
         public bool Streaming {
             get {
-                if (_frameSource == null || _onFrameReady == null)
+                if (frameSource == null || onFrameReady == null)
                     return false;
-                return Array.Find(_onFrameReady.GetInvocationList(), 
+                return Array.Find(onFrameReady.GetInvocationList(),
                     (i) => i.Equals((OnFrameReadyDelegate)Device.SendImageAsync)) != null;
             }
             set {
-                if (_frameSource == null || Streaming == value)
+                if (frameSource == null || Streaming == value)
                     return;
                 if (value) {
                     OnFrameReady += Device.SendImageAsync;
@@ -66,7 +63,7 @@ namespace SayoDeviceStreamingAssistant {
             }
         }
 
-        public Mat ScreenMat;
+        public readonly Mat ScreenMat;
         public Rect? FrameRect;
 
         public DeviceInfo(SayoHidDevice device) {
@@ -75,9 +72,7 @@ namespace SayoDeviceStreamingAssistant {
             DeviceName = device.Device.GetProductName();
             UpdateStatus();
             Device.OnDeviceConnectionChanged += (connected) => {
-                Dispatcher.Invoke(() => {
-                    UpdateStatus();
-                });
+                Dispatcher.Invoke(UpdateStatus);
             };
             SourcesManagePage.FrameSources.CollectionChanged += (sender, e) => {
                 if (e.Action != System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
@@ -92,19 +87,18 @@ namespace SayoDeviceStreamingAssistant {
             var screenInfo = Device.ScreenInfo;
             ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
         }
-        public void HandleFrame(Mat frame) {
+
+        private void HandleFrame(Mat frame) {
             if (frame == null) return;
-            if(FrameRect == null) {
+            if (FrameRect == null) {
                 FrameRect = GetDefaultRect();
                 return;
             }
             frame.DrawTo(ScreenMat, FrameRect.Value);
-            _onFrameReady?.Invoke(ScreenMat);
+            onFrameReady?.Invoke(ScreenMat);
         }
         public Rect? GetDefaultRect() {
-            if (_frameSource == null)
-                return null;
-            var srcSize = _frameSource.GetContentRawSize();
+            var srcSize = frameSource?.GetContentRawSize();
             if (srcSize == null) return null;
             var dstSize = ScreenMat.Size();
             Rect rect;
@@ -120,27 +114,25 @@ namespace SayoDeviceStreamingAssistant {
             }
             return rect;
         }
-        public void UpdateStatus() {
+
+        private void UpdateStatus() {
             string status;
             if (!Device.IsConnected) {
                 status = "Disconnected";
                 DeviceStatus.Fill = Brushes.Gray;
                 DeviceSelectButton.IsEnabled = false;
                 DeviceSelectButton.ToolTip = "Device is disconnected";
-            }
-            else if (!Device.SupportsStreaming) {
+            } else if (!Device.SupportsStreaming) {
                 status = "Not Supported";
                 DeviceStatus.Fill = Brushes.Red;
                 DeviceSelectButton.IsEnabled = false;
                 DeviceSelectButton.ToolTip = "Device does not support streaming";
-            }
-            else if (!Streaming || _frameSource == null) {
+            } else if (!Streaming || frameSource == null) {
                 status = "Ready";
                 DeviceStatus.Fill = Brushes.Cyan;
                 DeviceSelectButton.IsEnabled = true;
-            }
-            else {
-                status = _frameSource.Name;
+            } else {
+                status = frameSource.Name;
                 DeviceStatus.Fill = Brushes.Green;
                 DeviceSelectButton.IsEnabled = true;
             }
@@ -152,7 +144,7 @@ namespace SayoDeviceStreamingAssistant {
 
         private void DeviceSelectButton_Click(object sender, RoutedEventArgs e) {
             var mainWindow = (MainWindow)System.Windows.Window.GetWindow(this);
-            mainWindow.ShowStreamingPage(this);
+            mainWindow?.ShowStreamingPage(this);
         }
     }
 }
