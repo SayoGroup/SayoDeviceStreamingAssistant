@@ -144,6 +144,8 @@ namespace SayoDeviceStreamingAssistant {
                         break;
                     
                     var captureItem = CaptureHelper.CreateItemForMonitor(monitor.Hmon);
+                    if (captureItem == null)
+                        break;
                     capture = new CaptureFramework(captureItem);
                     if (Enabled) capture.Init();
                     ReadRawFrame = capture.ReadFrame;
@@ -156,7 +158,10 @@ namespace SayoDeviceStreamingAssistant {
                         break;
                     foreach (var p in process) {
                         if (p.MainWindowTitle == windowTitle) {
-                            capture = new CaptureFramework(CaptureHelper.CreateItemForWindow(p.MainWindowHandle));
+                            var item = CaptureHelper.CreateItemForWindow(p.MainWindowHandle);
+                            if (item == null)
+                                continue;
+                            capture = new CaptureFramework(item);
                             break;
                         }
                     }
@@ -167,7 +172,10 @@ namespace SayoDeviceStreamingAssistant {
                     }
                     foreach (var p in process) {
                         if (p.MainWindowHandle != IntPtr.Zero) {
-                            capture = new CaptureFramework(CaptureHelper.CreateItemForWindow(p.MainWindowHandle));
+                            var item = CaptureHelper.CreateItemForWindow(p.MainWindowHandle);
+                            if (item == null)
+                                continue;
+                            capture = new CaptureFramework(item);
                             break;
                         }
                     }
@@ -206,11 +214,10 @@ namespace SayoDeviceStreamingAssistant {
             _microTimer?.StopAndWait();
             capture?.Dispose();
             video?.Dispose();
-            RawFrame?.Dispose();
         }
 
         protected bool ReadFrame() {
-            if (!Initialized) return false;
+            if (!Initialized || ReadRawFrame == null) return false;
 
             if(video != null) {
                 var t = sinceInitialized.Elapsed.TotalMilliseconds;
