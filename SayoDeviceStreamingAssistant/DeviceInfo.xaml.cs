@@ -50,7 +50,7 @@ namespace SayoDeviceStreamingAssistant {
         }
         public bool Streaming {
             get {
-                if (_frameSource == null)
+                if (_frameSource == null || _onFrameReady == null)
                     return false;
                 return Array.Find(_onFrameReady.GetInvocationList(), 
                     (i) => i.Equals((OnFrameReadyDelegate)Device.SendImageAsync)) != null;

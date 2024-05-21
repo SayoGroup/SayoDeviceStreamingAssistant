@@ -37,7 +37,7 @@ public class MonitorInfo {
     public string DeviceName { get; set; }
     public IntPtr Hmon { get; set; }
 
-    public string MainWindowTitle { 
+    public string Name { 
         get {
             return DeviceName;
         }

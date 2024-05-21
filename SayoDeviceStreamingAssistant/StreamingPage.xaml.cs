@@ -152,7 +152,7 @@ namespace SayoDeviceStreamingAssistant {
 
         private void ConfigSourcesButton_Click(object sender, RoutedEventArgs e) {
             var mainWindow = (MainWindow)Window.GetWindow(this);
-            mainWindow.ShowSourcesManagePage();
+            mainWindow.ShowSourcesManagePage(SourceCombo.SelectedItem as FrameSource);
         }
     }
 }

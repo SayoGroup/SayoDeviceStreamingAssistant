@@ -28,6 +28,8 @@ public class CaptureFramework : IDisposable {
     private D3D11.Texture2DDescription _stagingTextureDesc;
     private D3D11.Texture2D _stagingTexture;
 
+    private bool initialized = false;
+
     public CaptureFramework(GraphicsCaptureItem i) {
         _item = i;
     }
@@ -84,8 +86,11 @@ public class CaptureFramework : IDisposable {
 
         _stagingTexture = new D3D11.Texture2D(_d3dDevice, _stagingTextureDesc);
         _session.StartCapture();
+        initialized = true;
     }
     public void Dispose() {
+        for(; reading; ) Task.Delay(1).Wait();
+        initialized = false;
         _stagingTexture?.Dispose();
         _stagingTexture = null;
         _session?.Dispose();
@@ -102,13 +107,16 @@ public class CaptureFramework : IDisposable {
         return compositor.CreateCompositionSurfaceForSwapChain(_swapChain);
     }
 
+    private bool reading = false;
     public bool ReadFrame(Mat mat) {
-        if(mat == null)
+        if (!initialized) return false;
+        reading = true;
+        if (mat == null)
             throw new ArgumentNullException(nameof(mat));
         var newSize = false;
         using (var frame = _framePool.TryGetNextFrame()) {
             if (frame == null) {
-                return false;
+                return reading = false;
             }
 
             if (frame.ContentSize.Width != _lastSize.Width ||
@@ -163,6 +171,7 @@ public class CaptureFramework : IDisposable {
                     _lastSize);
             }
         }
+        reading = false;
         return true;
     }
 }

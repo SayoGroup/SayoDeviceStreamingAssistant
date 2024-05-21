@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:SayoDeviceStreamingAssistant"
       mc:Ignorable="d" 
       xmlns:fa="http://schemas.fontawesome.io/icons/"
-      d:DesignHeight="267" d:DesignWidth="341"
+      d:DesignHeight="267" d:DesignWidth="357"
       Title="SourcesManagePage">
 
     <Grid Background="#FF6F6F6F">
@@ -16,5 +16,40 @@
                 <fa:ImageAwesome Icon="AngleLeft"/>
             </Button.Content>
         </Button>
+        <ListBox x:Name="SourcesList" Margin="10,35,212,27" Background="#FF888888" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="SourcesList_SelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <Button x:Name="AddNewButton" ToolTip="Config sources"
+            HorizontalAlignment="Left" Margin="10,0,0,9" VerticalAlignment="Bottom" Width="21" Height="18" Background="Transparent" Click="AddNewButton_Click">
+            <Button.Content>
+                <fa:ImageAwesome Icon="Plus" Foreground="#FFC7C7C7"/>
+            </Button.Content>
+        </Button>
+        <Button x:Name="DeleteButton" ToolTip="Config sources"
+    HorizontalAlignment="Left" Margin="36,0,0,9" VerticalAlignment="Bottom" Width="21" Height="18" Background="Transparent" Click="DeleteButton_Click">
+            <Button.Content>
+                <fa:ImageAwesome Icon="Trash" Foreground="#FFC7C7C7"/>
+            </Button.Content>
+        </Button>
+        <Grid x:Name="SourceConfigPanel" Margin="150,35,10,10" Background="#FF949494">
+            <Image x:Name="Preview" HorizontalAlignment="Left" Height="80" Margin="17,108,0,0" VerticalAlignment="Top" Width="160"/>
+            <TextBox x:Name="SourceName" HorizontalAlignment="Right" TextWrapping="Wrap" Text="TextBox" Margin="0,9,8,0" VerticalAlignment="Top" Width="114" Height="19" TextChanged="SourceName_TextChanged"/>
+            <ComboBox x:Name="SourceType" HorizontalAlignment="Right" Margin="0,33,8,0" VerticalAlignment="Top" Width="114" SelectionChanged="SourceType_SelectionChanged"/>
+            <ComboBox x:Name="SourceContentCombo" IsEditable="True" DisplayMemberPath="Name" HorizontalAlignment="Right" Margin="0,59,8,0" VerticalAlignment="Top" Width="114" SelectionChanged="SourceContentCombo_SelectionChanged" PreviewTextInput="SourceContentCombo_TextInput"/>
+            <TextBox x:Name="SourceContentText" TextWrapping="NoWrap" Text="TextBox" Margin="0,60,29,0" HorizontalAlignment="Right" VerticalAlignment="Top" Height="19" TextChanged="SourceContentText_TextChanged" Width="93"/>
+            <Button x:Name="SelecteFileButton" ToolTip="Config sources" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,60,8,0" Width="21" Height="21" Background="Transparent" Click="SelecteFileButton_Click">
+                <Button.Content>
+                    <fa:ImageAwesome Icon="File" Foreground="#FFC7C7C7"/>
+                </Button.Content>
+            </Button>
+            <Label x:Name="labelName" Content="Name" HorizontalAlignment="Left" Margin="4,9,0,0" VerticalAlignment="Top"/>
+            <Label x:Name="labelType" Content="Type" HorizontalAlignment="Left" Margin="4,33,0,0" VerticalAlignment="Top"/>
+            <Label x:Name="labelContent" Content="Content" HorizontalAlignment="Left" Margin="4,56,0,0" VerticalAlignment="Top"/>
+        </Grid>
+
     </Grid>
 </Page>

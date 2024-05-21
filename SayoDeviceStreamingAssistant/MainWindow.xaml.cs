@@ -57,7 +57,8 @@ namespace SayoDeviceStreamingAssistant {
             ToggleFrameVisibility(streamingConfigPage);
         }
 
-        public void ShowSourcesManagePage() {
+        public void ShowSourcesManagePage(FrameSource frameSource) {
+            _sourcesManagePage.BindSource(frameSource);
             ToggleFrameVisibility(sourcesManagePage);
         }
         public void HideSourcesManagePage() {

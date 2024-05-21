@@ -1,33 +1,21 @@
-﻿//  ---------------------------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-// 
-//  The MIT License (MIT)
-// 
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-// 
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-// 
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
-//  ---------------------------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
+public class WindowInfo {
+    public Process proc;
+    public WindowInfo(Process proc) {
+        this.proc = proc;
+    }
+    public string Name {
+        get {
+            return Path.GetFileName(proc.MainModule.FileName) + ":" + proc.MainWindowTitle;
+        }
+    }
+}
 
 public static class WindowEnumerationHelper {
     [DllImport("user32.dll", SetLastError = true)]
@@ -42,23 +30,25 @@ public static class WindowEnumerationHelper {
     /// Get all hWnds of windows
     /// </summary>
     /// <returns>(hWnd,Title)</returns>
-    public static List<Process> GetWindows() {
-        var res = new List<Process>();
+    public static List<WindowInfo> GetWindows() {
+        var res = new List<WindowInfo>();
         EnumWindows((hWnd, lParam) => {
-            //if (!IsWindowValidForCapture(hWnd))
-            //    return true;
+            if (!IsWindowValidForCapture(hWnd))
+                return true;
 
             var sb = new StringBuilder(256);
             GetWindowText(hWnd, sb, sb.Capacity);
             var title = sb.ToString();
 
-            //if (string.IsNullOrWhiteSpace(title))
-            //    return true;
+            if (string.IsNullOrWhiteSpace(title))
+                return true;
 
             uint processId;
             GetWindowThreadProcessId(hWnd, out processId);
             try {
-                res.Add(Process.GetProcessById((int)processId));
+                var wndInfo = new WindowInfo(Process.GetProcessById((int)processId));
+                string name = wndInfo.Name;
+                res.Add(wndInfo);
             } catch (Exception) {
                 // ignored
             }

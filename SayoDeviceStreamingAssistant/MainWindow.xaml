@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SayoDeviceStreamingAssistant"
         mc:Ignorable="d"
-        Title="Streaming Assistant" Height="265" Width="341" MinHeight="300" MinWidth="357" MaxWidth="357" MaxHeight="300">
+        Title="Streaming Assistant" Height="300" Width="357" MinHeight="300" MinWidth="357" MaxWidth="357" MaxHeight="300">
     <Grid>
         <Frame x:Name="deviceSelectePage" NavigationUIVisibility="Hidden" HorizontalAlignment="Left"/>
         <Frame x:Name="streamingConfigPage" NavigationUIVisibility="Hidden" HorizontalAlignment="Left" Width="357" Margin="-357,0,0,0"/>
