@@ -31,47 +31,53 @@ namespace SayoDeviceStreamingAssistant {
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
     public partial class MainWindow : Window {
-        private DeviceSelectionPage deviceSelectionPage = new DeviceSelectionPage();
-        private StreamingPage streamingPage = new StreamingPage();
-
-        public class Media {
-            public string MainWindowTitle { get; set; }
-        }
-
-        public ObservableCollection<Media> medias = new ObservableCollection<Media>();
+        private DeviceSelectionPage _deviceSelectionPage = new DeviceSelectionPage();
+        private StreamingPage _streamingPage = new StreamingPage();
+        private SourcesManagePage _sourcesManagePage = new SourcesManagePage();
 
         public MainWindow() {
             InitializeComponent();
-            deviceSelect.Navigate(deviceSelectionPage);
-            streaming.Navigate(streamingPage);
+            deviceSelectePage.Navigate(_deviceSelectionPage);
+            streamingConfigPage.Navigate(_streamingPage);
+            sourcesManagePage.Navigate(_sourcesManagePage);
             this.Closing += (sender, e) => {
-                deviceSelectionPage.Dispose();
+                _deviceSelectionPage.Dispose();
+                //_streamingPage.Dispose();
+                //_sourcesManagePage.Dispose();
             };
+            visibility.Add(deviceSelectePage, true);
+            visibility.Add(streamingConfigPage, false);
+            visibility.Add(sourcesManagePage, false);
+        }
+        public void ShowStreamingPage(DeviceInfo device) {
+            _streamingPage.BindDevice(device);
+            ToggleFrameVisibility(streamingConfigPage);
+        }
+        public void HideStreamingPage() {
+            ToggleFrameVisibility(streamingConfigPage);
         }
 
-        public void AddMedia(string title) {
-            medias.Add(new Media { MainWindowTitle = title });
+        public void ShowSourcesManagePage() {
+            ToggleFrameVisibility(sourcesManagePage);
         }
-        public void SetStreamingPage(DeviceInfo device) {
-            streamingPage.SetDevice(device);
-            ToggleFrameVisibility();
+        public void HideSourcesManagePage() {
+            ToggleFrameVisibility(sourcesManagePage);
         }
 
-        private bool isFrameVisible = false;
-        public void ToggleFrameVisibility() {
+        private Dictionary<UIElement, bool> visibility = new Dictionary<UIElement, bool>();
+        public void ToggleFrameVisibility(UIElement ui) {
             ThicknessAnimation animation = new ThicknessAnimation();
             animation.Duration = TimeSpan.FromSeconds(0.2);
-
-            if (isFrameVisible) {
-                animation.To = new Thickness(-streaming.ActualWidth * 2, 0, 0, 0);
-                isFrameVisible = false;
+            if (visibility[ui]) {
+                animation.To = new Thickness(-ActualWidth * 2, 0, 0, 0);
+                visibility[ui] = false;
             } else {
                 animation.To = new Thickness(0, 0, 0, 0);
-                isFrameVisible = true;
+                visibility[ui] = true;
             }
-
-            streaming.BeginAnimation(MarginProperty, animation);
+            ui.BeginAnimation(MarginProperty, animation);
         }
+        
 
     }
 }

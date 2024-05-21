@@ -81,12 +81,14 @@
     <Compile Include="DeviceSelectionPage.xaml.cs">
       <DependentUpon>DeviceSelectionPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FrameSource.cs" />
     <Compile Include="SayoHid.cs" />
-    <Compile Include="StreamingController.cs" />
+    <Compile Include="SourcesManagePage.xaml.cs">
+      <DependentUpon>SourcesManagePage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="StreamingPage.xaml.cs">
       <DependentUpon>StreamingPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TransformedMat.cs" />
     <Compile Include="Utilitys.cs" />
     <Page Include="DeviceInfo.xaml">
       <SubType>Designer</SubType>
@@ -108,6 +110,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="SourcesManagePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="StreamingPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

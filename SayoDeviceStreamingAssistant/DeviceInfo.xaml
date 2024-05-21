@@ -7,9 +7,9 @@
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              mc:Ignorable="d" Height="42" Width="256">
     <Grid Background="White">
-        <Button x:Name="DeviceSelect"></Button>
+        <Button x:Name="DeviceSelectButton" Click="DeviceSelectButton_Click"></Button>
         <Label x:Name="labelName" Content="Device Name" HorizontalAlignment="Left" VerticalAlignment="Top" Width="201" IsHitTestVisible="False" Margin="21,-2,0,0"/>
-        <Label x:Name="labelSupportStreaming" Content="Device Status" HorizontalAlignment="Center" Margin="0,17,0,0" VerticalAlignment="Top" Width="256" IsHitTestVisible="False"/>
+        <Label x:Name="labelDeviceStatus" Content="Device Status" HorizontalAlignment="Center" Margin="0,17,0,0" VerticalAlignment="Top" Width="256" IsHitTestVisible="False"/>
         <Ellipse x:Name="DeviceStatus" Height="12" Width="12" Fill="#FFFB0000" Margin="4,5,240,25" IsHitTestVisible="False"/>
         <Button x:Name="button" HorizontalAlignment="Left" Margin="236,3,0,0" VerticalAlignment="Top" Height="16" Width="16" BorderBrush="#00707070">
             <Button.Content>

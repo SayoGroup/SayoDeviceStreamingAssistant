@@ -1,8 +1,10 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using HidSharp;
 using MongoDB.Bson;
 using OpenCvSharp;
@@ -80,13 +82,21 @@ public class SayoHidDevice: IDisposable {
     public HidStream Stream;
     private byte[] _buffer;
 
-    public StreamingController ScreenStream;
+    private ScreenInfoPacket _screenInfo = null;
+    public ScreenInfoPacket ScreenInfo {
+        get {
+            if(_screenInfo == null)
+                _screenInfo = GetScreenInfo();
+            return _screenInfo;
+        }
+    }
+    public bool IsConnected => Stream != null;
 
-    public ScreenInfoPacket ScreenInfo = null;
     public bool SupportsStreaming => ScreenInfo != null && ScreenInfo.Width != 0 && ScreenInfo.Height != 0;
 
+    public event Action<bool> OnDeviceConnectionChanged;
+
     public void Dispose() {
-        ScreenStream?.Dispose();
         Stream?.Close();
     }
 
@@ -133,11 +143,10 @@ public class SayoHidDevice: IDisposable {
             .Usages.GetAllValues().FirstOrDefault() ?? 0;
         if (usage != 0xFF020002) {
             Stream.Close();
+            Stream = null;
             return;
         }
         _buffer = new byte[Device.GetMaxOutputReportLength()];
-        ScreenInfo = GetScreenInfo();
-        ScreenStream = new StreamingController(this);
         DeviceList.Local.Changed += (sender, args) => {
             bool found = false;
             foreach (var hidDevice in DeviceList.Local.GetHidDevices()) {
@@ -150,10 +159,12 @@ public class SayoHidDevice: IDisposable {
                 case false when Stream != null:
                     Stream.Close();
                     Stream = null;
+                    OnDeviceConnectionChanged?.Invoke(false);
                     return;
                 case true when Stream == null:
                     if(!Device.TryOpen(out Stream))
                         Stream = null;
+                    OnDeviceConnectionChanged?.Invoke(true);
                     break;
             }
         };
@@ -171,7 +182,7 @@ public class SayoHidDevice: IDisposable {
         _buffer[7] = index;
     }
 
-    public ScreenInfoPacket GetScreenInfo() {
+    private ScreenInfoPacket GetScreenInfo() {
         SetHeader(
             id: 0x22,
             echo: SayoHidPacketBase.ApplicationEcho,
@@ -181,12 +192,30 @@ public class SayoHidDevice: IDisposable {
             len: 0);
         ScreenInfoPacket screenInfo;
         Stream.Write(_buffer, 0, 8);
-        for (; ; ) {
-            var res = Stream.Read();
-            if ((screenInfo = ScreenInfoPacket.FromBytes(res)) != null)
-                break;
-        }
-        return screenInfo;
+        var task = Task.Run(() => {
+            var timeout = false;
+            var sw = new Stopwatch();
+            sw.Start();
+            while (sw.ElapsedMilliseconds < 1000) {
+                var buffer = new byte[1024];
+                var readTask = Stream.ReadAsync(buffer, 0, 1024);
+                timeout = Task.WaitAny(readTask, Task.Delay(1000)) == 1;
+                screenInfo = ScreenInfoPacket.FromBytes(buffer);
+                if (screenInfo != null) {
+                    return screenInfo;
+                }
+            }
+            return null;
+        });
+        task.Wait();
+        return task.Result;
+    }
+
+    public async void SendImageAsync (Mat image) {
+        await Task.Run(() => SendImage(image));
+    }
+    public async void SendImageAsync(byte[] rgb565) {
+        await Task.Run(() => SendImage(rgb565));
     }
 
     public void SendImage(Mat image) {

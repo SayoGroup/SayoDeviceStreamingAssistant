@@ -67,7 +67,6 @@
     <Compile Include="MircroStopWatch.cs" />
     <Compile Include="MonitorEnumerationHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utilitysy.cs" />
     <Compile Include="WindowEnumerationHelper.cs" />
   </ItemGroup>
   <ItemGroup>

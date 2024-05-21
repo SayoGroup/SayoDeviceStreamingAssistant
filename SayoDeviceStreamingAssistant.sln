@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SayoDeviceStreamingAssistan
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaptureFramework", "CaptureFramework\CaptureFramework.csproj", "{C8335307-2DB7-48C9-8B99-FF37075012DD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{CC201DB3-8463-45DF-8418-AA27E225E16A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,14 @@ Global
 		{C8335307-2DB7-48C9-8B99-FF37075012DD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C8335307-2DB7-48C9-8B99-FF37075012DD}.Release|x64.ActiveCfg = Release|x64
 		{C8335307-2DB7-48C9-8B99-FF37075012DD}.Release|x64.Build.0 = Release|x64
+		{CC201DB3-8463-45DF-8418-AA27E225E16A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC201DB3-8463-45DF-8418-AA27E225E16A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC201DB3-8463-45DF-8418-AA27E225E16A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CC201DB3-8463-45DF-8418-AA27E225E16A}.Debug|x64.Build.0 = Debug|Any CPU
+		{CC201DB3-8463-45DF-8418-AA27E225E16A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC201DB3-8463-45DF-8418-AA27E225E16A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC201DB3-8463-45DF-8418-AA27E225E16A}.Release|x64.ActiveCfg = Release|Any CPU
+		{CC201DB3-8463-45DF-8418-AA27E225E16A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

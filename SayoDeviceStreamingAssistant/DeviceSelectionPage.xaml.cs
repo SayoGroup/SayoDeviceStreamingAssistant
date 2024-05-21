@@ -33,14 +33,7 @@ namespace SayoDeviceStreamingAssistant {
             foreach (var device in devices) {
                 var deviceInfo = deviceInfos.Find(info => info.Device.Device.GetSerialNumber() == device.Device.GetSerialNumber());
                 if (deviceInfo == null) {
-                    deviceInfo = new DeviceInfo();
-                    deviceInfo.Device = device;
-                    deviceInfo.DeviceName = device.Device.GetProductName();
-                    deviceInfo.StreamingStatus = device.SupportsStreaming ? "Ready" : "Doesn't support streaming";
-                    deviceInfo.DeviceSelect.Click += (sender, e) => {
-                        var mainWindow = (MainWindow)Window.GetWindow(this);
-                        mainWindow.SetStreamingPage(deviceInfo);
-                    };
+                    deviceInfo = new DeviceInfo(device);
                     DeviceList.Children.Add(deviceInfo);
                     deviceInfos.Add(deviceInfo);
                 }
