@@ -196,7 +196,9 @@ namespace SayoDeviceStreamingAssistant {
         public void Dispose() {
             readRawFrame = null;
             initTimer?.Dispose();
+            readFrameTimer.Enabled = false;
             readFrameTimer?.StopAndWait();
+            readFrameTimer?.Abort();
             capture?.Dispose();
             video?.Dispose();
         }

@@ -19,8 +19,8 @@ namespace SayoDeviceStreamingAssistant {
             sourcesManageFrame.Navigate(sourcesManagePage);
             this.Closing += (sender, e) => {
                 deviceSelectionPage.Dispose();
-                //_streamingPage.Dispose();
-                //_sourcesManagePage.Dispose();
+                //streamingPage.Dispose();
+                sourcesManagePage.Dispose();
             };
             visibility.Add(deviceSelecteFrame, true);
             visibility.Add(streamingConfigFrame, false);

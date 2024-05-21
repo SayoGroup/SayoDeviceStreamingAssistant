@@ -56,36 +56,38 @@ namespace SayoDeviceStreamingAssistant {
             SourcesList.ItemsSource = FrameSources;
             SourceConfigPanel.Visibility = Visibility.Collapsed;
 
-            if (_contentUpdateTimer != null) return;
-            _contentUpdateTimer = new Timer((state) => {
-                var monitors = MonitorEnumerationHelper.GetMonitors();
-                var monitorInfos = monitors as MonitorInfo[] ?? monitors.ToArray();
-                foreach (var monitor in monitorInfos) {
-                    if (Monitors.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
-                        Dispatcher.Invoke(() => Monitors.Add(monitor));
+            if (_contentUpdateTimer == null) {
+                _contentUpdateTimer = new Timer((state) => {
+                    if (Dispatcher.HasShutdownStarted) return;
+                    var monitors = MonitorEnumerationHelper.GetMonitors();
+                    var monitorInfos = monitors as MonitorInfo[] ?? monitors.ToArray();
+                    foreach (var monitor in monitorInfos) {
+                        if (Monitors.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
+                            Dispatcher.Invoke(() => Monitors.Add(monitor));
+                        }
                     }
-                }
-                foreach (var monitor in Monitors.ToArray()) {
-                    if (monitorInfos.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
-                        Dispatcher.Invoke(() => Monitors.Remove(monitor));
+                    foreach (var monitor in Monitors.ToArray()) {
+                        if (monitorInfos.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
+                            Dispatcher.Invoke(() => Monitors.Remove(monitor));
+                        }
                     }
-                }
                 
-                var windows = WindowEnumerationHelper.GetWindows();
-                foreach (var wnd in windows.Where(wnd => Windows.ToList().Find((p) => p.proc.Id == wnd.proc.Id) == null)) {
-                    Dispatcher.Invoke(() => Windows.Add(wnd));
-                }
-                foreach (var wnd in Windows.ToArray()) {
-                    if (windows.Find((p) => p.proc.Id == wnd.proc.Id) == null) {
-                        Dispatcher.Invoke(() => {
-                            var source = selectedSource?.Source;
-                            Windows.Remove(wnd);
-                            if (source != null)
-                                SourceContentCombo.Text = source;
-                        });
+                    var windows = WindowEnumerationHelper.GetWindows();
+                    foreach (var wnd in windows.Where(wnd => Windows.ToList().Find((p) => p.proc.Id == wnd.proc.Id) == null)) {
+                        Dispatcher.Invoke(() => Windows.Add(wnd));
                     }
-                }
-            }, null, 0, 1000);
+                    foreach (var wnd in Windows.ToArray()) {
+                        if (windows.Find((p) => p.proc.Id == wnd.proc.Id) == null) {
+                            Dispatcher.Invoke(() => {
+                                var source = selectedSource?.Source;
+                                Windows.Remove(wnd);
+                                if (source != null)
+                                    SourceContentCombo.Text = source;
+                            });
+                        }
+                    }
+                }, null, 0, 1000);
+            }
             previewTimer.Tick += (sender, e) => {
                 UpdatePreview();
             };
@@ -96,15 +98,16 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         public void Dispose() {
+            foreach (var source in FrameSources) {
+                source.Dispose();
+            }
             _contentUpdateTimer.Dispose();
+            _contentUpdateTimer = null;
             previewTimer.Stop();
             previewTimer = null;
             previewBitmap = null;
             previewMat.Dispose();
             previewMat = null;
-            foreach (var source in FrameSources) {
-                source.Dispose();
-            }
         }
 
         public void BindSource(FrameSource source) {
