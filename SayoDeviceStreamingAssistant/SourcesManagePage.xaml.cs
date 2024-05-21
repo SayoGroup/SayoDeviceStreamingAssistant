@@ -27,7 +27,7 @@ namespace SayoDeviceStreamingAssistant {
     /// <summary>
     /// SourcesManagePage.xaml 的交互逻辑
     /// </summary>
-    public partial class SourcesManagePage : Page {
+    public partial class SourcesManagePage : Page, IDisposable {
         public static List<string> sourceTypes = new List<string> {
             "Monitor",
             "Window",
@@ -104,6 +104,18 @@ namespace SayoDeviceStreamingAssistant {
             previewTimer.Start();
             previewBitmap = new WriteableBitmap(previewMat.Width, previewMat.Height, 96, 96, PixelFormats.Bgr565, null);
             Preview.Source = previewBitmap;
+        }
+
+        public void Dispose() {
+            contentUpdateTimer.Dispose();
+            previewTimer.Stop();
+            previewTimer = null;
+            previewBitmap = null;
+            previewMat.Dispose();
+            previewMat = null;
+            foreach (var source in FrameSources) {
+                source.Dispose();
+            }
         }
 
         public void BindSource(FrameSource source) {
