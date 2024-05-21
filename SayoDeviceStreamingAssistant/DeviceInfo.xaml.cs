@@ -30,7 +30,7 @@ namespace SayoDeviceStreamingAssistant {
                 _frameSource = value;
                 if (_frameSource != null && _onFrameReady != null) {
                     _frameSource.OnFrameReady += HandleFrame;
-                    FrameRect = GetDefaultRect().Value;
+                    FrameRect = GetDefaultRect();
                 }
             }
         }
@@ -67,7 +67,7 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         public Mat ScreenMat;
-        public Rect FrameRect;
+        public Rect? FrameRect;
 
         public DeviceInfo(SayoHidDevice device) {
             InitializeComponent();
@@ -93,16 +93,22 @@ namespace SayoDeviceStreamingAssistant {
             ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
         }
         public void HandleFrame(Mat frame) {
-            frame.DrawTo(ScreenMat, FrameRect);
+            if (frame == null) return;
+            if(FrameRect == null) {
+                FrameRect = GetDefaultRect();
+                return;
+            }
+            frame.DrawTo(ScreenMat, FrameRect.Value);
             _onFrameReady?.Invoke(ScreenMat);
         }
         public Rect? GetDefaultRect() {
             if (_frameSource == null)
                 return null;
             var srcSize = _frameSource.GetContentRawSize();
+            if (srcSize == null) return null;
             var dstSize = ScreenMat.Size();
             Rect rect;
-            var ratio = (double)srcSize.Width / srcSize.Height;
+            var ratio = (double)srcSize.Value.Width / srcSize.Value.Height;
             if (ratio > 2) {
                 var space = dstSize.Height - dstSize.Width / ratio;
                 rect = new Rect(0, (int)Math.Round(space / 2), dstSize.Width,

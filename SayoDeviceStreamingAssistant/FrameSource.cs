@@ -233,8 +233,14 @@ namespace SayoDeviceStreamingAssistant {
             return RawFrame;
         }
 
-        public Size GetContentRawSize() {
-            return capture?.GetSourceSize() ?? new Size(video.FrameWidth, video.FrameHeight);
+        public Size? GetContentRawSize() {
+            return capture?.GetSourceSize() ?? 
+                GetVideoSize() ?? null;
+        }
+        private Size? GetVideoSize() {
+            if(video == null)
+                return null;
+            return new Size(video.FrameWidth, video.FrameHeight);
         }
     }
 

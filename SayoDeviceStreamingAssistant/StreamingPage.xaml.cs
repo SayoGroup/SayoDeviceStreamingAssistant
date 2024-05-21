@@ -105,7 +105,10 @@ namespace SayoDeviceStreamingAssistant {
             var mousePos = new Point(e.GetPosition(Preview).X / 2, e.GetPosition(Preview).Y / 2);
             var deltaScale = e.Delta > 0 ? 1.1 : 0.9;
 
-            var rect = _deviceInfo.FrameRect;
+            if (_deviceInfo.FrameRect == null)
+                return;
+            var rect = _deviceInfo.FrameRect.Value;
+
             var cursorVec = new Point(mousePos.X - rect.X, mousePos.Y - rect.Y);
             rect.Width = (int)(rect.Width * deltaScale);
             rect.Height = (int)(rect.Height * deltaScale);
