@@ -95,7 +95,14 @@ namespace SayoDeviceStreamingAssistant {
         public DeviceInfo(SayoHidDevice device) {
             InitializeComponent();
             Device = device;
-            DeviceName = device.Device.GetProductName();
+            var screenInfo = Device.ScreenInfo;
+            var screenInfoStr = "";
+            if (screenInfo != null) {
+                ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
+                screenInfoStr = $"{screenInfo.Width}x{screenInfo.Height}@{screenInfo.RefreshRate}Hz";
+            }
+            
+            DeviceName = device.Device.GetProductName() + "    " + screenInfoStr;
             UpdateStatus();
             Device.OnDeviceConnectionChanged += (connected) => {
                 Dispatcher.Invoke(UpdateStatus);
@@ -110,8 +117,7 @@ namespace SayoDeviceStreamingAssistant {
                     UpdateStatus();
                 }
             };
-            var screenInfo = Device.ScreenInfo;
-            ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
+            
         }
 
 
