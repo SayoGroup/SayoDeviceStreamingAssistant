@@ -237,13 +237,16 @@ namespace SayoDeviceStreamingAssistant {
                 return false;
             reading = true;
             
-            if (video != null && video.PosFrames == video.FrameCount) 
+            if (video != null && video.PosFrames >= video.FrameCount) 
                 video.PosFrames = 0;
             
             if (!readRawFrame(rawFrame)) {
                 reading = false;
                 return false;
             }
+            
+            // Cv2.ImShow("frame", rawFrame);
+            // Cv2.WaitKey(1);
 
             //RawFrame.DrawTo(mat, FrameRect);
             if (FrameCount % 60 == 0)

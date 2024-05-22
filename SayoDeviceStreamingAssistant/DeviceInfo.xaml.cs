@@ -69,6 +69,9 @@ namespace SayoDeviceStreamingAssistant {
 
         public readonly Mat ScreenMat;
         private readonly Dictionary<Guid,Rect> frameRects = new Dictionary<Guid, Rect>();
+        
+        
+        private bool rectDirty = true;
         public Rect? FrameRect {
             get {
                 if(frameSource == null) return null;
@@ -79,6 +82,7 @@ namespace SayoDeviceStreamingAssistant {
                 if(value == null) return;
                 if (frameSource == null) return;
                 frameRects[frameSource.Guid] = value.Value;
+                rectDirty = true;
             }
         }
 
@@ -130,7 +134,10 @@ namespace SayoDeviceStreamingAssistant {
                 FrameRect = GetDefaultRect();
                 return;
             }
-            ScreenMat.SetTo(new Scalar(0, 0, 0));
+            if (rectDirty) {
+                ScreenMat.SetTo(new Scalar(0, 0, 0));
+                rectDirty = false;
+            }
             frame.DrawTo(ScreenMat, FrameRect.Value);
             onFrameReady?.Invoke(ScreenMat);
         }

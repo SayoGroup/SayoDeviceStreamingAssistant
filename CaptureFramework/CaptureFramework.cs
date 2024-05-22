@@ -40,7 +40,6 @@ namespace CaptureFramework {
         public void Init() {
             if (_d3dDevice != null || _item.Size.Width == 0 || _item.Size.Height == 0 || initialized)
                 return;
-
             _d3dDevice = Direct3D11Helper.CreateSharpDXDevice(_device);
             var dxgiFactory = new Factory2();
             var description = new SwapChainDescription1 {
@@ -162,7 +161,7 @@ namespace CaptureFramework {
                     _d3dDevice.ImmediateContext.UnmapSubresource(_stagingTexture, 0);
                 }
 
-                _swapChain.Present(0, PresentFlags.None);
+                _swapChain.pre.Present(0, PresentFlags.None);
                 if (newSize) {
                     _framePool.Recreate(
                         _device,

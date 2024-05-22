@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Streaming Assistant" Height="300" Width="357" MinHeight="300" MinWidth="357" MaxWidth="357" MaxHeight="300">
     <Grid>
-        <Frame x:Name="deviceSelecteFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Left"/>
+        <Frame x:Name="deviceSelecteFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Center" Width="357"/>
         <Frame x:Name="streamingConfigFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Left" Width="357" Margin="-357,0,0,0"/>
         <Frame x:Name="sourcesManageFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Left" Width="357" Margin="-357,0,0,0"/>
     </Grid>
