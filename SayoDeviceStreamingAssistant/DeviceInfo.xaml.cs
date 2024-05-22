@@ -94,6 +94,8 @@ namespace SayoDeviceStreamingAssistant {
                 FrameRect = GetDefaultRect();
                 return;
             }
+
+            ScreenMat.SetTo(new Scalar(0, 0, 0));
             frame.DrawTo(ScreenMat, FrameRect.Value);
             onFrameReady?.Invoke(ScreenMat);
         }
