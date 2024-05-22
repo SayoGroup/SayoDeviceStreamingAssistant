@@ -67,6 +67,7 @@ namespace CaptureFramework {
                 2,
                 _item.Size);
             _session = _framePool.CreateCaptureSession(_item);
+            _session.IsBorderRequired = false;
 
             _lastSize = _item.Size;
 
