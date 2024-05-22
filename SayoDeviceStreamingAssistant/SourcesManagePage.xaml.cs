@@ -19,9 +19,9 @@ namespace SayoDeviceStreamingAssistant {
     /// </summary>
     public partial class SourcesManagePage : IDisposable {
         private static readonly List<string> SourceTypes = new List<string> {
-            "Monitor",
-            "Window",
-            "Media",
+            Properties.Resources.SourcesManagePage_SetContentUiByType_Monitor,
+            Properties.Resources.SourcesManagePage_SetContentUiByType_Window,
+            Properties.Resources.SourcesManagePage_SourceTypes_Media,
         };
         public static readonly ObservableCollection<FrameSource> FrameSources = new ObservableCollection<FrameSource>();
         private static readonly ObservableCollection<WindowInfo> Windows = new ObservableCollection<WindowInfo>();
@@ -44,7 +44,7 @@ namespace SayoDeviceStreamingAssistant {
                 selectedSource = value;
                 if (selectedSource == null) return;
                 SourceName.Text = selectedSource.Name;
-                SourceType.SelectedIndex = SourceTypes.IndexOf(selectedSource.Type);
+                SourceType.SelectedIndex = selectedSource.Type;
                 SetContentUiByType(selectedSource.Type);
                 if (selectedSource != null)
                     selectedSource.OnFrameReady += OnFrameReady;
@@ -123,7 +123,8 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         private void AddNewButton_Click(object sender, RoutedEventArgs e) {
-            var newSource = new FrameSource($"New source");
+            var newSource = new FrameSource(string.Format(
+                Properties.Resources.SourcesManagePage_AddNewButton_Click_Source__0_, FrameSources.Count));
             FrameSources.Add(newSource);
             SourcesList.SelectedIndex = FrameSources.IndexOf(newSource);
         }
@@ -153,38 +154,42 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         private void SourceType_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            var type = SourceType.SelectedItem as string;
-            if (SelectedSource == null || type == null) return;
+            var type = SourceType.SelectedIndex;
+            if (SelectedSource == null) return;
             if (SelectedSource.Type != type)
                 SelectedSource.Source = null;
             SelectedSource.Type = type;
             SetContentUiByType(type);
         }
 
-        private void SetContentUiByType(string type) {
+        private void SetContentUiByType(int type) {
             SourceContentCombo.Visibility = Visibility.Collapsed;
             SourceContentText.Visibility = Visibility.Collapsed;
             SelecteFileButton.Visibility = Visibility.Collapsed;
             labelContent.Visibility = Visibility.Collapsed;
 
-            if (!SourceTypes.Contains(type)) return;
+            if (type < 0 || type > 2) return;
 
             labelContent.Visibility = Visibility.Visible;
-            if (type == "Media") {
-                SourceContentText.Visibility = Visibility.Visible;
-                SelecteFileButton.Visibility = Visibility.Visible;
-                labelContent.Content = "Video path";
-                SourceContentText.Text = selectedSource.Source;
-            } else {
-                SourceContentCombo.Visibility = Visibility.Visible;
-                labelContent.Content = "Content";
-                if (type == "Monitor") {
+            switch (type) {
+                case 0: //"Monitor"
+                    SourceContentCombo.Visibility = Visibility.Visible;
+                    labelContent.Content = Properties.Resources.SourcesManagePage_SetContentUiByType_Monitor;
                     SourceContentCombo.ItemsSource = Monitors;
                     SourceContentCombo.Text = selectedSource?.Source;
-                } else if (type == "Window") {
+                    break;
+                case 1: //"Window"
+                    SourceContentCombo.Visibility = Visibility.Visible;
+                    labelContent.Content = Properties.Resources.SourcesManagePage_SetContentUiByType_Window;
                     SourceContentCombo.ItemsSource = Windows;
                     SourceContentCombo.Text = selectedSource?.Source;
-                }
+                    break;
+                case 2: //"Media"
+                    SourceContentText.Visibility = Visibility.Visible;
+                    SelecteFileButton.Visibility = Visibility.Visible;
+                    labelContent.Content = Properties.Resources.SourcesManagePage_SetContentUiByType_Video_path;
+                    SourceContentText.Text = selectedSource.Source;
+                    break;
             }
         }
 
@@ -208,14 +213,14 @@ namespace SayoDeviceStreamingAssistant {
 
         private void SelectFileButton_Click(object sender, RoutedEventArgs e) {
             var openFileDialog = new OpenFileDialog {
-                Title = "选择视频文件",
+                Title = Properties.Resources.SourcesManagePage_SelectFileButton_Click_Select_video_file,
                 // 设置文件类型过滤器
-                Filter = "视频文件 (*.avi; *.mp4; *.mkv; *.mov; *.wmv; *.flv; *.rmvb)|*.avi;*.mp4;*.mkv;*.mov;*.wmv;*.flv;*.rmvb|所有文件 (*.*)|*.*"
+                Filter = "Video (*.avi; *.mp4; *.mkv; *.mov; *.wmv; *.flv; *.rmvb)|*.avi;*.mp4;*.mkv;*.mov;*.wmv;*.flv;*.rmvb|All (*.*)|*.*"
             };
 
             //openFileDialog.Multiselect = true;
             var result = openFileDialog.ShowDialog();
-            if (!result != true) return;
+            if (result != true) return;
             var selectedFilePath = openFileDialog.FileName;
             SourceContentText.Text = selectedFilePath;
         }

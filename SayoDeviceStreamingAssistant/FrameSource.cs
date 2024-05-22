@@ -24,8 +24,8 @@ namespace SayoDeviceStreamingAssistant {
                 OnPropertyChanged(nameof(Name));
             }
         }
-        private string type;
-        public string Type {
+        private int type;
+        public int Type {
             get => type;
             set {
                 if (value == type) return;
@@ -127,10 +127,10 @@ namespace SayoDeviceStreamingAssistant {
             if (initializing) return false;
             initializing = true;
             if (readRawFrame != null) return initializing = false;
-            if (string.IsNullOrEmpty(Type)) return initializing = false;
+            if (Type < 0 || Type > 2) return initializing = false;
             if (string.IsNullOrEmpty(Source)) return initializing = false;
             switch (Type) {
-                case "Monitor":
+                case 0: //"Monitor"
                     var monitors = MonitorEnumerationHelper.GetMonitors();
                     var monitor = monitors.FirstOrDefault(m => m.DeviceName == Source);
                     if (monitor == null)
@@ -143,7 +143,7 @@ namespace SayoDeviceStreamingAssistant {
                     if (Enabled) capture.Init();
                     readRawFrame = capture.ReadFrame;
                     break;
-                case "Window":
+                case 1://"Window"
                     var processName = Source.Split(':')[0];
                     var windowTitle = Source.Split(':')[1];
                     var process = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(processName));
@@ -173,7 +173,7 @@ namespace SayoDeviceStreamingAssistant {
                     if (Enabled) capture.Init();
                     readRawFrame = capture.ReadFrame;
                     break;
-                case "Media":
+                case 2: //"Media"
                     if (File.Exists(Source) == false) break;
                     video = new VideoCapture(Source);
                     video.Open(Source);
@@ -194,6 +194,7 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         public void Dispose() {
+            for (; reading;) Thread.Sleep(1);
             readRawFrame = null;
             initTimer?.Dispose();
             readFrameTimer.Enabled = false;
@@ -203,10 +204,11 @@ namespace SayoDeviceStreamingAssistant {
             video?.Dispose();
         }
 
+        private bool reading;
         private bool ReadFrame() {
-            if (!Initialized || readRawFrame == null) return false;
-
-            if (video != null) {
+            if (reading || !Initialized || readRawFrame == null) return false;
+            reading = true;
+            if (false) {
                 var t = sinceInitialized.Elapsed.TotalMilliseconds;
                 var frameIndex = (int)(t * video.Fps / 1000.0) % video.FrameCount;
                 if (frameIndex != video.PosFrames - 1) {
@@ -214,13 +216,16 @@ namespace SayoDeviceStreamingAssistant {
                     readRawFrame(rawFrame);
                 }
             } else {
-                if (!readRawFrame(rawFrame))
+                if (!readRawFrame(rawFrame)) {
+                    reading = false;
                     return false;
+                }
             }
 
             //RawFrame.DrawTo(mat, FrameRect);
             if (++FrameCount % 60 == 0)
                 GC.Collect();
+            reading = false;
             return true;
         }
         public Mat PeekFrame() {

@@ -33,9 +33,7 @@ namespace SayoDeviceStreamingAssistant {
             previewBitmap = new WriteableBitmap(screenSize.Width, screenSize.Height, 96, 96, PixelFormats.Bgr565, null);
             Preview.Source = previewBitmap;
             SourceCombo.SelectedIndex = SourcesManagePage.FrameSources.IndexOf(bindDeviceInfo.FrameSource);
-            StreamButton.Content = bindDeviceInfo.Streaming ? new ImageAwesome { Icon = FontAwesomeIcon.Pause } :
-                new ImageAwesome { Icon = FontAwesomeIcon.Play };
-            ((ImageAwesome)StreamButton.Content).Foreground = bindDeviceInfo.Streaming ? Brushes.Green : Brushes.Red;
+            SetStreamButton();
             bindDeviceInfo.OnFrameReady += OnBindDeviceFrameReady;
             if (bindDeviceInfo.FrameSource?.Fps == null)
                 return;
@@ -91,7 +89,15 @@ namespace SayoDeviceStreamingAssistant {
         private void StreamButton_Click(object sender, RoutedEventArgs e) {
             if (bindDeviceInfo == null)
                 return;
-            bindDeviceInfo.Streaming = false;
+            bindDeviceInfo.Streaming = !bindDeviceInfo.Streaming;
+            SetStreamButton();
+        }
+        private void SetStreamButton() {
+            StreamButton.ToolTip = bindDeviceInfo.Streaming ? Properties.Resources.StreamingPage_SetStreamButton_Pause_streaming 
+                : Properties.Resources.StreamingPage_SetStreamButton_Begin_streaming;
+            StreamButton.Content = bindDeviceInfo.Streaming ? new ImageAwesome { Icon = FontAwesomeIcon.Pause } :
+                new ImageAwesome { Icon = FontAwesomeIcon.Play };
+            ((ImageAwesome)StreamButton.Content).Foreground = bindDeviceInfo.Streaming ? Brushes.Red : Brushes.Green;
         }
 
         private void Preview_MouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e) {

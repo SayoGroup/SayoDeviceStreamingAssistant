@@ -118,17 +118,17 @@ namespace SayoDeviceStreamingAssistant {
         private void UpdateStatus() {
             string status;
             if (!Device.IsConnected) {
-                status = "Disconnected";
+                status = Properties.Resources.DeviceInfo_UpdateStatus_Disconnected;
                 DeviceStatus.Fill = Brushes.Gray;
                 DeviceSelectButton.IsEnabled = false;
-                DeviceSelectButton.ToolTip = "Device is disconnected";
+                DeviceSelectButton.ToolTip = Properties.Resources.DeviceInfo_UpdateStatus_Device_is_disconnected;
             } else if (!Device.SupportsStreaming) {
-                status = "Not Supported";
+                status = Properties.Resources.DeviceInfo_UpdateStatus_Not_Supported;
                 DeviceStatus.Fill = Brushes.Red;
                 DeviceSelectButton.IsEnabled = false;
-                DeviceSelectButton.ToolTip = "Device does not support streaming";
+                DeviceSelectButton.ToolTip = Properties.Resources.DeviceInfo_UpdateStatus_Device_does_not_support_streaming;
             } else if (!Streaming || frameSource == null) {
-                status = "Ready";
+                status = Properties.Resources.DeviceInfo_UpdateStatus_Ready;
                 DeviceStatus.Fill = Brushes.Cyan;
                 DeviceSelectButton.IsEnabled = true;
             } else {
