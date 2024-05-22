@@ -12,7 +12,7 @@
     <Grid Background="#FF6B6B6B">
         <ComboBox x:Name="SourceCombo" ToolTip="{x:Static properties:Resources.SourceCombo_ToolTip}" DisplayMemberPath="Name"
                   HorizontalAlignment="Left" Margin="52,9,0,0" VerticalAlignment="Top" Width="197" SelectionChanged="SourceCombo_SelectionChanged"/>
-        <Image x:Name="Preview"   HorizontalAlignment="Left" Margin="10,60,0,0" VerticalAlignment="Top" Height="160" Width="320" MouseWheel="Preview_MouseWheel" MouseDown="Preview_MouseDown" MouseUp="Preview_MouseUp" MouseMove="Preview_MouseMove" MouseLeave="Preview_MouseLeave"/>
+
         <Button x:Name="BackButton" ToolTip="{x:Static properties:Resources.BackButton_ToolTip}"
                 HorizontalAlignment="Left" Margin="10,8,0,0" VerticalAlignment="Top" Width="37" Click="BackButton_Click" Height="22" Background="#00DDDDDD">
             <Button.Content>
@@ -37,7 +37,11 @@
                 <fa:ImageAwesome Icon="Refresh" Foreground="#FFBFBFBF"/>
             </Button.Content>
         </Button>
-        <Label x:Name="FrameTimeLabel" Content="Process: 0ms" HorizontalAlignment="Left" Margin="10,220,0,0" VerticalAlignment="Top" Width="140" RenderTransformOrigin="0.636,0.225"/>
-        <Label x:Name="FPSLabel" Content="0 FPS" HorizontalAlignment="Left" Margin="251,220,0,0" VerticalAlignment="Top" Width="80"/>
+        <Label x:Name="FrameTimeLabel" Content="Process: 0ms" HorizontalAlignment="Left" Margin="10,220,0,0" VerticalAlignment="Top" Width="101" RenderTransformOrigin="0.636,0.225"/>
+        <Label x:Name="SendImageElapsedLabel" Content="Process: 0ms" HorizontalAlignment="Left" Margin="116,221,0,0" VerticalAlignment="Top" Width="96" RenderTransformOrigin="0.636,0.225"/>
+        <Label x:Name="FPSLabel" Content="000.00/000.00 FPS" HorizontalAlignment="Left" Margin="217,221,0,0" VerticalAlignment="Top" Width="114"/>
+        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Margin="10,60,0,0" VerticalAlignment="Top" Height="161" Width="321">
+            <Image x:Name="Preview" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Height="160" Width="320" MouseWheel="Preview_MouseWheel" MouseDown="Preview_MouseDown" MouseUp="Preview_MouseUp" MouseMove="Preview_MouseMove" MouseLeave="Preview_MouseLeave"/>
+        </Border>
     </Grid>
 </Page>

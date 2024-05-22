@@ -66,8 +66,9 @@ namespace SayoDeviceStreamingAssistant {
                 return;
             var fps = frameSource.Fps.ToString("F2");
             var frameTime = frameSource.FrameTime.ToString("F2");
-            FPSLabel.Content = $"{fps} FPS";
+            FPSLabel.Content = $"{bindDeviceInfo.SendImageRate.ToString("F2")}/{fps} FPS";
             FrameTimeLabel.Content = $"Process: {frameTime}ms";
+            SendImageElapsedLabel.Content = $"Send: {bindDeviceInfo.SendImageElapsed.ToString("F2")}ms";
         }
         private void SourceCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             bindDeviceInfo.FrameSource = SourceCombo.SelectedItem as FrameSource;
@@ -75,7 +76,10 @@ namespace SayoDeviceStreamingAssistant {
             if (bindDeviceInfo.FrameSource?.Fps == null)
                 return;
             previewTimer.Interval = TimeSpan.FromMilliseconds(1e3 / bindDeviceInfo.FrameSource.Fps);
+            previewMat.SetTo(new Scalar(0, 0, 0));
+            newFrame = true;
             previewTimer.Start();
+            
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e) {

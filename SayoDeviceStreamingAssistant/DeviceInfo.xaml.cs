@@ -1,13 +1,9 @@
 ﻿using OpenCvSharp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using FontAwesome.WPF;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using OpenCvSharp.Aruco;
 using static SayoDeviceStreamingAssistant.FrameSource;
 using Rect = OpenCvSharp.Rect;
 
@@ -118,13 +114,16 @@ namespace SayoDeviceStreamingAssistant {
             ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
         }
 
+
+        public double SendImageElapsed => Device.ImageSendElapsedMs;
+        public double SendImageRate => Device.SendImageRate;
+
         private void HandleFrame(Mat frame) {
             if (frame == null) return;
             if (FrameRect == null) {
                 FrameRect = GetDefaultRect();
                 return;
             }
-
             ScreenMat.SetTo(new Scalar(0, 0, 0));
             frame.DrawTo(ScreenMat, FrameRect.Value);
             onFrameReady?.Invoke(ScreenMat);
@@ -132,7 +131,20 @@ namespace SayoDeviceStreamingAssistant {
         
         public void PeekFrame() {
             if (frameSource == null) return;
-            HandleFrame(frameSource.PeekFrame());
+            var frame =frameSource.PeekFrame();
+            if (frame == null) return;
+            if (FrameRect == null) {
+                FrameRect = GetDefaultRect();
+                return;
+            }
+            ScreenMat.SetTo(new Scalar(0, 0, 0));
+            frame.DrawTo(ScreenMat, FrameRect.Value);
+
+            if (onFrameReady == null) return;
+            foreach (var cb in onFrameReady.GetInvocationList()) {
+                if ((OnFrameReadyDelegate)cb != Device.SendImageAsync)
+                    cb.DynamicInvoke(ScreenMat);
+            }
         }
         
         public Rect? GetDefaultRect() {

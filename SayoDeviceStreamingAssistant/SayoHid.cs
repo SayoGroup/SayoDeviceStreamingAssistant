@@ -126,7 +126,7 @@ namespace SayoDeviceStreamingAssistant {
                 return deviceDict.Select(device => new SayoHidDevice(device.Value)).ToList();
             }
         }
-
+        
         private SayoHidDevice(HidDevice device) {
             Device = device;
             stream = device.Open();
@@ -175,31 +175,35 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         private ScreenInfoPacket GetScreenInfo() {
-            SetHeader(
-                id: 0x22,
-                echo: SayoHidPacketBase.ApplicationEcho,
-                flag: 0x7296,
-                cmd: ScreenInfoPacket.Cmd,
-                index: 0,
-                len: 0);
-            //ScreenInfoPacket screenInfo;
-            stream.Write(buffer, 0, 8);
-            var task = Task.Run(() => {
-                var sw = new Stopwatch();
-                sw.Start();
-                while (sw.ElapsedMilliseconds < 1000) {
-                    var readBuffer = new byte[1024];
-                    var readTask = stream.ReadAsync(readBuffer, 0, 1024);
-                    _ = Task.WaitAny(readTask, Task.Delay(1000)) == 1;
-                    screenInfo = ScreenInfoPacket.FromBytes(readBuffer);
-                    if (screenInfo != null) {
-                        return screenInfo;
+            try {
+                SetHeader(
+                    id: 0x22,
+                    echo: SayoHidPacketBase.ApplicationEcho,
+                    flag: 0x7296,
+                    cmd: ScreenInfoPacket.Cmd,
+                    index: 0,
+                    len: 0);
+                //ScreenInfoPacket screenInfo;
+                stream.Write(buffer, 0, 8);
+                var task = Task.Run(() => {
+                    var sw = new Stopwatch();
+                    sw.Start();
+                    while (sw.ElapsedMilliseconds < 1000) {
+                        var readBuffer = new byte[1024];
+                        var readTask = stream.ReadAsync(readBuffer, 0, 1024);
+                        _ = Task.WaitAny(readTask, Task.Delay(1000)) == 1;
+                        screenInfo = ScreenInfoPacket.FromBytes(readBuffer);
+                        if (screenInfo != null) {
+                            return screenInfo;
+                        }
                     }
-                }
+                    return null;
+                });
+                task.Wait();
+                return task.Result;
+            } catch {
                 return null;
-            });
-            task.Wait();
-            return task.Result;
+            }
         }
 
         public async void SendImageAsync(Mat image) {
@@ -209,8 +213,14 @@ namespace SayoDeviceStreamingAssistant {
             await Task.Run(() => SendImage(rgb565));
         }
 
+        public double ImageSendElapsedMs { get; private set; }
+        public double SendImageRate { get; private set; }
+
+        Queue<DateTime> fpsCounter = new Queue<DateTime>();
         public void SendImage(Mat image) {
             try {
+                var sw = Stopwatch.StartNew();
+                sw.Start();
                 var len = image.Width * image.Height * 2;
                 for (int j = 0; j < len;) {
                     var pixelCount = Math.Min(buffer.Length - 12, len - j);
@@ -231,6 +241,12 @@ namespace SayoDeviceStreamingAssistant {
                     stream.Write(buffer, 0, pixelCount + 12);
                     j += pixelCount;
                 }
+                ImageSendElapsedMs = sw.Elapsed.TotalMilliseconds;
+                sw.Stop();
+                fpsCounter.Enqueue(DateTime.Now);
+                while (fpsCounter.Count > 30) 
+                    fpsCounter.Dequeue();
+                SendImageRate = (fpsCounter.Count - 1) / (fpsCounter.Last() - fpsCounter.First()).TotalSeconds;
             } catch {
                 //Console.WriteLine(e);
             }
@@ -238,6 +254,8 @@ namespace SayoDeviceStreamingAssistant {
 
         public void SendImage(byte[] rgb565) {
             try {
+                var sw = Stopwatch.StartNew();
+                sw.Start();
                 for (int j = 0; j < rgb565.Length;) {
                     var pixelCount = Math.Min(buffer.Length - 12, rgb565.Length - j);
                     Array.Copy(BitConverter.GetBytes(j), 0, buffer, 8, 4);
@@ -252,6 +270,12 @@ namespace SayoDeviceStreamingAssistant {
                     stream.Write(buffer, 0, pixelCount + 12);
                     j += pixelCount;
                 }
+                ImageSendElapsedMs = sw.Elapsed.TotalMilliseconds;
+                sw.Stop();
+                fpsCounter.Enqueue(DateTime.Now);
+                while (fpsCounter.Count > 30)
+                    fpsCounter.Dequeue();
+                SendImageRate = (fpsCounter.Count - 1) / (fpsCounter.Last() - fpsCounter.First()).TotalSeconds;
             } catch {
                 //Console.WriteLine(e);
             }

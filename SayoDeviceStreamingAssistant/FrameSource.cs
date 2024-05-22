@@ -54,15 +54,15 @@ namespace SayoDeviceStreamingAssistant {
 
         public delegate void OnFrameReadyDelegate(Mat frame);
         //private event OnFrameReadyDelegate OnFrameReady;
-        //callback, expected fps, last called time
-        private readonly Dictionary<OnFrameReadyDelegate, (double, Stopwatch)> onFrameListeners 
-            = new Dictionary<OnFrameReadyDelegate, (double, Stopwatch)>();
+        //callback, expected fps, beginSendFrameCount, sendFrameCount
+        private readonly Dictionary<OnFrameReadyDelegate, (double, uint, uint)> onFrameListeners 
+            = new Dictionary<OnFrameReadyDelegate, (double, uint, uint)>();
 
         public void AddFrameListener(OnFrameReadyDelegate listener, double expectedFps) {
             if (onFrameListeners.Count == 0)
                 Enabled = true;
             //OnFrameReady += listener;
-            onFrameListeners[listener] = (expectedFps, Stopwatch.StartNew());
+            onFrameListeners[listener] = (expectedFps, FrameCount, 0);
             SetFps();
         }
         public void RemoveFrameListener(OnFrameReadyDelegate listener) {
@@ -86,13 +86,12 @@ namespace SayoDeviceStreamingAssistant {
         public double Fps { get; private set; } = 60;
 
         private void SetFps() {
-            var vfps = video?.Fps;
-            Fps = vfps ?? 
-                  (onFrameListeners.Any() ? onFrameListeners.Values.Select((i)=>i.Item1).Min() : 60);
+            Fps = video?.Fps ?? 
+                  (onFrameListeners.Any() ? onFrameListeners.Values.Select((i)=>i.Item1).Max() : 60);
             readFrameTimer.Interval = (long)Math.Round(1e6 / Fps);
         }
 
-        public ulong FrameCount { get; private set; }
+        public uint FrameCount { get; private set; }
 
         private readonly Mat rawFrame = new Mat();
         private readonly MicroTimer readFrameTimer = new MicroTimer();
@@ -112,11 +111,14 @@ namespace SayoDeviceStreamingAssistant {
                     //OnFrameReady?.Invoke(rawFrame);
                     foreach (var listener in onFrameListeners.ToArray()) {
                         var onFrame = listener.Key;
-                        var (expectedFps, lastCalled) = listener.Value;
-                        if (!(lastCalled.Elapsed.TotalMilliseconds >= 1000.0 / expectedFps - 16)) continue;
+                        var (expectedFps, beginFrameCount, sendFrameCount) = listener.Value;
+                        var frameElapsedCount = FrameCount - beginFrameCount;
+                        var fpsRatio = expectedFps / Fps;
+                        if ((double)sendFrameCount / frameElapsedCount > fpsRatio) continue;
                         onFrame(rawFrame);
-                        lastCalled.Restart();
+                        onFrameListeners[listener.Key] = (expectedFps, beginFrameCount, sendFrameCount + 1);
                     }
+                    ++FrameCount;
                 }
                 FrameTime = sw.Elapsed.TotalMilliseconds;
                 sw.Stop();
@@ -244,7 +246,7 @@ namespace SayoDeviceStreamingAssistant {
             }
 
             //RawFrame.DrawTo(mat, FrameRect);
-            if (++FrameCount % 60 == 0)
+            if (FrameCount % 60 == 0)
                 GC.Collect();
             reading = false;
             return true;
