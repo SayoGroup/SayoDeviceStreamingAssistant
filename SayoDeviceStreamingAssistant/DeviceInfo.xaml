@@ -11,7 +11,7 @@
         <Label x:Name="labelName" Content="Device Name" HorizontalAlignment="Left" VerticalAlignment="Top" Width="201" IsHitTestVisible="False" Margin="21,-2,0,0"/>
         <Label x:Name="labelDeviceStatus" Content="Device Status" HorizontalAlignment="Center" Margin="0,17,0,0" VerticalAlignment="Top" Width="256" IsHitTestVisible="False"/>
         <Ellipse x:Name="DeviceStatus" Height="12" Width="12" Fill="#FFFB0000" Margin="4,5,240,25" IsHitTestVisible="False"/>
-        <Button x:Name="button" HorizontalAlignment="Left" Margin="236,3,0,0" VerticalAlignment="Top" Height="16" Width="16" BorderBrush="#00707070">
+        <Button x:Name="PlayButton" HorizontalAlignment="Left" Margin="236,3,0,0" VerticalAlignment="Top" Height="16" Width="16" BorderBrush="#00707070" Click="PlayButton_Click">
             <Button.Content>
                 <fa:ImageAwesome Icon="Play"/>
             </Button.Content>

@@ -177,4 +177,10 @@
   <data name="SourcesManagePage_SourceTypes_Media" xml:space="preserve">
     <value>Media</value>
   </data>
+  <data name="DeviceInfo_UpdateStatus_Paused___0_" xml:space="preserve">
+    <value>Paused: {0}</value>
+  </data>
+  <data name="DeviceInfo_UpdateStatus_Streaming___0_" xml:space="preserve">
+    <value>Streaming: {0}</value>
+  </data>
 </root>

@@ -35,7 +35,7 @@ namespace CaptureFramework {
         }
 
         public void Init() {
-            if (_d3dDevice != null)
+            if (_d3dDevice != null || _item.Size.Width == 0 || _item.Size.Height == 0 || initialized)
                 return;
 
             _d3dDevice = Direct3D11Helper.CreateSharpDXDevice(_device);

@@ -114,11 +114,29 @@ namespace SayoDeviceStreamingAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Paused: {0}.
+        /// </summary>
+        public static string DeviceInfo_UpdateStatus_Paused___0_ {
+            get {
+                return ResourceManager.GetString("DeviceInfo_UpdateStatus_Paused___0_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ready.
         /// </summary>
         public static string DeviceInfo_UpdateStatus_Ready {
             get {
                 return ResourceManager.GetString("DeviceInfo_UpdateStatus_Ready", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Streaming: {0}.
+        /// </summary>
+        public static string DeviceInfo_UpdateStatus_Streaming___0_ {
+            get {
+                return ResourceManager.GetString("DeviceInfo_UpdateStatus_Streaming___0_", resourceCulture);
             }
         }
         

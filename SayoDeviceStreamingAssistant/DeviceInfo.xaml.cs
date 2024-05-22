@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
+using FontAwesome.WPF;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using OpenCvSharp.Aruco;
@@ -31,6 +32,7 @@ namespace SayoDeviceStreamingAssistant {
                     frameSource.RemoveFrameListener(HandleFrame);
                 }
                 frameSource = value;
+                Dispatcher.Invoke(UpdateStatus);
                 if (frameSource == null || onFrameReady == null) return;
                 frameSource.AddFrameListener(HandleFrame, Device?.ScreenInfo?.RefreshRate ?? 60);
                 //FrameRect = GetDefaultRect();
@@ -65,6 +67,7 @@ namespace SayoDeviceStreamingAssistant {
                 } else {
                     OnFrameReady -= Device.SendImageAsync;
                 }
+                Dispatcher.Invoke(UpdateStatus);
             }
         }
 
@@ -156,16 +159,22 @@ namespace SayoDeviceStreamingAssistant {
                 DeviceStatus.Fill = Brushes.Red;
                 DeviceSelectButton.IsEnabled = false;
                 DeviceSelectButton.ToolTip = Properties.Resources.DeviceInfo_UpdateStatus_Device_does_not_support_streaming;
-            } else if (!Streaming || frameSource == null) {
-                status = Properties.Resources.DeviceInfo_UpdateStatus_Ready;
+            } else if (!Streaming) {
+                status = frameSource == null ? Properties.Resources.DeviceInfo_UpdateStatus_Ready 
+                    : string.Format(Properties.Resources.DeviceInfo_UpdateStatus_Paused___0_, frameSource.Name);
                 DeviceStatus.Fill = Brushes.Cyan;
                 DeviceSelectButton.IsEnabled = true;
             } else {
-                status = frameSource.Name;
+                status = string.Format(Properties.Resources.DeviceInfo_UpdateStatus_Streaming___0_, frameSource.Name);
                 DeviceStatus.Fill = Brushes.Green;
                 DeviceSelectButton.IsEnabled = true;
             }
             Status = status;
+            PlayButton.ToolTip = Streaming ? Properties.Resources.StreamingPage_SetStreamButton_Pause_streaming 
+                : Properties.Resources.StreamingPage_SetStreamButton_Begin_streaming;
+            PlayButton.Content = Streaming ? new ImageAwesome { Icon = FontAwesomeIcon.Pause } :
+                new ImageAwesome { Icon = FontAwesomeIcon.Play };
+            ((ImageAwesome)PlayButton.Content).Foreground = Streaming ? Brushes.Red : Brushes.Green;
         }
         public void Dispose() {
             Device?.Dispose();
@@ -174,6 +183,10 @@ namespace SayoDeviceStreamingAssistant {
         private void DeviceSelectButton_Click(object sender, RoutedEventArgs e) {
             var mainWindow = (MainWindow)System.Windows.Window.GetWindow(this);
             mainWindow?.ShowStreamingPage(this);
+        }
+
+        private void PlayButton_Click(object sender, RoutedEventArgs e) {
+            Streaming = !Streaming;
         }
     }
 }

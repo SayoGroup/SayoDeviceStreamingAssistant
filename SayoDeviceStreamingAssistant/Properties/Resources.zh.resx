@@ -71,4 +71,10 @@
     <data name="SourcesManagePage_SourceTypes_Media" xml:space="preserve">
         <value>视频</value>
     </data>
+    <data name="DeviceInfo_UpdateStatus_Paused___0_" xml:space="preserve">
+        <value>已暂停: {0}</value>
+    </data>
+    <data name="DeviceInfo_UpdateStatus_Streaming___0_" xml:space="preserve">
+        <value>串流中: {0}</value>
+    </data>
 </root>
