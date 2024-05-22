@@ -40,14 +40,14 @@ namespace SayoDeviceStreamingAssistant {
             set {
                 previewMat.SetTo(new Scalar(0, 0, 0));
                 if (selectedSource != null)
-                    selectedSource.OnFrameReady -= OnFrameReady;
+                    selectedSource.RemoveFrameListener(OnFrameReady);
                 selectedSource = value;
                 if (selectedSource == null) return;
                 SourceName.Text = selectedSource.Name;
                 SourceType.SelectedIndex = selectedSource.Type;
                 SetContentUiByType(selectedSource.Type);
                 if (selectedSource != null)
-                    selectedSource.OnFrameReady += OnFrameReady;
+                    selectedSource.AddFrameListener(OnFrameReady, 60);
             }
         }
         public SourcesManagePage() {

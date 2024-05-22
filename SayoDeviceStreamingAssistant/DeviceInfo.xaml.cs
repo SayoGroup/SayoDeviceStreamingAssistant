@@ -23,11 +23,11 @@ namespace SayoDeviceStreamingAssistant {
             get => frameSource;
             set {
                 if (frameSource != null && onFrameReady != null) {
-                    frameSource.OnFrameReady -= HandleFrame;
+                    frameSource.RemoveFrameListener(HandleFrame);
                 }
                 frameSource = value;
                 if (frameSource == null || onFrameReady == null) return;
-                frameSource.OnFrameReady += HandleFrame;
+                frameSource.AddFrameListener(HandleFrame, Device?.ScreenInfo?.RefreshRate ?? 60);
                 FrameRect = GetDefaultRect();
             }
         }
@@ -36,13 +36,13 @@ namespace SayoDeviceStreamingAssistant {
         public event OnFrameReadyDelegate OnFrameReady {
             add {
                 if (frameSource != null && onFrameReady == null)
-                    frameSource.OnFrameReady += HandleFrame;
+                    frameSource.AddFrameListener(HandleFrame, Device?.ScreenInfo?.RefreshRate ?? 60);
                 onFrameReady += value;
             }
             remove {
                 onFrameReady -= value;
                 if (frameSource != null && onFrameReady == null)
-                    frameSource.OnFrameReady -= HandleFrame;
+                    frameSource.RemoveFrameListener(HandleFrame);
             }
         }
         public bool Streaming {
