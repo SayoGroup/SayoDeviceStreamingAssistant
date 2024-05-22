@@ -161,7 +161,7 @@ namespace CaptureFramework {
                     _d3dDevice.ImmediateContext.UnmapSubresource(_stagingTexture, 0);
                 }
 
-                _swapChain.pre.Present(0, PresentFlags.None);
+                _swapChain.Present(0, PresentFlags.None);
                 if (newSize) {
                     _framePool.Recreate(
                         _device,
