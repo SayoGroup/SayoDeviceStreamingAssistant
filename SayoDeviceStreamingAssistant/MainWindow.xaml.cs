@@ -8,23 +8,23 @@ namespace SayoDeviceStreamingAssistant {
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
     public partial class MainWindow {
-        private readonly DeviceSelectionPage deviceSelectionPage = new DeviceSelectionPage();
         private readonly StreamingPage streamingPage = new StreamingPage();
         private readonly SourcesManagePage sourcesManagePage = new SourcesManagePage();
+        private readonly DeviceSelectionPage deviceSelectionPage = new DeviceSelectionPage();
 
         public MainWindow() {
             InitializeComponent();
-            deviceSelecteFrame.Navigate(deviceSelectionPage);
             streamingConfigFrame.Navigate(streamingPage);
             sourcesManageFrame.Navigate(sourcesManagePage);
+            deviceSelecteFrame.Navigate(deviceSelectionPage);
             this.Closing += (sender, e) => {
                 deviceSelectionPage.Dispose();
                 //streamingPage.Dispose();
                 sourcesManagePage.Dispose();
             };
-            visibility.Add(deviceSelecteFrame, true);
             visibility.Add(streamingConfigFrame, false);
             visibility.Add(sourcesManageFrame, false);
+            visibility.Add(deviceSelecteFrame, true);
         }
         public void ShowStreamingPage(DeviceInfo device) {
             streamingPage.BindDevice(device);

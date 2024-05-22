@@ -1,7 +1,12 @@
 ﻿using OpenCvSharp;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using OpenCvSharp.Aruco;
 using static SayoDeviceStreamingAssistant.FrameSource;
 using Rect = OpenCvSharp.Rect;
 
@@ -28,7 +33,7 @@ namespace SayoDeviceStreamingAssistant {
                 frameSource = value;
                 if (frameSource == null || onFrameReady == null) return;
                 frameSource.AddFrameListener(HandleFrame, Device?.ScreenInfo?.RefreshRate ?? 60);
-                FrameRect = GetDefaultRect();
+                //FrameRect = GetDefaultRect();
             }
         }
 
@@ -64,8 +69,30 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         public readonly Mat ScreenMat;
-        public Rect? FrameRect;
+        private readonly Dictionary<Guid,Rect> frameRects = new Dictionary<Guid, Rect>();
+        public Rect? FrameRect {
+            get {
+                if(frameSource == null) return null;
+                if (!frameRects.ContainsKey(frameSource.Guid)) return null;
+                return frameRects[frameSource.Guid];
+            }
+            set {
+                if(value == null) return;
+                if (frameSource == null) return;
+                frameRects[frameSource.Guid] = value.Value;
+            }
+        }
 
+        public Dictionary<Guid, Rect> GetSourceRects() {
+            return frameRects;
+        }
+        public void SetSourceRects(Dictionary<Guid, Rect> rects) {
+            frameRects.Clear();
+            foreach (var kv in rects) {
+                frameRects[kv.Key] = kv.Value;
+            }
+        }
+        
         public DeviceInfo(SayoHidDevice device) {
             InitializeComponent();
             Device = device;

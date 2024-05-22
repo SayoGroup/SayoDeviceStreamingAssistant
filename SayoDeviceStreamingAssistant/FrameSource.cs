@@ -7,9 +7,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using MongoDB.Bson;
 
 namespace SayoDeviceStreamingAssistant {
     public class FrameSource : IDisposable, INotifyPropertyChanged {
+        public readonly Guid Guid;
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void OnPropertyChanged(string propertyName) {
@@ -25,7 +27,7 @@ namespace SayoDeviceStreamingAssistant {
                 OnPropertyChanged(nameof(Name));
             }
         }
-        private int type;
+        private int type = -1;
         public int Type {
             get => type;
             set {
@@ -37,7 +39,7 @@ namespace SayoDeviceStreamingAssistant {
                 initTimer = new Timer((state) => Init(), null, 0, 1000);
             }
         }
-        private string source;
+        private string source = "";
         public string Source {
             get => source;
             set {
@@ -99,7 +101,8 @@ namespace SayoDeviceStreamingAssistant {
         private VideoCapture video;
         private Func<Mat, bool> readRawFrame;
 
-        public FrameSource(string name) {
+        public FrameSource(string name, Guid? guid = null) {
+            this.Guid = guid ?? Guid.NewGuid();
             Name = name;
             initTimer = new Timer((state) => Init(), null, 0, 1000);
             readFrameTimer.Interval = (long)Math.Round(1e6 / 60);
@@ -119,20 +122,27 @@ namespace SayoDeviceStreamingAssistant {
                 sw.Stop();
             };
         }
-        //public void SetSource(string type, string source, double expectedFps, Rect2f? rect = null) {
-        //    Type = type;
-        //    Source = source;
-        //    Fps = expectedFps;
-        //    _microTimer.Interval = (long)Math.Round(1000.0 / Fps);
-        //    _microTimer.MicroTimerElapsed += (o, e) => {
-        //        var sw = Stopwatch.StartNew();
-        //        ReadFrame();
-        //        FrameTime = sw.Elapsed.TotalMilliseconds;
-        //        sw.Stop();
-        //        _onFrameReady?.Invoke(RawFrame);
-        //    };
-        //    initTimer = new Timer((state) => Init(), null, 0, 1000);
-        //}
+
+        public BsonDocument ToBsonDocument() {
+            var json = new {
+                Guid = Guid.ToString(),
+                Name,
+                Type,
+                Source
+            };
+            return json.ToBsonDocument();
+        }
+        public static FrameSource FromBsonDocument(BsonDocument bson) {
+            var guid = Guid.Parse(bson["Guid"].AsString);
+            var name = bson["Name"].AsString;
+            var type = bson["Type"].AsInt32;
+            var source = bson["Source"].AsString;
+            return new FrameSource(name, guid) {
+                Type = type,
+                Source = source
+            };
+        }
+        
         public bool Initialized => initTimer == null;
         private Timer initTimer;
         private bool initializing;

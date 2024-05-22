@@ -3,6 +3,7 @@ using OpenCvSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -11,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using MongoDB.Bson;
 using Window = System.Windows.Window;
 
 namespace SayoDeviceStreamingAssistant {
@@ -18,6 +20,7 @@ namespace SayoDeviceStreamingAssistant {
     /// SourcesManagePage.xaml 的交互逻辑
     /// </summary>
     public partial class SourcesManagePage : IDisposable {
+        private const string SourcesJsonFile = "./content/sources.json";
         private static readonly List<string> SourceTypes = new List<string> {
             Properties.Resources.SourcesManagePage_SetContentUiByType_Monitor,
             Properties.Resources.SourcesManagePage_SetContentUiByType_Window,
@@ -50,8 +53,30 @@ namespace SayoDeviceStreamingAssistant {
                     selectedSource.AddFrameListener(OnFrameReady, 60);
             }
         }
+
+        private string ToJson() {
+            var sources = new BsonArray();
+            foreach (var source in FrameSources) {
+                sources.Add(source.ToBsonDocument());
+            }
+            return new BsonDocument {
+                {"Sources", sources}
+            }.ToJson();
+        }
+        private static void FromJson(string json) {
+            var doc = BsonDocument.Parse(json);
+            var sources = doc["Sources"].AsBsonArray;
+            foreach (var source in sources) {
+                var frameSource = FrameSource.FromBsonDocument(source as BsonDocument);
+                FrameSources.Add(frameSource);
+            }
+        }
+        
         public SourcesManagePage() {
             InitializeComponent();
+            if(File.Exists(SourcesJsonFile))
+                FromJson(File.ReadAllText(SourcesJsonFile));
+            
             SourceType.ItemsSource = SourceTypes;
             SourcesList.ItemsSource = FrameSources;
             SourceConfigPanel.Visibility = Visibility.Collapsed;
@@ -98,6 +123,9 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         public void Dispose() {
+            if(!Directory.Exists("./content"))
+                Directory.CreateDirectory("./content");
+            File.WriteAllText(SourcesJsonFile, ToJson());
             foreach (var source in FrameSources) {
                 source.Dispose();
             }
