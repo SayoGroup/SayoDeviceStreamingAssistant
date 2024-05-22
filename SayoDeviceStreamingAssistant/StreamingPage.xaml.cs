@@ -114,6 +114,7 @@ namespace SayoDeviceStreamingAssistant {
             rect.Left = (int)(rect.X - cursorVec.X * (deltaScale - 1));
             rect.Top = (int)(rect.Y - cursorVec.Y * (deltaScale - 1));
             bindDeviceInfo.FrameRect = rect;
+            bindDeviceInfo.PeekFrame();
         }
 
         private System.Windows.Point? mouseDownPose;
@@ -138,6 +139,7 @@ namespace SayoDeviceStreamingAssistant {
             rect.Left += delta.X / 2;
             rect.Top += delta.Y / 2;
             bindDeviceInfo.FrameRect = rect;
+            bindDeviceInfo.PeekFrame();
         }
 
         private void ResetPreviewRect_Click(object sender, RoutedEventArgs e) {
@@ -145,6 +147,7 @@ namespace SayoDeviceStreamingAssistant {
             if (rect == null)
                 return;
             bindDeviceInfo.FrameRect = rect.Value;
+            bindDeviceInfo.PeekFrame();
         }
 
         private void Preview_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e) {

@@ -24,14 +24,17 @@ namespace CaptureFramework {
         private D3D11.Texture2DDescription _stagingTextureDesc;
         private D3D11.Texture2D _stagingTexture;
 
-        private bool initialized = false;
+        public bool initialized {
+            get;
+            private set;
+        }
 
         public CaptureFramework(GraphicsCaptureItem i) {
             _item = i;
         }
 
         public Size GetSourceSize() {
-            return new Size(_item.Size.Width, _item.Size.Height);
+            return new Size(_lastSize.Width, _lastSize.Height);
         }
 
         public void Init() {

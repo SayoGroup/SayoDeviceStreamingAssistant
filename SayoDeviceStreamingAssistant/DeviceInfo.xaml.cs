@@ -129,6 +129,12 @@ namespace SayoDeviceStreamingAssistant {
             frame.DrawTo(ScreenMat, FrameRect.Value);
             onFrameReady?.Invoke(ScreenMat);
         }
+        
+        public void PeekFrame() {
+            if (frameSource == null) return;
+            HandleFrame(frameSource.PeekFrame());
+        }
+        
         public Rect? GetDefaultRect() {
             var srcSize = frameSource?.GetContentRawSize();
             if (srcSize == null) return null;
