@@ -144,7 +144,7 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e) {
-            SourcesList.SelectedIndex = -1;
+            //SourcesList.SelectedIndex = -1;
             //SelectedSource = null;
             var mainWindow = (MainWindow)Window.GetWindow(this);
             mainWindow?.HideSourcesManagePage();

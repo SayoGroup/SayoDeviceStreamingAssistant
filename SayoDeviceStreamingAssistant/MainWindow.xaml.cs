@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Animation;
 
@@ -57,7 +58,23 @@ namespace SayoDeviceStreamingAssistant {
             }
             ui.BeginAnimation(MarginProperty, animation);
         }
-        
 
+        private void TitleBar_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
+            BackButton.IsHitTestVisible = false;
+            this.DragMove();
+        }
+
+        private void TitleBar_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e) {
+            Task.Run(() => {
+                System.Threading.Thread.Sleep(100);
+                Dispatcher.Invoke(() => {
+                    BackButton.IsHitTestVisible = true;
+                });
+            });
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e) {
+            this.Close();
+        }
     }
 }

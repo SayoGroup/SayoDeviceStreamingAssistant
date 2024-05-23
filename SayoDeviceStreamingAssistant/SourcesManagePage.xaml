@@ -7,7 +7,7 @@
       mc:Ignorable="d" 
       xmlns:fa="http://schemas.fontawesome.io/icons/"
       xmlns:properties="clr-namespace:SayoDeviceStreamingAssistant.Properties"
-      d:DesignHeight="267" d:DesignWidth="357"
+      d:DesignHeight="260" d:DesignWidth="350"
       Title="SourcesManagePage">
 
     <Grid Background="#FF6F6F6F">

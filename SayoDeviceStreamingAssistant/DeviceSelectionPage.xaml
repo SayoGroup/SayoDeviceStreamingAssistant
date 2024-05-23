@@ -7,12 +7,12 @@
       xmlns:properties="clr-namespace:SayoDeviceStreamingAssistant.Properties"
       mc:Ignorable="d" 
       Margin="0,0,0,0" 
-      d:DesignHeight="265"
-      Title="DeviceSelectionPage" Width="355">
+      d:DesignHeight="260" d:DesignWidth="350"
+      Title="DeviceSelectionPage">
 
     <Grid Background="#FF313131" Margin="0,0,0,0">
-        <Label x:Name="label" Content="{x:Static properties:Resources.label_Content}" Margin="10,10,189,226" Foreground="#FFD8D8D8"/>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="10,10,10,10">
+        <Label x:Name="label" Content="{x:Static properties:Resources.label_Content}" Margin="20,20,179,216" Foreground="#FFD8D8D8"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="20,12,20,12">
             <WrapPanel x:Name="DeviceList">
                 
 

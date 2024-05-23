@@ -104,9 +104,11 @@ namespace SayoDeviceStreamingAssistant {
             if (screenInfo != null) {
                 ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
                 screenInfoStr = $"{screenInfo.Width}x{screenInfo.Height}@{screenInfo.RefreshRate}Hz";
-            }
-            
-            DeviceName = device.Device.GetProductName() + "    " + screenInfoStr;
+                labelScreenInfo.Content = screenInfoStr;
+            } else
+                labelScreenInfo.Content = "";
+
+            DeviceName = device.Device.GetProductName();
             UpdateStatus();
             Device.OnDeviceConnectionChanged += (connected) => {
                 Dispatcher.Invoke(UpdateStatus);

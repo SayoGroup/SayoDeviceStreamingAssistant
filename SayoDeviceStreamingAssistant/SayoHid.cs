@@ -110,16 +110,14 @@ namespace SayoDeviceStreamingAssistant {
                     }
 
                     var serialNumber = hidDevice.GetSerialNumber();
-                    var usage = hidDevice.GetReportDescriptor().DeviceItems.FirstOrDefault()?
-                        .Usages.GetAllValues().FirstOrDefault() ?? 0;
-                    if (usage == 0xFF020002) {
-                        if (!deviceDict.ContainsKey(serialNumber))
-                            deviceDict.Add(hidDevice.GetSerialNumber(), hidDevice);
-                        else
-                            deviceDict[serialNumber] = hidDevice;
-                    } else if (!deviceDict.ContainsKey(hidDevice.GetSerialNumber())) {
-                        if (!deviceDict.ContainsKey(serialNumber))
-                            deviceDict.Add(hidDevice.GetSerialNumber(), hidDevice);
+                    foreach (var deviceItems in hidDevice.GetReportDescriptor().DeviceItems) {
+                        foreach (var usage in deviceItems.Usages.GetAllValues()) {
+                            if (usage == 0xFF020002) {
+                                deviceDict[serialNumber] = hidDevice;
+                            } else if (!deviceDict.ContainsKey(serialNumber)) {
+                                deviceDict[serialNumber] = hidDevice;
+                            }
+                        }
                     }
                 }
 
@@ -133,11 +131,11 @@ namespace SayoDeviceStreamingAssistant {
 
             var usage = Device.GetReportDescriptor().DeviceItems.FirstOrDefault()?
                 .Usages.GetAllValues().FirstOrDefault() ?? 0;
-            if (usage != 0xFF020002) {
-                stream.Close();
-                stream = null;
-                return;
-            }
+            //if (usage != 0xFF020002) {
+            //    stream.Close();
+            //    stream = null;
+            //    return;
+            //}
             buffer = new byte[Device.GetMaxOutputReportLength()];
             DeviceList.Local.Changed += (sender, args) => {
                 bool found = false;

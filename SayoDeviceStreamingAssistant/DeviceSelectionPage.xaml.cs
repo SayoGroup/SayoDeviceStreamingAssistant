@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using OpenCvSharp;
@@ -65,7 +66,11 @@ namespace SayoDeviceStreamingAssistant {
             foreach (var device in devices) {
                 label.Visibility = System.Windows.Visibility.Hidden;
                 var deviceInfo = deviceInfos.Find(info => info.Device.Device.GetSerialNumber() == device.Device.GetSerialNumber());
-                if (deviceInfo != null) continue;
+                if (deviceInfo != null) {
+                    if (!deviceInfo.Device.SupportsStreaming && device.SupportsStreaming) 
+                        deviceInfo.Device = device;
+                    continue;
+                };
                 deviceInfo = new DeviceInfo(device);
                 var serialNumber = device.Device.GetSerialNumber();
                 if (devicesSettings.TryGetValue(serialNumber, out var cfg)) {
