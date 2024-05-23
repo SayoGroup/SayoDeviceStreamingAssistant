@@ -112,11 +112,11 @@ namespace CaptureFramework {
         private bool reading = false;
         public bool ReadFrame(Mat mat) {
             if (!initialized) return false;
+            reading = true;
             if (_item.Size.Width == 0 || _item.Size.Height == 0) {
                 ItemeDestroyed?.Invoke();
                 return false;
             }
-            reading = true;
             if (mat == null)
                 throw new ArgumentNullException(nameof(mat));
             var newSize = false;

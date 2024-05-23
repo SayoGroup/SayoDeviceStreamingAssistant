@@ -71,7 +71,10 @@ namespace SayoDeviceStreamingAssistant {
             SendImageElapsedLabel.Content = $"Send: {bindDeviceInfo.SendImageElapsed.ToString("F2")}ms";
         }
         private void SourceCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            bindDeviceInfo.FrameSource = SourceCombo.SelectedItem as FrameSource;
+            var newSource = SourceCombo.SelectedItem as FrameSource;
+            if (newSource == bindDeviceInfo.FrameSource)
+                return;
+            bindDeviceInfo.FrameSource = newSource;
             previewTimer.Stop();
             if (bindDeviceInfo.FrameSource?.Fps == null)
                 return;

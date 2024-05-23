@@ -76,10 +76,14 @@ namespace SayoDeviceStreamingAssistant {
         private bool Enabled {
             get => onFrameListeners.Count != 0;
             set {
-                readFrameTimer.Enabled = value;
-                if (capture == null) return;
-                if (value) capture.Init();
-                else capture.Dispose();
+                Console.WriteLine("set timer enabled: " + value);
+                if (!value) readFrameTimer.StopAndWait();
+                else readFrameTimer.Enabled = true;
+                if (capture != null) {
+                    if (value) capture.Init();
+                    else capture.Dispose();
+                }
+                
             }
         }
         public double FrameTime { get; private set; }
@@ -206,7 +210,7 @@ namespace SayoDeviceStreamingAssistant {
                 case 2: //"Media"
                     if (File.Exists(Source) == false) break;
                     video = new VideoCapture(Source);
-                    video.Open(Source);
+                    //video.Open(Source);
                     readRawFrame = video.Read;
                     break;
             }
@@ -261,7 +265,7 @@ namespace SayoDeviceStreamingAssistant {
             // Cv2.WaitKey(1);
 
             //RawFrame.DrawTo(mat, FrameRect);
-            if (FrameCount % 60 == 0)
+            if (FrameCount % 30 == 0)
                 GC.Collect();
             reading = false;
             return true;
