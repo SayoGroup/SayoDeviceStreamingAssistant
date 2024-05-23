@@ -236,9 +236,10 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         public void Dispose() {
+            initTimer?.Dispose();
+            initTimer = null;
             for (; reading;) Thread.Sleep(1);
             readRawFrame = null;
-            initTimer?.Dispose();
             readFrameTimer.Enabled = false;
             readFrameTimer?.StopAndWait();
             capture?.Dispose();
@@ -261,10 +262,6 @@ namespace SayoDeviceStreamingAssistant {
                 return false;
             }
             
-            // Cv2.ImShow("frame", rawFrame);
-            // Cv2.WaitKey(1);
-
-            //RawFrame.DrawTo(mat, FrameRect);
             if (FrameCount % 30 == 0)
                 GC.Collect();
             reading = false;

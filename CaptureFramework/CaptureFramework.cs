@@ -114,6 +114,7 @@ namespace CaptureFramework {
             if (!initialized) return false;
             reading = true;
             if (_item.Size.Width == 0 || _item.Size.Height == 0) {
+                reading = false;
                 ItemeDestroyed?.Invoke();
                 return false;
             }

@@ -8,8 +8,8 @@
              mc:Ignorable="d" Height="42" Width="320">
     <Grid Background="White">
         <Button x:Name="DeviceSelectButton" Click="DeviceSelectButton_Click"></Button>
-        <Label x:Name="labelName" Content="Device Name" HorizontalAlignment="Left" VerticalAlignment="Top" Width="201" IsHitTestVisible="False" Margin="21,-2,0,0"/>
-        <Label x:Name="labelDeviceStatus" Content="Device Status" HorizontalAlignment="Left" Margin="0,17,0,0" VerticalAlignment="Top" Width="256" IsHitTestVisible="False"/>
+        <Label x:Name="labelName" Content="Device Name" HorizontalAlignment="Left" VerticalAlignment="Top" Width="269" IsHitTestVisible="False" Margin="16,-2,0,0"/>
+        <Label x:Name="labelDeviceStatus" Content="Device Status" HorizontalAlignment="Left" Margin="0,17,0,0" VerticalAlignment="Top" Width="285" IsHitTestVisible="False"/>
         <Ellipse x:Name="DeviceStatus" HorizontalAlignment="Left" Height="12" Width="12" Fill="#FFFB0000" Margin="4,5,240,25" IsHitTestVisible="False"/>
         <Button x:Name="PlayButton" HorizontalAlignment="Left" Margin="285,0,0,0" VerticalAlignment="Center" Height="30" Width="30" BorderBrush="#00707070" Click="PlayButton_Click">
             <Button.Content>
