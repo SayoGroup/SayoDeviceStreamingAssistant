@@ -141,6 +141,15 @@ namespace SayoDeviceStreamingAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No available devices..
+        /// </summary>
+        public static string label_Content {
+            get {
+                return ResourceManager.GetString("label.Content", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name.
         /// </summary>
         public static string labelName_Content {

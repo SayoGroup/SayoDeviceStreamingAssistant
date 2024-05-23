@@ -24,6 +24,9 @@ namespace CaptureFramework {
         private D3D11.Texture2DDescription _stagingTextureDesc;
         private D3D11.Texture2D _stagingTexture;
 
+        public event Action ItemeDestroyed;
+
+
         public bool initialized {
             get;
             private set;
@@ -109,6 +112,10 @@ namespace CaptureFramework {
         private bool reading = false;
         public bool ReadFrame(Mat mat) {
             if (!initialized) return false;
+            if (_item.Size.Width == 0 || _item.Size.Height == 0) {
+                ItemeDestroyed?.Invoke();
+                return false;
+            }
             reading = true;
             if (mat == null)
                 throw new ArgumentNullException(nameof(mat));
@@ -155,7 +162,8 @@ namespace CaptureFramework {
                         data.DataPointer);
 
                     //cut the mat to the correct size
-                    new Mat(bmat, new Rect(0, 0, _lastSize.Width, _lastSize.Height)).CopyTo(mat);
+                    bmat.RowRange(0, _lastSize.Height).ColRange(0, _lastSize.Width).CopyTo(mat);
+                    //new Mat(bmat, new Rect(0, 0, _lastSize.Width, _lastSize.Height)).CopyTo(mat);
 
                     bmat.Dispose();
                     _d3dDevice.ImmediateContext.UnmapSubresource(_stagingTexture, 0);

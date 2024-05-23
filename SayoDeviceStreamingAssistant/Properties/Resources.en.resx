@@ -77,4 +77,7 @@
     <data name="DeviceInfo_UpdateStatus_Streaming___0_" xml:space="preserve">
         <value>Streaming: {0}</value>
     </data>
+    <data name="label.Content" xml:space="preserve">
+        <value>No available devices.</value>
+    </data>
 </root>
