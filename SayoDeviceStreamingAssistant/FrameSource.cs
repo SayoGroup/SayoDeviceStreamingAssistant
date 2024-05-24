@@ -59,25 +59,15 @@ namespace SayoDeviceStreamingAssistant {
             = new Dictionary<OnFrameReadyDelegate, (double, uint, uint)>();
 
         public void AddFrameListener(OnFrameReadyDelegate listener, double expectedFps) {
-            Console.WriteLine("add frame listener");
-            foreach (var l in onFrameListeners) {
-                Console.WriteLine("    " + l.Key.Method.Name);
-            }
-            if (onFrameListeners.Count == 0)
-                Enabled = true;
-            //OnFrameReady += listener;
             onFrameListeners[listener] = (expectedFps, FrameCount, 0);
+            if (readFrameTimer.Enabled == false)
+                Enabled = true;
             SetFps();
         }
         public void RemoveFrameListener(OnFrameReadyDelegate listener) {
-            Console.WriteLine("remove frame listener");
-            foreach (var l in onFrameListeners) {
-                Console.WriteLine("    " + l.Key.Method.Name);
-            }
-            //OnFrameReady -= listener;
-            onFrameListeners.Remove(listener);
-            if (onFrameListeners.Count == 0)
+            if (onFrameListeners.Count == 1 && onFrameListeners.ContainsKey(listener))
                 Enabled = false;
+            onFrameListeners.Remove(listener);
             SetFps();
         }
 
@@ -87,11 +77,10 @@ namespace SayoDeviceStreamingAssistant {
                 Console.WriteLine("set timer enabled: " + value);
                 if (!value) readFrameTimer.StopAndWait();
                 else readFrameTimer.Enabled = true;
-                if (capture != null) {
-                    if (value) capture.Init();
-                    else capture.Dispose();
-                }
-                
+                if (capture == null) return;
+                if (value) capture.Init();
+                else capture.Dispose();
+
             }
         }
         public double FrameTime { get; private set; }
