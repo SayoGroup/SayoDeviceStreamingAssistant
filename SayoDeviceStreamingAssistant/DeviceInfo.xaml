@@ -5,14 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SayoDeviceStreamingAssistant"
              xmlns:fa="http://schemas.fontawesome.io/icons/"
-             mc:Ignorable="d" Height="44" Width="320">
+             mc:Ignorable="d" Height="44" Width="301">
     <Grid Background="White" Height="42">
-        <Button x:Name="DeviceSelectButton" Click="DeviceSelectButton_Click"></Button>
-        <Label x:Name="labelName" Content="Device Name" HorizontalAlignment="Left" VerticalAlignment="Top" Width="269" IsHitTestVisible="False" Margin="16,-2,0,0"/>
-        <Label x:Name="labelDeviceStatus" Content="Device Status" HorizontalAlignment="Left" Margin="0,17,0,0" VerticalAlignment="Top" Width="285" IsHitTestVisible="False"/>
-        <Label x:Name="labelScreenInfo" HorizontalContentAlignment="Right" Content="160x80@60Hz" HorizontalAlignment="Right" Margin="0,17,30,0" VerticalAlignment="Top" Width="96" IsHitTestVisible="False"/>
+        <Button x:Name="DeviceSelectButton" Click="DeviceSelectButton_Click" Background="#FF6B6B6B"></Button>
+        <Label x:Name="labelName" Content="Device Name" HorizontalAlignment="Left" VerticalAlignment="Top" Width="269" IsHitTestVisible="False" Margin="16,-2,0,0" Foreground="#FFB1B1B1"/>
+        <Label x:Name="labelDeviceStatus" Content="Device Status" HorizontalAlignment="Left" Margin="0,17,0,0" VerticalAlignment="Top" Width="285" IsHitTestVisible="False" Foreground="#FFB1B1B1"/>
+        <Label x:Name="labelScreenInfo" HorizontalContentAlignment="Right" Content="160x80@60Hz" HorizontalAlignment="Right" Margin="0,17,30,0" VerticalAlignment="Top" Width="96" IsHitTestVisible="False" Foreground="#FFB1B1B1"/>
         <Ellipse x:Name="DeviceStatus" HorizontalAlignment="Left" Height="12" Width="12" Fill="#FFFB0000" Margin="4,5,240,25" IsHitTestVisible="False"/>
-        <Button x:Name="PlayButton" HorizontalAlignment="Left" Margin="295,0,0,0" VerticalAlignment="Top" Height="23" Width="25" BorderBrush="#00707070" Click="PlayButton_Click">
+        <Button x:Name="PlayButton" HorizontalAlignment="Right" VerticalAlignment="Top" Height="23" Width="25" Click="PlayButton_Click" Background="#00000000" BorderBrush="#00000000">
             <Button.Content>
                 <fa:ImageAwesome Icon="Play"/>
             </Button.Content>

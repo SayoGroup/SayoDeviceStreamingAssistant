@@ -138,16 +138,13 @@ namespace SayoDeviceStreamingAssistant {
             previewMat = null;
         }
 
-        public void BindSource(FrameSource source) {
+        public void ShowPage(FrameSource source) {
             var index = FrameSources.IndexOf(source);
             SourcesList.SelectedIndex = index;
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e) {
-            //SourcesList.SelectedIndex = -1;
-            //SelectedSource = null;
-            var mainWindow = (MainWindow)Window.GetWindow(this);
-            mainWindow?.HideSourcesManagePage();
+        public void HidePage() {
+            SourcesList.SelectedIndex = -1;
         }
 
         private void AddNewButton_Click(object sender, RoutedEventArgs e) {

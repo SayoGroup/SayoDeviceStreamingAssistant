@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace SayoDeviceStreamingAssistant {
     /// <summary>
@@ -12,6 +14,7 @@ namespace SayoDeviceStreamingAssistant {
         private readonly StreamingPage streamingPage = new StreamingPage();
         private readonly SourcesManagePage sourcesManagePage = new SourcesManagePage();
         private readonly DeviceSelectionPage deviceSelectionPage = new DeviceSelectionPage();
+        private Page currentPage;
 
         public MainWindow() {
             InitializeComponent();
@@ -23,58 +26,75 @@ namespace SayoDeviceStreamingAssistant {
                 //streamingPage.Dispose();
                 sourcesManagePage.Dispose();
             };
-            visibility.Add(streamingConfigFrame, false);
-            visibility.Add(sourcesManageFrame, false);
-            visibility.Add(deviceSelecteFrame, true);
+            currentPage = deviceSelectionPage;
         }
         public void ShowStreamingPage(DeviceInfo device) {
-            streamingPage.BindDevice(device);
-            ToggleFrameVisibility(streamingConfigFrame);
-        }
-        public void HideStreamingPage() {
-            ToggleFrameVisibility(streamingConfigFrame);
+            currentPage = streamingPage;
+            streamingConfigFrame.IsHitTestVisible = true;
+            streamingPage.ShowPage(device);
+            SetFrameVisibility(streamingConfigFrame, true);
+            SetBackButtonVisibility(true);
         }
 
         public void ShowSourcesManagePage(FrameSource frameSource) {
-            sourcesManagePage.BindSource(frameSource);
-            ToggleFrameVisibility(sourcesManageFrame);
-        }
-        public void HideSourcesManagePage() {
-            ToggleFrameVisibility(sourcesManageFrame);
+            currentPage = sourcesManagePage;
+            sourcesManageFrame.IsHitTestVisible = true;
+            sourcesManagePage.ShowPage(frameSource);
+            SetFrameVisibility(sourcesManageFrame, true);
+            SetBackButtonVisibility(true);
+            //streamingPage.HidePage();
         }
 
-        private readonly Dictionary<UIElement, bool> visibility = new Dictionary<UIElement, bool>();
-
-        private void ToggleFrameVisibility(UIElement ui) {
-            var animation = new ThicknessAnimation {
+        private void SetFrameVisibility(UIElement ui,bool show) {
+            var animation = new DoubleAnimation {
                 Duration = TimeSpan.FromSeconds(0.2)
             };
-            if (visibility[ui]) {
-                animation.To = new Thickness(-ActualWidth * 2, 0, 0, 0);
-                visibility[ui] = false;
-            } else {
-                animation.To = new Thickness(0, 0, 0, 0);
-                visibility[ui] = true;
-            }
-            ui.BeginAnimation(MarginProperty, animation);
+            animation.To = show ? 1 : 0;
+            ui.BeginAnimation(OpacityProperty, animation);
+        }
+        private void SetBackButtonVisibility(bool show) {
+            var animation = new DoubleAnimation {
+                Duration = TimeSpan.FromSeconds(0.2)
+            };
+            animation.To = show ? 1 : 0;
+            BackButton.BeginAnimation(OpacityProperty, animation);
+            BackButton.IsHitTestVisible = show;
         }
 
         private void TitleBar_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
-            BackButton.IsHitTestVisible = false;
             this.DragMove();
         }
 
         private void TitleBar_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e) {
-            Task.Run(() => {
-                System.Threading.Thread.Sleep(100);
-                Dispatcher.Invoke(() => {
-                    BackButton.IsHitTestVisible = true;
-                });
-            });
+
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e) {
             this.Close();
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e) {
+            if (currentPage == streamingPage) {
+                streamingConfigFrame.IsHitTestVisible = false;
+                SetFrameVisibility(streamingConfigFrame, false);
+                streamingPage.HidePage();
+                currentPage = deviceSelectionPage;
+                SetBackButtonVisibility(false);
+            } else if (currentPage == sourcesManagePage) {
+                sourcesManageFrame.IsHitTestVisible = false;
+                SetFrameVisibility(sourcesManageFrame, false);
+                sourcesManagePage.HidePage();
+                currentPage = streamingPage;
+            }
+        }
+
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e) {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void Window_Activated(object sender, EventArgs e) {
+            //Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => WindowStyle = WindowStyle.None));
+            //Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => AllowsTransparency = true));
         }
     }
 }

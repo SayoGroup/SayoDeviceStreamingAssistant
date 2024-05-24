@@ -27,7 +27,7 @@ namespace SayoDeviceStreamingAssistant {
             };
         }
 
-        public void BindDevice(DeviceInfo deviceInfo) {
+        public void ShowPage(DeviceInfo deviceInfo) {
             this.bindDeviceInfo = deviceInfo;
             var screenSize = bindDeviceInfo.ScreenMat.Size();
             previewBitmap = new WriteableBitmap(screenSize.Width, screenSize.Height, 96, 96, PixelFormats.Bgr565, null);
@@ -40,9 +40,7 @@ namespace SayoDeviceStreamingAssistant {
             previewTimer.Interval = TimeSpan.FromMilliseconds(1e3 / bindDeviceInfo.FrameSource.Fps);
             previewTimer.Start();
         }
-        public void UnbindDevice() {
-            var mainWindow = (MainWindow)Window.GetWindow(this);
-            mainWindow?.HideStreamingPage();
+        public void HidePage() {
             previewTimer.Stop();
             bindDeviceInfo.OnFrameReady -= OnBindDeviceFrameReady;
             bindDeviceInfo = null;
@@ -83,14 +81,6 @@ namespace SayoDeviceStreamingAssistant {
             newFrame = true;
             previewTimer.Start();
             
-        }
-
-        private void BackButton_Click(object sender, RoutedEventArgs e) {
-            try {
-                UnbindDevice();
-            } catch {
-                // ignored
-            }
         }
 
         private void StreamButton_Click(object sender, RoutedEventArgs e) {

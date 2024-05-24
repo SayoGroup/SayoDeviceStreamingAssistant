@@ -31,6 +31,7 @@ namespace SayoDeviceStreamingAssistant {
                 Dispatcher.Invoke(UpdateStatus);
                 if (frameSource == null || onFrameReady == null) return;
                 frameSource.AddFrameListener(HandleFrame, Device?.ScreenInfo?.RefreshRate ?? 60);
+                rectDirty = true;
                 //FrameRect = GetDefaultRect();
             }
         }

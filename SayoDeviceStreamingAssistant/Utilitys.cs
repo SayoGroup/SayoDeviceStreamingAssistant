@@ -5,7 +5,7 @@ using OpenCvSharp;
 
 namespace SayoDeviceStreamingAssistant {
     internal static class MatExtension {
-        public static void DrawTo(this Mat src, Mat dst, Rect rect) {
+        public static void DrawTo(this Mat src, Mat dst, Rect rect, ColorConversionCodes colorCvtCode = ColorConversionCodes.BGRA2BGR565) {
             if (rect.X >= dst.Width || rect.Y >= dst.Height || rect.Right <= 0 || rect.Bottom <= 0)
                 return;
             Rect roiRect;
@@ -26,11 +26,11 @@ namespace SayoDeviceStreamingAssistant {
 
             var roiMat = Resize(src.SubMat(roi), roiRect.Size);
             //Cv2.ImShow("roi", roiMat);
-            Cv2.CvtColor(roiMat, roiMat, ColorConversionCodes.BGR2BGR565);
+            Cv2.CvtColor(roiMat, roiMat, colorCvtCode);
             roiMat.CopyTo(dst.RowRange(roiRect.Top, roiRect.Bottom).ColRange
                 (roiRect.Left, roiRect.Right));
         }
-        private static readonly Size Size720P = new Size(1280, 720);
+        private static readonly Size Size720P = new Size(1280, 640);
         private static Mat Resize(Mat mat, Size size) {
             var srcPixelCount = mat.Width * mat.Height;
             var dstPixelCount = size.Width * size.Height;

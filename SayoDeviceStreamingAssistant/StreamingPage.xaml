@@ -7,41 +7,34 @@
       xmlns:fa="http://schemas.fontawesome.io/icons/"
       xmlns:properties="clr-namespace:SayoDeviceStreamingAssistant.Properties"
       mc:Ignorable="d"
-      d:DesignHeight="260" d:DesignWidth="350"
+      d:DesignHeight="225" d:DesignWidth="341"
       Title="StreamingPage">
 
-    <Grid Background="#FF6B6B6B">
+    <Grid Background="#FF313131">
         <ComboBox x:Name="SourceCombo" ToolTip="{x:Static properties:Resources.SourceCombo_ToolTip}" DisplayMemberPath="Name"
-                  HorizontalAlignment="Left" Margin="52,9,0,0" VerticalAlignment="Top" Width="197" SelectionChanged="SourceCombo_SelectionChanged"/>
-
-        <Button x:Name="BackButton" ToolTip="{x:Static properties:Resources.BackButton_ToolTip}"
-                HorizontalAlignment="Left" Margin="10,8,0,0" VerticalAlignment="Top" Width="37" Click="BackButton_Click" Height="22" Background="#00DDDDDD">
-            <Button.Content>
-                <fa:ImageAwesome Icon="AngleLeft"/>
-            </Button.Content>
-        </Button>
-        <Button x:Name="ConfigSourcesButton" ToolTip="{x:Static properties:Resources.ConfigSourcesButton_ToolTip}"
-        HorizontalAlignment="Left" Margin="254,11,0,0" VerticalAlignment="Top" Width="21" Height="18" Background="Transparent" Click="ConfigSourcesButton_Click">
+                  HorizontalAlignment="Left" Margin="68,10,0,0" VerticalAlignment="Top" Width="234" Height="24" SelectionChanged="SourceCombo_SelectionChanged" Background="Red" BorderBrush="Red" Foreground="Black"/>
+        <Button x:Name ="ConfigSourcesButton" ToolTip="{x:Static properties:Resources.ConfigSourcesButton_ToolTip}"
+        HorizontalAlignment="Left" Margin="307,10,0,0" VerticalAlignment="Top" Width="24" Height="24" Background="Transparent" Click="ConfigSourcesButton_Click" BorderBrush="#00000000">
             <Button.Content>
                 <fa:ImageAwesome Icon="Gear" Foreground="#FFC7C7C7"/>
             </Button.Content>
         </Button>
         <Button x:Name="StreamButton" ToolTip="{x:Static properties:Resources.StreamButton_ToolTip}"
-                HorizontalAlignment="Left" Margin="280,12,0,0" VerticalAlignment="Top" Click="StreamButton_Click" Width="22" Foreground="#FF00AD13" Height="20" Background="#00DDDDDD">
+                HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Click="StreamButton_Click" Width="24" Foreground="#FF00AD13" Height="24" Background="#00DDDDDD" BorderBrush="#00000000">
             <Button.Content>
                 <fa:ImageAwesome Icon="Play" Foreground="#FF0C9E00"/>
             </Button.Content>
         </Button>
         <Button x:Name="ResetPreviewRect" ToolTip="{x:Static properties:Resources.ResetPreviewRect_ToolTip}"
-                HorizontalAlignment="Left" Margin="307,11,0,0" VerticalAlignment="Top" Click="ResetPreviewRect_Click" Width="24" Height="21" Background="#00DDDDDD">
+                HorizontalAlignment="Left" Margin="39,10,0,0" VerticalAlignment="Top" Click="ResetPreviewRect_Click" Width="24" Height="24" Background="#00DDDDDD" BorderBrush="#00000000">
             <Button.Content>
                 <fa:ImageAwesome Icon="Refresh" Foreground="#FFBFBFBF"/>
             </Button.Content>
         </Button>
-        <Label x:Name="FrameTimeLabel" Content="Process: 0ms" HorizontalAlignment="Left" Margin="10,220,0,0" VerticalAlignment="Top" Width="101" RenderTransformOrigin="0.636,0.225"/>
-        <Label x:Name="SendImageElapsedLabel" Content="Process: 0ms" HorizontalAlignment="Left" Margin="116,221,0,0" VerticalAlignment="Top" Width="96" RenderTransformOrigin="0.636,0.225"/>
-        <Label x:Name="FPSLabel" Content="000.00/000.00 FPS" HorizontalAlignment="Left" Margin="217,221,0,0" VerticalAlignment="Top" Width="114"/>
-        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Margin="10,60,0,0" VerticalAlignment="Top" Height="161" Width="321">
+        <Label x:Name="FrameTimeLabel" Content="Process: 0ms" HorizontalAlignment="Left" Margin="10,200,0,0" VerticalAlignment="Top" Width="101" RenderTransformOrigin="0.636,0.225" Foreground="#FFA4A4A4"/>
+        <Label x:Name="SendImageElapsedLabel" Content="Process: 0ms" HorizontalAlignment="Left" Margin="116,200,0,0" VerticalAlignment="Top" Width="96" RenderTransformOrigin="0.636,0.225" Foreground="#FFA4A4A4"/>
+        <Label x:Name="FPSLabel" Content="00.00/000.00 FPS" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="217,200,0,0" VerticalAlignment="Top" Width="114" Foreground="#FFA4A4A4"/>
+        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Height="161" Width="321">
             <Image x:Name="Preview" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Height="160" Width="320" MouseWheel="Preview_MouseWheel" MouseDown="Preview_MouseDown" MouseUp="Preview_MouseUp" MouseMove="Preview_MouseMove" MouseLeave="Preview_MouseLeave"/>
         </Border>
     </Grid>

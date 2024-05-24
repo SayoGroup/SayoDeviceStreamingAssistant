@@ -6,37 +6,31 @@
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:local="clr-namespace:SayoDeviceStreamingAssistant"
         mc:Ignorable="d"
-        WindowStyle="None" 
-        ResizeMode="NoResize"
-        AllowsTransparency="True"
-        Background="Transparent"
-        Title="Streaming Assistant" Height="300" Width="360" MinHeight="300" MinWidth="360" MaxWidth="360" MaxHeight="300">
-
-    <Grid MouseDown="TitleBar_MouseDown" MouseUp="TitleBar_MouseUp">
-        <Border CornerRadius="10" Background="#FF404040">
-            <Grid>
-                <Grid/>
-                <Frame x:Name="deviceSelecteFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="350" Height="260" Margin="0,0,0,5" Background="#FF797979"/>
-                <Frame x:Name="streamingConfigFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="350" Height="260" Margin="-360,0,0,5"/>
-                <Frame x:Name="sourcesManageFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="350" Height="260" Margin="-360,0,0,5"/>
-                <Button x:Name="BackButton" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="32" BorderBrush="#00000000" Background="#00000000" Foreground="#00000000" Margin="3,3,0,0">
-                    <Button.Content>
-                        <fa:ImageAwesome Icon="AngleLeft" Height="16" Foreground="#FFABABAB"/>
-                    </Button.Content>
-                </Button>
-                <Button x:Name="CloseButton" HorizontalAlignment="Left" Margin="325,3,0,0" VerticalAlignment="Top" Height="32" Width="32" Background="#00000000" BorderBrush="#00000000" Click="CloseButton_Click">
-                    <Button.Content>
-                        <fa:ImageAwesome Icon="Close" Width="16" Foreground="#FFA4A4A4"/>
-                    </Button.Content>
-                </Button>
-                <Button x:Name="MinimizeButton" HorizontalAlignment="Left" Margin="293,3,0,0" VerticalAlignment="Top" Height="32" Width="32" Background="#00000000" BorderBrush="#00000000">
-                    <Button.Content>
-                        <fa:ImageAwesome Icon="WindowMinimize" Width="16" Foreground="DarkGray"/>
-                    </Button.Content>
-                </Button>
-                <Label x:Name="label" Content="Streaming Assistant" HorizontalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Width="230" FontSize="16" IsHitTestVisible="False" Foreground="#FFCECECE"/>
-            </Grid>
-        </Border>
+        Background="#FF404040"
+        Title="Streaming Assistant" Height="265" Width="351" Activated="Window_Activated">
+    <WindowChrome.WindowChrome>
+        <WindowChrome GlassFrameThickness="10" CornerRadius="16" CaptionHeight="0" UseAeroCaptionButtons="False" ResizeBorderThickness="0"/>
+    </WindowChrome.WindowChrome>
+    <Grid >
+        <Label x:Name="TitleBar" Content="Streaming Assistant" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Top" Height="32" Width="350" FontSize="16" Foreground="#FFCECECE" MouseLeftButtonDown="TitleBar_MouseDown" MouseLeftButtonUp="TitleBar_MouseUp"/>
+        <Frame x:Name="deviceSelecteFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="341" Height="225" Margin="0,0,0,5" Background="#FF313131"/>
+        <Frame x:Name="streamingConfigFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="341" Height="225" Margin="5,0,0,5" Opacity="0" IsHitTestVisible="False"/>
+        <Frame x:Name="sourcesManageFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="341" Height="225" Margin="5,0,0,5" Opacity="0" IsHitTestVisible="False"/>
+        <Button x:Name="BackButton" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="32" BorderBrush="#00000000" Background="#00000000" Foreground="#00000000" Margin="3,3,0,0" Click="BackButton_Click" Opacity="0" IsHitTestVisible="False">
+            <Button.Content>
+                <fa:ImageAwesome Icon="AngleLeft" Height="16" Foreground="#FFABABAB"/>
+            </Button.Content>
+        </Button>
+        <Button x:Name="CloseButton" HorizontalAlignment="Right" Margin="325,3,0,0" VerticalAlignment="Top" Height="32" Width="32" Background="#00000000" BorderBrush="#00000000" Click="CloseButton_Click">
+            <Button.Content>
+                <fa:ImageAwesome Icon="Close" Width="16" Foreground="#FFA4A4A4"/>
+            </Button.Content>
+        </Button>
+        <Button x:Name="MinimizeButton" HorizontalAlignment="Right" Margin="0,3,37,0" VerticalAlignment="Top" Height="32" Width="32" Background="#00000000" BorderBrush="#00000000" Click="MinimizeButton_Click">
+            <Button.Content>
+                <fa:ImageAwesome Icon="WindowMinimize" Width="16" Foreground="DarkGray"/>
+            </Button.Content>
+        </Button>
     </Grid>
 
 </Window>
