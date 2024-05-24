@@ -167,18 +167,7 @@ namespace SayoDeviceStreamingAssistant {
             var srcSize = frameSource?.GetContentRawSize();
             if (srcSize == null) return null;
             var dstSize = ScreenMat.Size();
-            Rect rect;
-            var ratio = (double)srcSize.Value.Width / srcSize.Value.Height;
-            if (ratio > 2) {
-                var space = dstSize.Height - dstSize.Width / ratio;
-                rect = new Rect(0, (int)Math.Round(space / 2), dstSize.Width,
-                    (int)Math.Round(dstSize.Width / ratio));
-            } else {
-                var space = dstSize.Width - dstSize.Height * ratio;
-                rect = new Rect((int)Math.Round(space / 2), 0,
-                    (int)Math.Round(dstSize.Height * ratio), dstSize.Height);
-            }
-            return rect;
+            return MatExtension.GetDefaultRect(srcSize.Value, dstSize);
         }
 
         private void UpdateStatus() {

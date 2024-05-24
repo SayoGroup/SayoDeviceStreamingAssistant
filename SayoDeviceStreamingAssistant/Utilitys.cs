@@ -1,10 +1,25 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using OpenCvSharp;
 
 namespace SayoDeviceStreamingAssistant {
     internal static class MatExtension {
+        public static Rect GetDefaultRect(Size srcSize, Size dstSize) {
+            Rect rect;
+            var ratio = (double)srcSize.Width / srcSize.Height;
+            if (ratio > 2) {
+                var space = dstSize.Height - dstSize.Width / ratio;
+                rect = new Rect(0, (int)Math.Round(space / 2), dstSize.Width,
+                    (int)Math.Round(dstSize.Width / ratio));
+            } else {
+                var space = dstSize.Width - dstSize.Height * ratio;
+                rect = new Rect((int)Math.Round(space / 2), 0,
+                    (int)Math.Round(dstSize.Height * ratio), dstSize.Height);
+            }
+            return rect;
+        }
         public static void DrawTo(this Mat src, Mat dst, Rect rect, ColorConversionCodes colorCvtCode = ColorConversionCodes.BGRA2BGR565) {
             if (rect.X >= dst.Width || rect.Y >= dst.Height || rect.Right <= 0 || rect.Bottom <= 0)
                 return;

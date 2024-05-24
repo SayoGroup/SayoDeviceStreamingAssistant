@@ -6,13 +6,17 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 public class WindowInfo {
+    public IntPtr hWnd;
     public Process proc;
-    public WindowInfo(Process proc) {
+    public string Title;
+    public WindowInfo(IntPtr hwmd, Process proc, string title) {
+        this.hWnd = hwmd;
         this.proc = proc;
+        this.Title = title;
     }
     public string Name {
         get {
-            return Path.GetFileName(proc.MainModule.FileName) + ":" + proc.MainWindowTitle;
+            return Path.GetFileName(proc.MainModule.FileName) + ":" + Title;
         }
     }
 }
@@ -46,7 +50,9 @@ public static class WindowEnumerationHelper {
             uint processId;
             GetWindowThreadProcessId(hWnd, out processId);
             try {
-                var wndInfo = new WindowInfo(Process.GetProcessById((int)processId));
+                var wndInfo = new WindowInfo(hWnd, 
+                    Process.GetProcessById((int)processId),
+                    title);
                 string name = wndInfo.Name;
                 res.Add(wndInfo);
             } catch (Exception) {

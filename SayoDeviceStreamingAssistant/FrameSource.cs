@@ -46,9 +46,7 @@ namespace SayoDeviceStreamingAssistant {
                 if (value == source) return;
                 source = value;
                 OnPropertyChanged(nameof(Source));
-                if (!Initialized) return;
-                Dispose();
-                initTimer = new Timer((state) => Init(), null, 0, 1000);
+                ReInit();
             }
         }
 
@@ -146,7 +144,12 @@ namespace SayoDeviceStreamingAssistant {
                 Source = source
             };
         }
-        
+
+        public void ReInit() {
+            if (!Initialized) return;
+            Dispose();
+            initTimer = new Timer((state) => Init(), null, 0, 1000);
+        }
         public bool Initialized => initTimer == null;
         private Timer initTimer;
         private bool initializing;
@@ -174,36 +177,46 @@ namespace SayoDeviceStreamingAssistant {
                     
                     break;
                 case 1://"Window"
-                    var processName = Source.Split(':')[0];
-                    var windowTitle = Source.Split(':')[1];
-                    var process = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(processName));
-                    if (process.Length == 0)
-                        break;
-                    foreach (var p in process) {
-                        if (p.MainWindowTitle != windowTitle) continue;
-                        var item = CaptureHelper.CreateItemForWindow(p.MainWindowHandle);
+                    //just grab window from SourcesManager -> best way
+                    var wndInfo = SourcesManagePage.GetWindowInfo(Source);
+                    if (wndInfo != null) {
+                        var item = CaptureHelper.CreateItemForWindow(wndInfo.hWnd);
+                        if (item != null) {
+                            capture = new CaptureFramework.CaptureFramework(item);
+                            capture.ItemeDestroyed += Capture_ItemeDestroyed;
+                            if (Enabled) capture.Init();
+                            readRawFrame = capture.ReadFrame;
+                            break;
+                        }
+                    }
+                    
+                    //ops, try to find window by process name and title,
+                    //theatrically this success only if SourcesManager has not been initialized
+                    foreach (var wnd in WindowEnumerationHelper.GetWindows()) {
+                        if (wnd.Name != Source) continue;
+                        var item = CaptureHelper.CreateItemForWindow(wnd.hWnd);
                         if (item == null) continue;
                         capture = new CaptureFramework.CaptureFramework(item);
                         capture.ItemeDestroyed += Capture_ItemeDestroyed;
-                        break;
-                    }
-                    if (capture != null) {
                         if (Enabled) capture.Init();
                         readRawFrame = capture.ReadFrame;
                         break;
                     }
+                    
+                    //ops, try to only match process name
+                    var processName = Source.Split(':')[0];
+                    var process = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(processName));
+                    if (process.Length == 0)
+                        break;
                     foreach (var p in process) {
-                        if (p.MainWindowHandle == IntPtr.Zero) continue;
+                        if (!WindowEnumerationHelper.IsWindowValidForCapture(p.MainWindowHandle)) continue;
                         var item = CaptureHelper.CreateItemForWindow(p.MainWindowHandle);
                         if (item == null) continue;
                         capture = new CaptureFramework.CaptureFramework(item);
                         capture.ItemeDestroyed += Capture_ItemeDestroyed;
-                        break;
+                        if (Enabled) capture.Init();
+                        readRawFrame = capture.ReadFrame;
                     }
-
-                    if (capture == null) return initializing = false;
-                    if (Enabled) capture.Init();
-                    readRawFrame = capture.ReadFrame;
                     break;
                 case 2: //"Media"
                     if (File.Exists(Source) == false) break;

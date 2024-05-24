@@ -145,6 +145,7 @@ namespace SayoDeviceStreamingAssistant {
                 return;
             bindDeviceInfo.FrameRect = rect.Value;
             bindDeviceInfo.PeekFrame();
+            bindDeviceInfo.FrameSource.ReInit();
         }
 
         private void Preview_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e) {

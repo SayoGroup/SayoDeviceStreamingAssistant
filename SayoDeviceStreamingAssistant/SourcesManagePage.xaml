@@ -11,7 +11,7 @@
       Title="SourcesManagePage">
 
     <Grid Background="#FF313131">
-        <ListBox x:Name="SourcesList" Margin="10,35,212,10" Background="#FF888888" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="SourcesList_SelectionChanged">
+        <ListBox x:Name="SourcesList" Margin="10,10,212,35" Background="#FF888888" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="SourcesList_SelectionChanged">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Name}" />
@@ -19,19 +19,19 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <Button x:Name="AddNewButton" ToolTip="Config sources"
-            HorizontalAlignment="Left" VerticalAlignment="Top" Margin="76,6,0,0" Width="24" Height="24" Background="Transparent" Click="AddNewButton_Click">
+            HorizontalAlignment="Left" VerticalAlignment="Top" Margin="105,195,0,0" Width="24" Height="24" Background="Transparent" Click="AddNewButton_Click" BorderBrush="Transparent">
             <Button.Content>
                 <fa:ImageAwesome Icon="Plus" Foreground="#FFC7C7C7"/>
             </Button.Content>
         </Button>
         <Button x:Name="DeleteButton" ToolTip="Config sources"
-    HorizontalAlignment="Left" VerticalAlignment="Top" Margin="105,6,0,0" Width="24" Height="24" Background="Transparent" Click="DeleteButton_Click">
+    HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,195,0,0" Width="24" Height="24" Background="Transparent" Click="DeleteButton_Click" BorderBrush="Transparent">
             <Button.Content>
                 <fa:ImageAwesome Icon="Trash" Foreground="#FFC7C7C7"/>
             </Button.Content>
         </Button>
-        <Grid x:Name="SourceConfigPanel" Margin="150,10,10,10" Background="#FF949494">
-            <Image x:Name="Preview" HorizontalAlignment="Left" Height="80" Margin="6,124,0,0" VerticalAlignment="Top" Width="160"/>
+        <Grid x:Name="SourceConfigPanel" Margin="143,10,10,10" Background="#FF949494">
+            <Image x:Name="Preview" HorizontalAlignment="Left" Height="80" Margin="16,0,0,2" VerticalAlignment="Bottom" Width="160"/>
             <TextBox x:Name="SourceName" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBox" Margin="0,23,0,0" VerticalAlignment="Top" Width="178" Height="19" TextChanged="SourceName_TextChanged"/>
             <ComboBox x:Name="SourceType" HorizontalAlignment="Center" Margin="0,60,0,0" VerticalAlignment="Top" Width="178" SelectionChanged="SourceType_SelectionChanged"/>
             <ComboBox x:Name="SourceContentCombo" IsEditable="True" DisplayMemberPath="Name" HorizontalAlignment="Center" VerticalAlignment="Top" Width="178" SelectionChanged="SourceContentCombo_SelectionChanged" PreviewTextInput="SourceContentCombo_TextInput" Margin="0,100,0,0"/>

@@ -36,12 +36,13 @@ namespace SayoDeviceStreamingAssistant {
         private bool newFrame;
         private DispatcherTimer previewTimer = new DispatcherTimer();
 
-
         private FrameSource selectedSource;
         private FrameSource SelectedSource {
-            get => selectedSource;
+            get  {
+                ClearPreview();
+                return selectedSource;
+            }
             set {
-                previewMat.SetTo(new Scalar(0, 0, 0));
                 if (selectedSource != null)
                     selectedSource.RemoveFrameListener(OnFrameReady);
                 selectedSource = value;
@@ -51,7 +52,12 @@ namespace SayoDeviceStreamingAssistant {
                 SetContentUiByType(selectedSource.Type);
                 if (selectedSource != null)
                     selectedSource.AddFrameListener(OnFrameReady, 60);
+                ClearPreview();
             }
+        }
+
+        public static WindowInfo GetWindowInfo(string source) {
+            return Windows.ToList().Find((w) => w.Name == source);
         }
 
         private string ToJson() {
@@ -98,11 +104,15 @@ namespace SayoDeviceStreamingAssistant {
                     }
                 
                     var windows = WindowEnumerationHelper.GetWindows();
-                    foreach (var wnd in windows.Where(wnd => Windows.ToList().Find((p) => p.proc.Id == wnd.proc.Id) == null)) {
+                    Console.WriteLine("---------------------------------");
+                    foreach (var window in windows) {
+                        Console.WriteLine(window.Name);
+                    }
+                    foreach (var wnd in windows.Where(wnd => Windows.ToList().Find((p) => p.hWnd == wnd.hWnd) == null)) {
                         Dispatcher.Invoke(() => Windows.Add(wnd));
                     }
                     foreach (var wnd in Windows.ToArray()) {
-                        if (windows.Find((p) => p.proc.Id == wnd.proc.Id) == null) {
+                        if (windows.Find((p) => p.hWnd == wnd.hWnd) == null) {
                             Dispatcher.Invoke(() => {
                                 var source = selectedSource?.Source;
                                 Windows.Remove(wnd);
@@ -250,18 +260,29 @@ namespace SayoDeviceStreamingAssistant {
             SourceContentText.Text = selectedFilePath;
         }
 
-        private void OnFrameReady(Mat frame) {
-            frame.DrawTo(previewMat, new OpenCvSharp.Rect(0, 0, previewMat.Width, previewMat.Height));
+        private void ClearPreview() {
+            previewMat.SetTo(new Scalar(0, 0, 0));
             newFrame = true;
         }
+        private void OnFrameReady(Mat frame) {
+            frame.DrawTo(previewMat, MatExtension.GetDefaultRect(frame.Size(), previewMat.Size()));
+            newFrame = true;
+        }
+        DateTime lastUpdate = DateTime.Now;
         private void UpdatePreview() {
-            if (previewMat == null || !newFrame) return;
+            if (previewMat == null || previewBitmap == null) return;
+            if (!newFrame) {
+                if ((DateTime.Now - lastUpdate).TotalSeconds > 0.5)
+                    ClearPreview();
+                return;
+            }
             var len = previewMat.Height * previewMat.Width * 2;
             previewBitmap.Lock();
             WinApi.CopyMemory(previewBitmap.BackBuffer, previewMat.Data, (uint)len);
             previewBitmap.AddDirtyRect(new Int32Rect(0, 0, previewMat.Width, previewMat.Height));
             previewBitmap.Unlock();
             newFrame = false;
+            lastUpdate = DateTime.Now;
         }
 
     }
