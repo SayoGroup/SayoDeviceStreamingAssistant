@@ -59,6 +59,10 @@ namespace SayoDeviceStreamingAssistant {
             = new Dictionary<OnFrameReadyDelegate, (double, uint, uint)>();
 
         public void AddFrameListener(OnFrameReadyDelegate listener, double expectedFps) {
+            Console.WriteLine("add frame listener");
+            foreach (var l in onFrameListeners) {
+                Console.WriteLine("    " + l.Key.Method.Name);
+            }
             if (onFrameListeners.Count == 0)
                 Enabled = true;
             //OnFrameReady += listener;
@@ -66,6 +70,10 @@ namespace SayoDeviceStreamingAssistant {
             SetFps();
         }
         public void RemoveFrameListener(OnFrameReadyDelegate listener) {
+            Console.WriteLine("remove frame listener");
+            foreach (var l in onFrameListeners) {
+                Console.WriteLine("    " + l.Key.Method.Name);
+            }
             //OnFrameReady -= listener;
             onFrameListeners.Remove(listener);
             if (onFrameListeners.Count == 0)
@@ -120,7 +128,8 @@ namespace SayoDeviceStreamingAssistant {
                         var fpsRatio = expectedFps / Fps;
                         if ((double)sendFrameCount / frameElapsedCount > fpsRatio) continue;
                         onFrame(rawFrame);
-                        onFrameListeners[listener.Key] = (expectedFps, beginFrameCount, sendFrameCount + 1);
+                        if(onFrameListeners.ContainsKey(listener.Key))
+                            onFrameListeners[listener.Key] = (expectedFps, beginFrameCount, sendFrameCount + 1);
                     }
                     ++FrameCount;
                 }

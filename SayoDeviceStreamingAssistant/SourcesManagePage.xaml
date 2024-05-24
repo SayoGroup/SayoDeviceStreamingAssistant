@@ -35,8 +35,8 @@
             <TextBox x:Name="SourceName" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBox" Margin="0,23,0,0" VerticalAlignment="Top" Width="178" Height="19" TextChanged="SourceName_TextChanged"/>
             <ComboBox x:Name="SourceType" HorizontalAlignment="Center" Margin="0,60,0,0" VerticalAlignment="Top" Width="178" SelectionChanged="SourceType_SelectionChanged"/>
             <ComboBox x:Name="SourceContentCombo" IsEditable="True" DisplayMemberPath="Name" HorizontalAlignment="Center" VerticalAlignment="Top" Width="178" SelectionChanged="SourceContentCombo_SelectionChanged" PreviewTextInput="SourceContentCombo_TextInput" Margin="0,100,0,0"/>
-            <TextBox x:Name="SourceContentText" TextWrapping="NoWrap" Text="TextBox" Margin="2,100,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="19" TextChanged="SourceContentText_TextChanged" Width="154"/>
-            <Button x:Name="SelecteFileButton" ToolTip="Config sources" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="157,100,0,0" Width="22" Height="21" Background="Transparent" Click="SelectFileButton_Click">
+            <TextBox x:Name="SourceContentText" TextWrapping="NoWrap" Text="TextBox" Margin="2,100,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="21" TextChanged="SourceContentText_TextChanged" Width="154"/>
+            <Button x:Name="SelecteFileButton" ToolTip="Config sources" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="157,100,0,0" Width="22" Height="21" Background="Transparent" Click="SelectFileButton_Click" BorderBrush="#00707070">
                 <Button.Content>
                     <fa:ImageAwesome Icon="File" Foreground="#FFC7C7C7"/>
                 </Button.Content>
