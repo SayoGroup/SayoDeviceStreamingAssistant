@@ -44,6 +44,7 @@ namespace SayoDeviceStreamingAssistant {
         private const string DeviceRectsFile = "./content/devices.json";
         private readonly List<DeviceInfo> deviceInfos = new List<DeviceInfo>();
         private readonly Dictionary<string, DeviceConfig> devicesSettings = new Dictionary<string, DeviceConfig>();
+        
         public DeviceSelectionPage() {
             InitializeComponent();
 
@@ -63,16 +64,16 @@ namespace SayoDeviceStreamingAssistant {
 
         private void UpdateDeviceList() {
             var devices = SayoHidDevice.Devices;
-            foreach (var device in devices) {
+            foreach (var kv in devices) {
                 label.Visibility = System.Windows.Visibility.Hidden;
-                var deviceInfo = deviceInfos.Find(info => info.Device.Device.GetSerialNumber() == device.Device.GetSerialNumber());
-                if (deviceInfo != null) {
-                    if (!deviceInfo.Device.SupportsStreaming && device.SupportsStreaming) 
-                        deviceInfo.Device = device;
+                var serialNumber = kv.Key;
+                var device = kv.Value;
+                var deviceInfo = deviceInfos.Find(info => info.Device.SerialNumber == serialNumber);
+                if (deviceInfo != null) 
                     continue;
-                };
+                
                 deviceInfo = new DeviceInfo(device);
-                var serialNumber = device.Device.GetSerialNumber();
+
                 if (devicesSettings.TryGetValue(serialNumber, out var cfg)) {
                     deviceInfo.SetSourceRects(cfg.Rects);
                     deviceInfo.FrameSource = SourcesManagePage.FrameSources.ToList()
@@ -84,7 +85,7 @@ namespace SayoDeviceStreamingAssistant {
         }
         public void Dispose() {
             foreach (var deviceInfo in deviceInfos) { //retrieve device settings
-                var serialNumber = deviceInfo.Device.Device.GetSerialNumber();
+                var serialNumber = deviceInfo.Device.SerialNumber;
                 var rects = deviceInfo.GetSourceRects();
                 var source = deviceInfo.FrameSource;
                 devicesSettings[serialNumber] = new DeviceConfig {

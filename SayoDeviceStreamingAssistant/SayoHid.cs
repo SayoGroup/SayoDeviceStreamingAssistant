@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using HidSharp;
 using OpenCvSharp;
+using OpenCvSharp.Aruco;
 
 namespace SayoDeviceStreamingAssistant {
     public class SayoHidPacketBase {
@@ -76,91 +79,65 @@ namespace SayoDeviceStreamingAssistant {
 
     }
 
-    public class SayoHidDevice : IDisposable {
-        public readonly HidDevice Device;
-        private HidStream stream;
-        private readonly byte[] buffer;
-
-        private ScreenInfoPacket screenInfo;
-        public ScreenInfoPacket ScreenInfo => screenInfo ?? (screenInfo = GetScreenInfo());
-        public bool IsConnected => stream != null;
-
-        public bool SupportsStreaming => ScreenInfo != null && ScreenInfo.Width != 0 && ScreenInfo.Height != 0;
-
-        public event Action<bool> OnDeviceConnectionChanged;
-
-        public void Dispose() {
-            stream?.Close();
+    public partial class SayoHidDevice : IDisposable { //static
+        private static bool _initialized;
+        private static bool Init() {
+            if (_initialized)
+                return true;
+            _initialized = true;
+            HidSharp.DeviceList.Local.Changed += OnDeviceChanged;
+            OnDeviceChanged(null, null);
+            return true;
         }
-
-        public static List<SayoHidDevice> Devices {
+        
+        //serial number, device
+        private static readonly ConcurrentDictionary<string, SayoHidDevice> DeviceList = new ConcurrentDictionary<string, SayoHidDevice>();
+        public static ConcurrentDictionary<string, SayoHidDevice> Devices {
             get {
-                var devices = DeviceList.Local.GetHidDevices(0x8089);
-                var deviceDict = new Dictionary<string, HidDevice>();
-                foreach (var hidDevice in devices) {
-                    Console.WriteLine($"ProductName: {hidDevice.GetProductName()}");
-                    Console.WriteLine($"    FriendlyName: {hidDevice.GetFriendlyName()}");
-                    Console.WriteLine($"    Manufacturer: {hidDevice.GetManufacturer()}");
-                    Console.WriteLine($"    SerialNumber: {hidDevice.GetSerialNumber()}");
-                    Console.WriteLine($"    DevicePath: {hidDevice.DevicePath}");
-                    foreach (var deviceItem in hidDevice.GetReportDescriptor().DeviceItems) {
-                        foreach (var usages in deviceItem.Usages.GetAllValues()) {
-                            Console.WriteLine($"        Usage: {usages:X}");
-                        }
-                    }
-
-                    var serialNumber = hidDevice.GetSerialNumber();
-                    foreach (var deviceItems in hidDevice.GetReportDescriptor().DeviceItems) {
-                        foreach (var usage in deviceItems.Usages.GetAllValues()) {
-                            if (usage == 0xFF020002) {
-                                deviceDict[serialNumber] = hidDevice;
-                            } else if (!deviceDict.ContainsKey(serialNumber)) {
-                                deviceDict[serialNumber] = hidDevice;
-                            }
-                        }
+                Init();
+                return DeviceList;
+            }
+        }
+        private static void OnDeviceChanged(object sender, DeviceListChangedEventArgs args) {
+            var devices = HidSharp.DeviceList.Local.GetHidDevices(0x8089);
+            //serial number, usage, device
+            var deviceDict = new Dictionary<string, Dictionary<uint, HidDevice>>();
+            foreach (var device in devices) {
+                uint? usage = null;
+                foreach (var deviceItem in device.GetReportDescriptor().DeviceItems) {
+                    foreach (var deviceUsage in deviceItem.Usages.GetAllValues()) {
+                        usage = deviceUsage;
                     }
                 }
+                if (usage == null) continue;
+                var serialNumber = device.GetSerialNumber();
+                if (!deviceDict.ContainsKey(serialNumber))
+                    deviceDict[serialNumber] = new Dictionary<uint, HidDevice>();
+                deviceDict[serialNumber][(uint)usage] = device;
+            }
 
-                return deviceDict.Select(device => new SayoHidDevice(device.Value)).ToList();
+            foreach (var sayoDevice in Devices) { //remove devices that are not connected
+                var serialNumber = sayoDevice.Key;
+                foreach (var kv in sayoDevice.Value.devices) {
+                    var usage = kv.Key;
+                    if (!deviceDict.ContainsKey(serialNumber) || !deviceDict[serialNumber].ContainsKey(usage)) 
+                        sayoDevice.Value.RemoveDevice(usage);
+                }
+            }
+            foreach (var kv in deviceDict) { //add new devices
+                var serialNumber = kv.Key;
+                if (!Devices.ContainsKey(serialNumber)) 
+                    Devices[serialNumber] = new SayoHidDevice(serialNumber);
+                var sayoDevice = Devices[serialNumber];
+                foreach (var kv2 in kv.Value) {
+                    var usage = kv2.Key;
+                    var device = kv2.Value;
+                    sayoDevice.AddDevice(usage, device);
+                }
             }
         }
         
-        private SayoHidDevice(HidDevice device) {
-            Device = device;
-            stream = device.Open();
-
-            var usage = Device.GetReportDescriptor().DeviceItems.FirstOrDefault()?
-                .Usages.GetAllValues().FirstOrDefault() ?? 0;
-            //if (usage != 0xFF020002) {
-            //    stream.Close();
-            //    stream = null;
-            //    return;
-            //}
-            buffer = new byte[Device.GetMaxOutputReportLength()];
-            DeviceList.Local.Changed += (sender, args) => {
-                bool found = false;
-                foreach (var hidDevice in DeviceList.Local.GetHidDevices()) {
-                    if (hidDevice.DevicePath == Device.DevicePath) {
-                        found = true;
-                        break;
-                    }
-                }
-                switch (found) {
-                    case false when stream != null:
-                        stream.Close();
-                        stream = null;
-                        OnDeviceConnectionChanged?.Invoke(false);
-                        return;
-                    case true when stream == null:
-                        if (!Device.TryOpen(out stream))
-                            stream = null;
-                        OnDeviceConnectionChanged?.Invoke(true);
-                        break;
-                }
-            };
-        }
-
-        private void SetHeader(byte id, byte echo, ushort flag, byte cmd, byte index, ushort len) {
+        private static void SetHidMessageHeader(IList<byte> buffer, byte id, byte echo, ushort flag, byte cmd, byte index, ushort len) {
             len += 4;
             buffer[0] = id;
             buffer[1] = echo;
@@ -171,10 +148,64 @@ namespace SayoDeviceStreamingAssistant {
             buffer[6] = cmd;
             buffer[7] = index;
         }
+    }
+    
+    public partial class SayoHidDevice : IDisposable {
+        public string SerialNumber { get; private set; }
+        //usage, device
+        private readonly ConcurrentDictionary<uint, HidDevice> devices = new ConcurrentDictionary<uint, HidDevice>();
+        private readonly ConcurrentDictionary<uint, HidStream> streams = new ConcurrentDictionary<uint, HidStream>();
+        private readonly ConcurrentDictionary<uint, byte[]> buffers = new ConcurrentDictionary<uint, byte[]>();
+        public event Action<bool> OnDeviceConnectionChanged;
 
-        private ScreenInfoPacket GetScreenInfo() {
+        public bool Connected => devices.Count > 0;
+        public bool SupportStreaming {
+            get {
+                var screenInfo = GetScreenInfo();
+                return screenInfo != null && screenInfo.Width != 0 && screenInfo.Height != 0;
+            }
+        }
+        
+        public void Dispose() {
+            //stream?.Close();
+        }
+
+        private void AddDevice(uint usage, HidDevice device) {
+            devices[usage] = device;
+            if (!device.TryOpen(out var stream))
+                return;
+            streams[usage] = stream;
+            var buffer = new byte[device.GetMaxOutputReportLength()];
+            buffers[usage] = buffer;
+            OnDeviceConnectionChanged?.Invoke(true);
+        }
+        private void RemoveDevice(uint usage) {
+            if (streams.TryGetValue(usage, out var stream)) {
+                stream.Close();
+                streams.TryRemove(usage,out var _);
+            }
+            devices.TryRemove(usage, out var _);
+            buffers.TryRemove(usage, out var _);
+            OnDeviceConnectionChanged?.Invoke(false);
+        }
+        
+        private SayoHidDevice(string serialNumber) {
+            SerialNumber = serialNumber;
+        }
+
+        public string GetProductName() {
+            if(devices.Count == 0) return "Not Connected";
+            var device = devices.First().Value;
+            if (devices.TryGetValue(0xFF020002, out var streamingDevice)) device = streamingDevice;
+            return device.GetProductName();
+        }
+        public ScreenInfoPacket GetScreenInfo() {
+            if (!devices.ContainsKey(0xFF020002)) return null;
             try {
-                SetHeader(
+                var buffer = buffers[0xFF020002];
+                var stream = streams[0xFF020002];
+                SetHidMessageHeader(
+                    buffer: buffer,
                     id: 0x22,
                     echo: SayoHidPacketBase.ApplicationEcho,
                     flag: 0x7296,
@@ -182,7 +213,7 @@ namespace SayoDeviceStreamingAssistant {
                     index: 0,
                     len: 0);
                 //ScreenInfoPacket screenInfo;
-                stream.Write(buffer, 0, 8);
+                streams[0xFF020002].Write(buffers[0xFF020002], 0, 8);
                 var task = Task.Run(() => {
                     var sw = new Stopwatch();
                     sw.Start();
@@ -190,7 +221,7 @@ namespace SayoDeviceStreamingAssistant {
                         var readBuffer = new byte[1024];
                         var readTask = stream.ReadAsync(readBuffer, 0, 1024);
                         _ = Task.WaitAny(readTask, Task.Delay(1000)) == 1;
-                        screenInfo = ScreenInfoPacket.FromBytes(readBuffer);
+                        var screenInfo = ScreenInfoPacket.FromBytes(readBuffer);
                         if (screenInfo != null) {
                             return screenInfo;
                         }
@@ -217,6 +248,8 @@ namespace SayoDeviceStreamingAssistant {
         Queue<DateTime> fpsCounter = new Queue<DateTime>();
         public void SendImage(Mat image) {
             try {
+                var buffer = buffers[0xFF020002];
+                var stream = streams[0xFF020002];
                 var sw = Stopwatch.StartNew();
                 sw.Start();
                 var len = image.Width * image.Height * 2;
@@ -229,7 +262,8 @@ namespace SayoDeviceStreamingAssistant {
                     //Array.Copy(BitConverter.GetBytes(j), 0, _buffer, 8, 4);
                     Marshal.Copy(image.Data + j, buffer, 12, pixelCount);
                     //Array.Copy(rgb565, j, _buffer, 12, pixelCount);
-                    SetHeader(
+                    SetHidMessageHeader(
+                        buffer: buffer,
                         id: 0x22,
                         echo: SayoHidPacketBase.ApplicationEcho,
                         flag: 0x7296,
@@ -252,13 +286,16 @@ namespace SayoDeviceStreamingAssistant {
 
         public void SendImage(byte[] rgb565) {
             try {
+                var buffer = buffers[0xFF020002];
+                var stream = streams[0xFF020002];
                 var sw = Stopwatch.StartNew();
                 sw.Start();
                 for (int j = 0; j < rgb565.Length;) {
                     var pixelCount = Math.Min(buffer.Length - 12, rgb565.Length - j);
                     Array.Copy(BitConverter.GetBytes(j), 0, buffer, 8, 4);
                     Array.Copy(rgb565, j, buffer, 12, pixelCount);
-                    SetHeader(
+                    SetHidMessageHeader(
+                        buffer: buffer,
                         id: 0x22,
                         echo: SayoHidPacketBase.ApplicationEcho,
                         flag: 0x7296,

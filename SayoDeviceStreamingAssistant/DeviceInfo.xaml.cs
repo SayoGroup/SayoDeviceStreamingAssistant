@@ -30,7 +30,7 @@ namespace SayoDeviceStreamingAssistant {
                 frameSource = value;
                 Dispatcher.Invoke(UpdateStatus);
                 if (frameSource == null || onFrameReady == null) return;
-                frameSource.AddFrameListener(HandleFrame, Device?.ScreenInfo?.RefreshRate ?? 60);
+                frameSource.AddFrameListener(HandleFrame, Device?.GetScreenInfo().RefreshRate ?? 60);
                 rectDirty = true;
                 //FrameRect = GetDefaultRect();
             }
@@ -40,7 +40,7 @@ namespace SayoDeviceStreamingAssistant {
         public event OnFrameReadyDelegate OnFrameReady {
             add {
                 if (frameSource != null && onFrameReady == null)
-                    frameSource.AddFrameListener(HandleFrame, Device?.ScreenInfo?.RefreshRate ?? 60);
+                    frameSource.AddFrameListener(HandleFrame, Device?.GetScreenInfo()?.RefreshRate ?? 60);
                 onFrameReady += value;
             }
             remove {
@@ -100,7 +100,7 @@ namespace SayoDeviceStreamingAssistant {
         public DeviceInfo(SayoHidDevice device) {
             InitializeComponent();
             Device = device;
-            var screenInfo = Device.ScreenInfo;
+            var screenInfo = Device.GetScreenInfo();
             var screenInfoStr = "";
             if (screenInfo != null) {
                 ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
@@ -109,7 +109,7 @@ namespace SayoDeviceStreamingAssistant {
             } else
                 labelScreenInfo.Content = "";
 
-            DeviceName = device.Device.GetProductName();
+            DeviceName = device.GetProductName();
             UpdateStatus();
             Device.OnDeviceConnectionChanged += (connected) => {
                 Dispatcher.Invoke(UpdateStatus);
@@ -172,12 +172,12 @@ namespace SayoDeviceStreamingAssistant {
 
         private void UpdateStatus() {
             string status;
-            if (!Device.IsConnected) {
+            if (!Device.Connected) {
                 status = Properties.Resources.DeviceInfo_UpdateStatus_Disconnected;
                 DeviceStatus.Fill = Brushes.Gray;
                 DeviceSelectButton.IsEnabled = false;
                 DeviceSelectButton.ToolTip = Properties.Resources.DeviceInfo_UpdateStatus_Device_is_disconnected;
-            } else if (!Device.SupportsStreaming) {
+            } else if (!Device.SupportStreaming) {
                 status = Properties.Resources.DeviceInfo_UpdateStatus_Not_Supported;
                 DeviceStatus.Fill = Brushes.Red;
                 DeviceSelectButton.IsEnabled = false;
