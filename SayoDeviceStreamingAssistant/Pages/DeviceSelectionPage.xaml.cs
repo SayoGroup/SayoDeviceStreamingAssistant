@@ -6,6 +6,7 @@ using System.Threading;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using OpenCvSharp;
+using SayoDeviceStreamingAssistant.Pages;
 
 namespace SayoDeviceStreamingAssistant {
     internal class DeviceConfig {

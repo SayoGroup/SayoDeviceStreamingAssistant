@@ -1,6 +1,4 @@
-﻿using Microsoft.Win32;
-using OpenCvSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -12,10 +10,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using MongoDB.Bson;
-using Window = System.Windows.Window;
+using OpenCvSharp;
 
-namespace SayoDeviceStreamingAssistant {
+namespace SayoDeviceStreamingAssistant.Pages {
     /// <summary>
     /// SourcesManagePage.xaml 的交互逻辑
     /// </summary>
@@ -36,7 +35,8 @@ namespace SayoDeviceStreamingAssistant {
         private bool newFrame;
         private DispatcherTimer previewTimer = new DispatcherTimer();
 
-        private FrameSource selectedSource;
+        public FrameSource selectedSource { get; private set; }
+
         private FrameSource SelectedSource {
             get  {
                 ClearPreview();
@@ -117,7 +117,6 @@ namespace SayoDeviceStreamingAssistant {
                         {
                             old.Title = wnd.Title;
                             old.proc = wnd.proc;
-                            continue;
                         } else
                         {
                             Dispatcher.Invoke(() => Windows.Add(wnd));
@@ -178,6 +177,8 @@ namespace SayoDeviceStreamingAssistant {
                 Properties.Resources.SourcesManagePage_AddNewButton_Click_Source__0_, FrameSources.Count));
             FrameSources.Add(newSource);
             SourcesList.SelectedIndex = FrameSources.IndexOf(newSource);
+            SourceType.SelectedIndex = 0;
+            SourceContentCombo.SelectedIndex = 0;
         }
         private void DeleteButton_Click(object sender, RoutedEventArgs e) {
             var source = (FrameSource)SourcesList.SelectedItem;

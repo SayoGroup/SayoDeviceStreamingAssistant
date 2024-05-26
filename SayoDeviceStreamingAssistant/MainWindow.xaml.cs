@@ -98,6 +98,8 @@ namespace SayoDeviceStreamingAssistant {
                 currentPage = deviceSelectionPage;
                 SetBackButtonVisibility(false);
             } else if (currentPage == sourcesManagePage) {
+                if(sourcesManagePage.selectedSource != null)
+                    streamingPage.SourceCombo.SelectedItem = sourcesManagePage.selectedSource;
                 sourcesManageFrame.IsHitTestVisible = false;
                 SetFrameVisibility(sourcesManageFrame, false);
                 sourcesManagePage.HidePage();

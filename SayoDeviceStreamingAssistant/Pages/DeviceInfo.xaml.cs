@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 using FontAwesome.WPF;
+using SayoDeviceStreamingAssistant.Pages;
 using static SayoDeviceStreamingAssistant.FrameSource;
 using Rect = OpenCvSharp.Rect;
 
@@ -196,10 +197,9 @@ namespace SayoDeviceStreamingAssistant {
             ((ImageAwesome)PlayButton.Content).Foreground = Streaming ? Brushes.Red : Brushes.Green;
             
             var screenInfo = Device.GetScreenInfo();
-            var screenInfoStr = "";
             if (screenInfo != null) {
                 ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
-                screenInfoStr = $"{screenInfo.Width}x{screenInfo.Height}@{screenInfo.RefreshRate}Hz";
+                var screenInfoStr = $"{screenInfo.Width}x{screenInfo.Height}@{screenInfo.RefreshRate}Hz";
                 labelScreenInfo.Content = screenInfoStr;
             } else
                 labelScreenInfo.Content = "";
