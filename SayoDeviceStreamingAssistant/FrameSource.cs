@@ -220,6 +220,8 @@ namespace SayoDeviceStreamingAssistant {
                 initTimer.Dispose();
                 initTimer = null;
                 SetFps();
+                if (Enabled)
+                    readFrameTimer.Enabled = true;
             }
             initializing = false;
             sinceInitialized.Restart();
@@ -228,7 +230,7 @@ namespace SayoDeviceStreamingAssistant {
 
         private void Capture_ItemDestroyed() {
             readRawFrame = null;
-            //readFrameTimer.Enabled = false;
+            readFrameTimer.Enabled = false;
             capture?.Dispose();
             capture = null;
             initTimer = new Timer((state) => Init(), null, 0, 1000);
