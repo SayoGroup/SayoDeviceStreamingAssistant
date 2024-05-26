@@ -11,6 +11,19 @@
       Title="StreamingPage">
 
     <Grid Background="#FF313131">
+        <Grid Margin="10,39,10,25">
+            <Label Margin="28,10,43,109" Foreground="DarkGray" Width="250" Content="No frame source has been selected.&#xD;&#xA;Quick start:"/>
+            <Label Margin="20,40,23,80" Foreground="DarkGray" Width="250" Height="26" Content="1.    Configure source."/>
+            <Label Margin="20,60,23,60" Foreground="DarkGray" Width="250" Height="26" Content="2.    Select source."/>
+            <Label Margin="20,80,23,40" Foreground="DarkGray" Width="250" Height="26" Content="3.    Begin/Stop streaming."/>
+            <Label Margin="20,100,23,20" Foreground="DarkGray" Width="250" Height="26" Content="4.    Drag and zoom on preview to adjust."/>
+            <Label Margin="20,120,22,0" Foreground="DarkGray" Width="250" Height="26" Content="5.    Reload source and reset transform."/>
+            <fa:ImageAwesome Foreground="#FFBFBFBF" Margin="3,40,210,80" Height="10" Width="10" Icon="Gear"/>
+            <fa:ImageAwesome Foreground="#FFBFBFBF" Margin="3,60,210,60" Height="10" Width="10" Icon="AngleDown"/>
+            <fa:ImageAwesome Foreground="#FF0C9E00" Margin="3,80,210,40" Height="10" Width="10" Icon="Play"/>
+            <fa:ImageAwesome Foreground="#FFBFBFBF" Margin="3,100,210,20" Height="10" Width="10" Icon="Arrows"/>
+            <fa:ImageAwesome Foreground="#FFBFBFBF" Margin="3,120,210,0" Height="10" Width="10" Icon="Refresh"/>
+        </Grid>
         <ComboBox x:Name="SourceCombo" ToolTip="{x:Static properties:Resources.SourceCombo_ToolTip}" DisplayMemberPath="Name"
                   HorizontalAlignment="Left" Margin="68,10,0,0" VerticalAlignment="Top" Width="234" Height="24" SelectionChanged="SourceCombo_SelectionChanged" Background="Red" BorderBrush="Red" Foreground="Black"/>
         <Button x:Name ="ConfigSourcesButton" ToolTip="{x:Static properties:Resources.ConfigSourcesButton_ToolTip}"
@@ -35,7 +48,7 @@
         <Label x:Name="SendImageElapsedLabel" Content="Process: 0ms" HorizontalAlignment="Left" Margin="116,200,0,0" VerticalAlignment="Top" Width="96" RenderTransformOrigin="0.636,0.225" Foreground="#FFA4A4A4"/>
         <Label x:Name="FPSLabel" Content="00.00/000.00 FPS" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="217,200,0,0" VerticalAlignment="Top" Width="114" Foreground="#FFA4A4A4"/>
         <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Height="161" Width="321">
-            <Image x:Name="Preview" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Height="160" Width="320" MouseWheel="Preview_MouseWheel" MouseDown="Preview_MouseDown" MouseUp="Preview_MouseUp" MouseMove="Preview_MouseMove" MouseLeave="Preview_MouseLeave"/>
+            <Image x:Name="Preview" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Height="160" Width="320" MouseWheel="Preview_MouseWheel" MouseDown="Preview_MouseDown" MouseUp="Preview_MouseUp" MouseMove="Preview_MouseMove" MouseLeave="Preview_MouseLeave" Visibility="Hidden"/>
         </Border>
     </Grid>
 </Page>

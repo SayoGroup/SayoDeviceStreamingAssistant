@@ -35,8 +35,12 @@ namespace SayoDeviceStreamingAssistant {
             SourceCombo.SelectedIndex = SourcesManagePage.FrameSources.IndexOf(bindDeviceInfo.FrameSource);
             SetStreamButton();
             bindDeviceInfo.OnFrameReady += OnBindDeviceFrameReady;
-            if (bindDeviceInfo.FrameSource?.Fps == null)
+            if (bindDeviceInfo.FrameSource == null)
+            {
+                Preview.Visibility = Visibility.Hidden;
                 return;
+            }
+            Preview.Visibility = Visibility.Visible;
             previewTimer.Interval = TimeSpan.FromMilliseconds(1e3 / bindDeviceInfo.FrameSource.Fps);
             previewTimer.Start();
         }
@@ -74,13 +78,15 @@ namespace SayoDeviceStreamingAssistant {
                 return;
             bindDeviceInfo.FrameSource = newSource;
             previewTimer.Stop();
-            if (bindDeviceInfo.FrameSource?.Fps == null)
+            if (bindDeviceInfo.FrameSource == null) {
+                Preview.Visibility = Visibility.Hidden;   
                 return;
+            }
+            Preview.Visibility = Visibility.Visible;
             previewTimer.Interval = TimeSpan.FromMilliseconds(1e3 / bindDeviceInfo.FrameSource.Fps);
             previewMat.SetTo(new Scalar(0, 0, 0));
             newFrame = true;
             previewTimer.Start();
-            
         }
 
         private void StreamButton_Click(object sender, RoutedEventArgs e) {
@@ -92,7 +98,7 @@ namespace SayoDeviceStreamingAssistant {
         private void SetStreamButton() {
             StreamButton.ToolTip = bindDeviceInfo.Streaming ? Properties.Resources.StreamingPage_SetStreamButton_Pause_streaming 
                 : Properties.Resources.StreamingPage_SetStreamButton_Begin_streaming;
-            StreamButton.Content = bindDeviceInfo.Streaming ? new ImageAwesome { Icon = FontAwesomeIcon.Pause } :
+            StreamButton.Content = bindDeviceInfo.Streaming ? new ImageAwesome { Icon = FontAwesomeIcon.Stop } :
                 new ImageAwesome { Icon = FontAwesomeIcon.Play };
             ((ImageAwesome)StreamButton.Content).Foreground = bindDeviceInfo.Streaming ? Brushes.Red : Brushes.Green;
         }
@@ -144,7 +150,7 @@ namespace SayoDeviceStreamingAssistant {
             if (rect != null)
                 bindDeviceInfo.FrameRect = rect.Value;
             bindDeviceInfo.PeekFrame();
-            bindDeviceInfo.FrameSource.ReInit();
+            bindDeviceInfo.FrameSource?.ReInit();
         }
 
         private void Preview_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e) {
@@ -155,6 +161,11 @@ namespace SayoDeviceStreamingAssistant {
         private void ConfigSourcesButton_Click(object sender, RoutedEventArgs e) {
             var mainWindow = (MainWindow)Window.GetWindow(this);
             mainWindow?.ShowSourcesManagePage(SourceCombo.SelectedItem as FrameSource);
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
         }
     }
 }
