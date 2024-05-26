@@ -170,6 +170,7 @@ namespace SayoDeviceStreamingAssistant {
             FrameSources.Remove(source);
             if (FrameSources.Count > 0)
                 SourcesList.SelectedIndex = Math.Min(index, FrameSources.Count - 1);
+            source.Dispose();
         }
 
         private void SourcesList_SelectionChanged(object sender, SelectionChangedEventArgs e) {

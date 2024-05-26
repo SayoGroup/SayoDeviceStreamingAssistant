@@ -141,9 +141,8 @@ namespace SayoDeviceStreamingAssistant {
 
         private void ResetPreviewRect_Click(object sender, RoutedEventArgs e) {
             var rect = bindDeviceInfo.GetDefaultRect();
-            if (rect == null)
-                return;
-            bindDeviceInfo.FrameRect = rect.Value;
+            if (rect != null)
+                bindDeviceInfo.FrameRect = rect.Value;
             bindDeviceInfo.PeekFrame();
             bindDeviceInfo.FrameSource.ReInit();
         }

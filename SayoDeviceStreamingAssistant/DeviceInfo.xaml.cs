@@ -165,7 +165,7 @@ namespace SayoDeviceStreamingAssistant {
         
         public Rect? GetDefaultRect() {
             var srcSize = frameSource?.GetContentRawSize();
-            if (srcSize == null) return null;
+            if (srcSize == null || srcSize.Value.Width == 0 || srcSize.Value.Height == 0) return null;
             var dstSize = ScreenMat.Size();
             return MatExtension.GetDefaultRect(srcSize.Value, dstSize);
         }

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Windows.Devices.Sensors;
 using OpenCvSharp;
 
 namespace SayoDeviceStreamingAssistant {
@@ -21,6 +22,8 @@ namespace SayoDeviceStreamingAssistant {
             return rect;
         }
         public static void DrawTo(this Mat src, Mat dst, Rect rect, ColorConversionCodes colorCvtCode = ColorConversionCodes.BGRA2BGR565) {
+            if (src == null || dst == null || src.Width == 0 || src.Height == 0)
+                return;
             if (rect.X >= dst.Width || rect.Y >= dst.Height || rect.Right <= 0 || rect.Bottom <= 0)
                 return;
             Rect roiRect;

@@ -173,15 +173,16 @@ namespace SayoDeviceStreamingAssistant {
                     
                     break;
                 case 1://"Window"
-                    //just grab window from SourcesManager -> best way
-                    var wndInfo = SourcesManagePage.GetWindowInfo(Source);
-                    if (wndInfo != null) {
-                        capture = new CaptureFramework.CaptureFramework(wndInfo.hWnd, CaptureFramework.CaptureFramework.SourceType.Window);
-                        capture.ItemeDestroyed += Capture_ItemDestroyed;
-                        if (Enabled) capture.Init();
-                        readRawFrame = capture.ReadFrame;
-                        break;
-                    }
+                    //just grab window from SourcesManager -> -- best way --
+                    //not best way, because when a window just closed, it will not be removed instantly from SourcesManager
+                    //var wndInfo = SourcesManagePage.GetWindowInfo(Source);
+                    //if (wndInfo != null) {
+                    //    capture = new CaptureFramework.CaptureFramework(wndInfo.hWnd, CaptureFramework.CaptureFramework.SourceType.Window);
+                    //    capture.ItemeDestroyed += Capture_ItemDestroyed;
+                    //    if (Enabled) capture.Init();
+                    //    readRawFrame = capture.ReadFrame;
+                    //    break;
+                    //}
                     
                     //ops, try to find window by process name and title,
                     //theatrically this success only if SourcesManager has not been initialized
@@ -193,6 +194,7 @@ namespace SayoDeviceStreamingAssistant {
                         readRawFrame = capture.ReadFrame;
                         break;
                     }
+                    if (readRawFrame != null) break;
                     
                     //ops, try to only match process name
                     var processName = Source.Split(':')[0];
@@ -217,9 +219,7 @@ namespace SayoDeviceStreamingAssistant {
             if (readRawFrame != null) {
                 initTimer.Dispose();
                 initTimer = null;
-                if (Enabled) readFrameTimer.Stop();
                 SetFps();
-                if (Enabled) readFrameTimer.Start();
             }
             initializing = false;
             sinceInitialized.Restart();
@@ -228,8 +228,7 @@ namespace SayoDeviceStreamingAssistant {
 
         private void Capture_ItemDestroyed() {
             readRawFrame = null;
-            readFrameTimer.Enabled = false;
-            readFrameTimer?.Stop();
+            //readFrameTimer.Enabled = false;
             capture?.Dispose();
             capture = null;
             initTimer = new Timer((state) => Init(), null, 0, 1000);
