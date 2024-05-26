@@ -73,7 +73,7 @@ namespace SayoDeviceStreamingAssistant {
             get => onFrameListeners.Count != 0;
             set {
                 Console.WriteLine("set timer enabled: " + value);
-                if (!value) readFrameTimer.StopAndWait();
+                if (!value) readFrameTimer.Stop();
                 else readFrameTimer.Enabled = true;
                 if (capture == null) return;
                 if (value) capture.Init();
@@ -171,7 +171,7 @@ namespace SayoDeviceStreamingAssistant {
                     if (captureItem == null)
                         break;
                     capture = new CaptureFramework.CaptureFramework(captureItem);
-                    capture.ItemeDestroyed += Capture_ItemeDestroyed;
+                    capture.ItemeDestroyed += Capture_ItemDestroyed;
                     if (Enabled) capture.Init();
                     readRawFrame = capture.ReadFrame;
                     
@@ -183,7 +183,7 @@ namespace SayoDeviceStreamingAssistant {
                         var item = CaptureHelper.CreateItemForWindow(wndInfo.hWnd);
                         if (item != null) {
                             capture = new CaptureFramework.CaptureFramework(item);
-                            capture.ItemeDestroyed += Capture_ItemeDestroyed;
+                            capture.ItemeDestroyed += Capture_ItemDestroyed;
                             if (Enabled) capture.Init();
                             readRawFrame = capture.ReadFrame;
                             break;
@@ -197,7 +197,7 @@ namespace SayoDeviceStreamingAssistant {
                         var item = CaptureHelper.CreateItemForWindow(wnd.hWnd);
                         if (item == null) continue;
                         capture = new CaptureFramework.CaptureFramework(item);
-                        capture.ItemeDestroyed += Capture_ItemeDestroyed;
+                        capture.ItemeDestroyed += Capture_ItemDestroyed;
                         if (Enabled) capture.Init();
                         readRawFrame = capture.ReadFrame;
                         break;
@@ -213,7 +213,7 @@ namespace SayoDeviceStreamingAssistant {
                         var item = CaptureHelper.CreateItemForWindow(p.MainWindowHandle);
                         if (item == null) continue;
                         capture = new CaptureFramework.CaptureFramework(item);
-                        capture.ItemeDestroyed += Capture_ItemeDestroyed;
+                        capture.ItemeDestroyed += Capture_ItemDestroyed;
                         if (Enabled) capture.Init();
                         readRawFrame = capture.ReadFrame;
                     }
@@ -228,7 +228,7 @@ namespace SayoDeviceStreamingAssistant {
             if (readRawFrame != null) {
                 initTimer.Dispose();
                 initTimer = null;
-                if (Enabled) readFrameTimer.StopAndWait();
+                if (Enabled) readFrameTimer.Stop();
                 SetFps();
                 if (Enabled) readFrameTimer.Start();
             }
@@ -237,10 +237,10 @@ namespace SayoDeviceStreamingAssistant {
             return true;
         }
 
-        private void Capture_ItemeDestroyed() {
+        private void Capture_ItemDestroyed() {
             readRawFrame = null;
             readFrameTimer.Enabled = false;
-            readFrameTimer?.StopAndWait();
+            readFrameTimer?.Stop();
             capture?.Dispose();
             capture = null;
             initTimer = new Timer((state) => Init(), null, 0, 1000);
@@ -252,7 +252,7 @@ namespace SayoDeviceStreamingAssistant {
             for (; reading;) Thread.Sleep(1);
             readRawFrame = null;
             readFrameTimer.Enabled = false;
-            readFrameTimer?.StopAndWait();
+            readFrameTimer?.Stop();
             capture?.Dispose();
             capture = null;
             video?.Dispose();

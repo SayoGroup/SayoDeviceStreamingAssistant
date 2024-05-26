@@ -104,10 +104,10 @@ namespace SayoDeviceStreamingAssistant {
                     }
                 
                     var windows = WindowEnumerationHelper.GetWindows();
-                    Console.WriteLine("---------------------------------");
-                    foreach (var window in windows) {
-                        Console.WriteLine(window.Name);
-                    }
+                    // Console.WriteLine("---------------------------------");
+                    // foreach (var window in windows) {
+                    //     Console.WriteLine(window.Name);
+                    // }
                     foreach (var wnd in windows.Where(wnd => Windows.ToList().Find((p) => p.hWnd == wnd.hWnd) == null)) {
                         Dispatcher.Invoke(() => Windows.Add(wnd));
                     }

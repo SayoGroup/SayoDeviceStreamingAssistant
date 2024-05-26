@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using Windows.Graphics;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX;
@@ -26,7 +28,11 @@ namespace CaptureFramework {
 
         public event Action ItemeDestroyed;
 
+        private Thread workThread;
+        private Dispatcher dispatcher;
 
+        private int _debugInitThreadId = -1;
+        
         public bool initialized {
             get;
             private set;
@@ -34,15 +40,30 @@ namespace CaptureFramework {
 
         public CaptureFramework(GraphicsCaptureItem i) {
             _item = i;
+            workThread = new Thread(() => {
+                dispatcher = Dispatcher.CurrentDispatcher;
+                Dispatcher.Run();
+            });
+            workThread.SetApartmentState(ApartmentState.STA);
+            workThread.IsBackground = true;
+            workThread.Start();
+            while (dispatcher == null) {
+                Thread.Sleep(1);
+            }
         }
 
         public Size GetSourceSize() {
             return new Size(_lastSize.Width, _lastSize.Height);
         }
 
-        public void Init() {
+        public bool Init() {
+            if (!dispatcher.CheckAccess()) {
+                return dispatcher.Invoke(Init); 
+            }
             if (_d3dDevice != null || _item.Size.Width == 0 || _item.Size.Height == 0 || initialized)
-                return;
+                return false;
+            _debugInitThreadId = Thread.CurrentThread.ManagedThreadId;
+            Console.WriteLine("Init CaptureFramework on thread " + _debugInitThreadId);
             _d3dDevice = Direct3D11Helper.CreateSharpDXDevice(_device);
             var dxgiFactory = new Factory2();
             var description = new SwapChainDescription1 {
@@ -89,8 +110,15 @@ namespace CaptureFramework {
             _stagingTexture = new D3D11.Texture2D(_d3dDevice, _stagingTextureDesc);
             _session.StartCapture();
             initialized = true;
+            return true;
         }
         public void Dispose() {
+            Console.WriteLine("Dispose CaptureFramework on thread " + _debugInitThreadId + " " + Thread.CurrentThread.ManagedThreadId);
+            if (!dispatcher.CheckAccess()) {
+                Console.WriteLine("Jump to thread " + _debugInitThreadId);
+                dispatcher.Invoke(Dispose);
+                return;
+            }
             for (; reading;) Task.Delay(1).Wait();
             initialized = false;
             _stagingTexture?.Dispose();
@@ -111,7 +139,11 @@ namespace CaptureFramework {
 
         private bool reading = false;
         public bool ReadFrame(Mat mat) {
+            if (!dispatcher.CheckAccess()) {
+                return dispatcher.Invoke(()=> ReadFrame(mat));  
+            }
             if (!initialized) return false;
+            Console.WriteLine("ReadFrame on thread " + _debugInitThreadId + " " + Thread.CurrentThread.ManagedThreadId);
             reading = true;
             if (_item.Size.Width == 0 || _item.Size.Height == 0) {
                 reading = false;
