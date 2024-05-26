@@ -166,11 +166,7 @@ namespace SayoDeviceStreamingAssistant {
                     var monitor = monitors.FirstOrDefault(m => m.DeviceName == Source);
                     if (monitor == null)
                         break;
-
-                    var captureItem = CaptureHelper.CreateItemForMonitor(monitor.Hmon);
-                    if (captureItem == null)
-                        break;
-                    capture = new CaptureFramework.CaptureFramework(captureItem);
+                    capture = new CaptureFramework.CaptureFramework(monitor.Hmon, CaptureFramework.CaptureFramework.SourceType.Monitor);
                     capture.ItemeDestroyed += Capture_ItemDestroyed;
                     if (Enabled) capture.Init();
                     readRawFrame = capture.ReadFrame;
@@ -180,23 +176,18 @@ namespace SayoDeviceStreamingAssistant {
                     //just grab window from SourcesManager -> best way
                     var wndInfo = SourcesManagePage.GetWindowInfo(Source);
                     if (wndInfo != null) {
-                        var item = CaptureHelper.CreateItemForWindow(wndInfo.hWnd);
-                        if (item != null) {
-                            capture = new CaptureFramework.CaptureFramework(item);
-                            capture.ItemeDestroyed += Capture_ItemDestroyed;
-                            if (Enabled) capture.Init();
-                            readRawFrame = capture.ReadFrame;
-                            break;
-                        }
+                        capture = new CaptureFramework.CaptureFramework(wndInfo.hWnd, CaptureFramework.CaptureFramework.SourceType.Window);
+                        capture.ItemeDestroyed += Capture_ItemDestroyed;
+                        if (Enabled) capture.Init();
+                        readRawFrame = capture.ReadFrame;
+                        break;
                     }
                     
                     //ops, try to find window by process name and title,
                     //theatrically this success only if SourcesManager has not been initialized
                     foreach (var wnd in WindowEnumerationHelper.GetWindows()) {
                         if (wnd.Name != Source) continue;
-                        var item = CaptureHelper.CreateItemForWindow(wnd.hWnd);
-                        if (item == null) continue;
-                        capture = new CaptureFramework.CaptureFramework(item);
+                        capture = new CaptureFramework.CaptureFramework(wnd.hWnd, CaptureFramework.CaptureFramework.SourceType.Window);
                         capture.ItemeDestroyed += Capture_ItemDestroyed;
                         if (Enabled) capture.Init();
                         readRawFrame = capture.ReadFrame;
@@ -210,9 +201,7 @@ namespace SayoDeviceStreamingAssistant {
                         break;
                     foreach (var p in process) {
                         if (!WindowEnumerationHelper.IsWindowValidForCapture(p.MainWindowHandle)) continue;
-                        var item = CaptureHelper.CreateItemForWindow(p.MainWindowHandle);
-                        if (item == null) continue;
-                        capture = new CaptureFramework.CaptureFramework(item);
+                        capture = new CaptureFramework.CaptureFramework(p.MainWindowHandle, CaptureFramework.CaptureFramework.SourceType.Window);
                         capture.ItemeDestroyed += Capture_ItemDestroyed;
                         if (Enabled) capture.Init();
                         readRawFrame = capture.ReadFrame;

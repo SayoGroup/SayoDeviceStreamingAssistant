@@ -30,16 +30,20 @@ namespace CaptureFramework {
 
         private Thread workThread;
         private Dispatcher dispatcher;
-
-        private int _debugInitThreadId = -1;
-        
-        public bool initialized {
+        private bool initialized {
             get;
-            private set;
+            set;
         }
-
-        public CaptureFramework(GraphicsCaptureItem i) {
-            _item = i;
+        
+        public enum SourceType {
+            Monitor,
+            Window,
+        }
+        private IntPtr sourceHandle;
+        private SourceType sourceType;
+        public CaptureFramework(IntPtr handle, SourceType type) {
+            sourceHandle = handle;
+            sourceType = type;
             workThread = new Thread(() => {
                 dispatcher = Dispatcher.CurrentDispatcher;
                 Dispatcher.Run();
@@ -60,10 +64,25 @@ namespace CaptureFramework {
             if (!dispatcher.CheckAccess()) {
                 return dispatcher.Invoke(Init); 
             }
-            if (_d3dDevice != null || _item.Size.Width == 0 || _item.Size.Height == 0 || initialized)
+            if (_d3dDevice != null)
                 return false;
-            _debugInitThreadId = Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine("Init CaptureFramework on thread " + _debugInitThreadId);
+            if(_item == null)
+            {
+                switch (sourceType)
+                {
+                    case SourceType.Window:
+                        _item = CaptureHelper.CreateItemForWindow(sourceHandle);
+                        break;
+                    case SourceType.Monitor:
+                        _item = CaptureHelper.CreateItemForMonitor(sourceHandle);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(sourceType), sourceType, null);
+                }
+            }
+
+            if (_item == null || _item.Size.Width == 0 || _item.Size.Height == 0 || initialized)
+                return false;
             _d3dDevice = Direct3D11Helper.CreateSharpDXDevice(_device);
             var dxgiFactory = new Factory2();
             var description = new SwapChainDescription1 {
@@ -113,9 +132,7 @@ namespace CaptureFramework {
             return true;
         }
         public void Dispose() {
-            Console.WriteLine("Dispose CaptureFramework on thread " + _debugInitThreadId + " " + Thread.CurrentThread.ManagedThreadId);
             if (!dispatcher.CheckAccess()) {
-                Console.WriteLine("Jump to thread " + _debugInitThreadId);
                 dispatcher.Invoke(Dispose);
                 return;
             }
@@ -143,7 +160,6 @@ namespace CaptureFramework {
                 return dispatcher.Invoke(()=> ReadFrame(mat));  
             }
             if (!initialized) return false;
-            Console.WriteLine("ReadFrame on thread " + _debugInitThreadId + " " + Thread.CurrentThread.ManagedThreadId);
             reading = true;
             if (_item.Size.Width == 0 || _item.Size.Height == 0) {
                 reading = false;
