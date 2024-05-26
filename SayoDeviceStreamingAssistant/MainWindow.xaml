@@ -14,6 +14,7 @@
     <Grid >
         <Label x:Name="TitleBar" Content="Streaming Assistant" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Top" Height="32" Width="350" FontSize="16" Foreground="#FFCECECE" MouseLeftButtonDown="TitleBar_MouseDown" MouseLeftButtonUp="TitleBar_MouseUp"/>
         <Frame x:Name="deviceSelecteFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="341" Height="225" Margin="0,0,0,5" Background="#FF313131"/>
+        <Frame x:Name="settingsFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="341" Height="225" Margin="0,0,0,5" Background="#FF313131" Opacity="0" IsHitTestVisible="False"/>
         <Frame x:Name="streamingConfigFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="341" Height="225" Margin="5,0,0,5" Opacity="0" IsHitTestVisible="False"/>
         <Frame x:Name="sourcesManageFrame" NavigationUIVisibility="Hidden" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="341" Height="225" Margin="5,0,0,5" Opacity="0" IsHitTestVisible="False"/>
         <Button x:Name="BackButton" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="32" BorderBrush="#00000000" Background="#00000000" Foreground="#00000000" Click="BackButton_Click" Opacity="0" IsHitTestVisible="False">
@@ -29,6 +30,11 @@
         <Button x:Name="MinimizeButton" HorizontalAlignment="Right" Margin="0,0,32,0" VerticalAlignment="Top" Height="32" Width="32" Background="#00000000" BorderBrush="#00000000" Click="MinimizeButton_Click">
             <Button.Content>
                 <fa:ImageAwesome Icon="WindowMinimize" Width="16" Foreground="DarkGray"/>
+            </Button.Content>
+        </Button>
+        <Button x:Name="SettingsButton" HorizontalAlignment="Right" Margin="0,0,318,0" VerticalAlignment="Top" Height="32" Width="32" Background="#00000000" BorderBrush="#00000000" Click="SettingsButton_Click">
+            <Button.Content>
+                <fa:ImageAwesome Icon="Gear" Width="16" Foreground="DarkGray"/>
             </Button.Content>
         </Button>
     </Grid>

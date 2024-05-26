@@ -12,12 +12,12 @@
 
     <Grid Background="#FF313131">
         <Grid Margin="10,39,10,25">
-            <Label Margin="28,10,43,109" Foreground="DarkGray" Width="250" Content="No frame source has been selected.&#xD;&#xA;Quick start:"/>
-            <Label Margin="20,40,23,80" Foreground="DarkGray" Width="250" Height="26" Content="1.    Configure source."/>
-            <Label Margin="20,60,23,60" Foreground="DarkGray" Width="250" Height="26" Content="2.    Select source."/>
-            <Label Margin="20,80,23,40" Foreground="DarkGray" Width="250" Height="26" Content="3.    Begin/Stop streaming."/>
-            <Label Margin="20,100,23,20" Foreground="DarkGray" Width="250" Height="26" Content="4.    Drag and zoom on preview to adjust."/>
-            <Label Margin="20,120,22,0" Foreground="DarkGray" Width="250" Height="26" Content="5.    Reload source and reset transform."/>
+            <Label Margin="28,10,43,109" Foreground="DarkGray" Width="250" Content="{x:Static properties:Resources.Tips0_Content}"/>
+            <Label Margin="20,40,23,80" Foreground="DarkGray" Width="250" Height="26" Content="{x:Static properties:Resources.Tips1_Content}"/>
+            <Label Margin="20,60,23,60" Foreground="DarkGray" Width="250" Height="26" Content="{x:Static properties:Resources.Tips2_Content}"/>
+            <Label Margin="20,80,23,40" Foreground="DarkGray" Width="250" Height="26" Content="{x:Static properties:Resources.Tips3_Content}"/>
+            <Label Margin="20,100,23,20" Foreground="DarkGray" Width="250" Height="26" Content="{x:Static properties:Resources.Tips4_Content}"/>
+            <Label Margin="20,120,22,0" Foreground="DarkGray" Width="250" Height="26" Content="{x:Static properties:Resources.Tips5_Content}"/>
             <fa:ImageAwesome Foreground="#FFBFBFBF" Margin="3,40,210,80" Height="10" Width="10" Icon="Gear"/>
             <fa:ImageAwesome Foreground="#FFBFBFBF" Margin="3,60,210,60" Height="10" Width="10" Icon="AngleDown"/>
             <fa:ImageAwesome Foreground="#FF0C9E00" Margin="3,80,210,40" Height="10" Width="10" Icon="Play"/>

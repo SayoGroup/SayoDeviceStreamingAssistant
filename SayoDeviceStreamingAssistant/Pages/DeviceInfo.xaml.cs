@@ -68,7 +68,7 @@ namespace SayoDeviceStreamingAssistant {
             }
         }
 
-        public readonly Mat ScreenMat;
+        public Mat ScreenMat;
         private readonly Dictionary<Guid,Rect> frameRects = new Dictionary<Guid, Rect>();
         
         
@@ -100,14 +100,6 @@ namespace SayoDeviceStreamingAssistant {
         public DeviceInfo(SayoHidDevice device) {
             InitializeComponent();
             Device = device;
-            var screenInfo = Device.GetScreenInfo();
-            var screenInfoStr = "";
-            if (screenInfo != null) {
-                ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
-                screenInfoStr = $"{screenInfo.Width}x{screenInfo.Height}@{screenInfo.RefreshRate}Hz";
-                labelScreenInfo.Content = screenInfoStr;
-            } else
-                labelScreenInfo.Content = "";
 
             DeviceName = device.GetProductName();
             UpdateStatus();
@@ -177,20 +169,24 @@ namespace SayoDeviceStreamingAssistant {
                 DeviceStatus.Fill = Brushes.Gray;
                 DeviceSelectButton.IsEnabled = false;
                 DeviceSelectButton.ToolTip = Properties.Resources.DeviceInfo_UpdateStatus_Device_is_disconnected;
+                PlayButton.Visibility = Visibility.Hidden;
             } else if (!Device.SupportStreaming) {
                 status = Properties.Resources.DeviceInfo_UpdateStatus_Not_Supported;
                 DeviceStatus.Fill = Brushes.Red;
                 DeviceSelectButton.IsEnabled = false;
                 DeviceSelectButton.ToolTip = Properties.Resources.DeviceInfo_UpdateStatus_Device_does_not_support_streaming;
+                PlayButton.Visibility = Visibility.Hidden;
             } else if (!Streaming) {
                 status = frameSource == null ? Properties.Resources.DeviceInfo_UpdateStatus_Ready 
                     : string.Format(Properties.Resources.DeviceInfo_UpdateStatus_Paused___0_, frameSource.Name);
                 DeviceStatus.Fill = Brushes.Cyan;
                 DeviceSelectButton.IsEnabled = true;
+                PlayButton.Visibility = Visibility.Visible;
             } else {
                 status = string.Format(Properties.Resources.DeviceInfo_UpdateStatus_Streaming___0_, frameSource.Name);
                 DeviceStatus.Fill = Brushes.Green;
                 DeviceSelectButton.IsEnabled = true;
+                PlayButton.Visibility = Visibility.Visible;
             }
             Status = status;
             PlayButton.ToolTip = Streaming ? Properties.Resources.StreamingPage_SetStreamButton_Pause_streaming 
@@ -198,6 +194,15 @@ namespace SayoDeviceStreamingAssistant {
             PlayButton.Content = Streaming ? new ImageAwesome { Icon = FontAwesomeIcon.Pause } :
                 new ImageAwesome { Icon = FontAwesomeIcon.Play };
             ((ImageAwesome)PlayButton.Content).Foreground = Streaming ? Brushes.Red : Brushes.Green;
+            
+            var screenInfo = Device.GetScreenInfo();
+            var screenInfoStr = "";
+            if (screenInfo != null) {
+                ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
+                screenInfoStr = $"{screenInfo.Width}x{screenInfo.Height}@{screenInfo.RefreshRate}Hz";
+                labelScreenInfo.Content = screenInfoStr;
+            } else
+                labelScreenInfo.Content = "";
         }
         public void Dispose() {
             Device?.Dispose();

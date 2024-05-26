@@ -5,12 +5,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using SayoDeviceStreamingAssistant.Pages;
 
 namespace SayoDeviceStreamingAssistant {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
     public partial class MainWindow {
+        public readonly Settings settingsPage = new Settings();
         private readonly StreamingPage streamingPage = new StreamingPage();
         private readonly SourcesManagePage sourcesManagePage = new SourcesManagePage();
         private readonly DeviceSelectionPage deviceSelectionPage = new DeviceSelectionPage();
@@ -21,10 +23,12 @@ namespace SayoDeviceStreamingAssistant {
             streamingConfigFrame.Navigate(streamingPage);
             sourcesManageFrame.Navigate(sourcesManagePage);
             deviceSelecteFrame.Navigate(deviceSelectionPage);
+            settingsFrame.Navigate(settingsPage);
             this.Closing += (sender, e) => {
                 deviceSelectionPage.Dispose();
                 //streamingPage.Dispose();
                 sourcesManagePage.Dispose();
+                settingsPage.Dispose();
             };
             currentPage = deviceSelectionPage;
         }
@@ -44,6 +48,12 @@ namespace SayoDeviceStreamingAssistant {
             SetBackButtonVisibility(true);
             //streamingPage.HidePage();
         }
+        public void ShowSettingsPage() {
+            currentPage = settingsPage;
+            settingsFrame.IsHitTestVisible = true;
+            SetFrameVisibility(settingsFrame, true);
+            SetBackButtonVisibility(true);
+        }
 
         private void SetFrameVisibility(UIElement ui,bool show) {
             var animation = new DoubleAnimation {
@@ -53,12 +63,19 @@ namespace SayoDeviceStreamingAssistant {
             ui.BeginAnimation(OpacityProperty, animation);
         }
         private void SetBackButtonVisibility(bool show) {
-            var animation = new DoubleAnimation {
+            var backBtnAnim = new DoubleAnimation {
                 Duration = TimeSpan.FromSeconds(0.2)
             };
-            animation.To = show ? 1 : 0;
-            BackButton.BeginAnimation(OpacityProperty, animation);
+            var settingBtnAnim = new DoubleAnimation
+            {
+                Duration = TimeSpan.FromSeconds(0.2)
+            };
+            backBtnAnim.To = show ? 1 : 0;
+            settingBtnAnim.To = show ? 0 : 1;
+            BackButton.BeginAnimation(OpacityProperty, backBtnAnim);
             BackButton.IsHitTestVisible = show;
+            SettingsButton.BeginAnimation(OpacityProperty, settingBtnAnim);
+            SettingsButton.IsHitTestVisible = !show;
         }
 
         private void TitleBar_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
@@ -85,6 +102,11 @@ namespace SayoDeviceStreamingAssistant {
                 SetFrameVisibility(sourcesManageFrame, false);
                 sourcesManagePage.HidePage();
                 currentPage = streamingPage;
+            } else if (currentPage == settingsPage) {
+                settingsFrame.IsHitTestVisible = false;
+                SetFrameVisibility(settingsFrame, false);
+                currentPage = deviceSelectionPage;
+                SetBackButtonVisibility(false);
             }
         }
 
@@ -95,6 +117,11 @@ namespace SayoDeviceStreamingAssistant {
         private void Window_Activated(object sender, EventArgs e) {
             //Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => WindowStyle = WindowStyle.None));
             //Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => AllowsTransparency = true));
+        }
+
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShowSettingsPage();
         }
     }
 }

@@ -75,26 +75,29 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="DeviceInfo.xaml.cs">
+    <Compile Include="Pages\DeviceInfo.xaml.cs">
       <DependentUpon>DeviceInfo.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DeviceSelectionPage.xaml.cs">
+    <Compile Include="Pages\DeviceSelectionPage.xaml.cs">
       <DependentUpon>DeviceSelectionPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="FrameSource.cs" />
-    <Compile Include="SayoHid.cs" />
-    <Compile Include="SourcesManagePage.xaml.cs">
+    <Compile Include="Pages\Settings.xaml.cs">
+      <DependentUpon>Settings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Sources\FrameSource.cs" />
+    <Compile Include="Sources\SayoHid.cs" />
+    <Compile Include="Pages\SourcesManagePage.xaml.cs">
       <DependentUpon>SourcesManagePage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="StreamingPage.xaml.cs">
+    <Compile Include="Pages\StreamingPage.xaml.cs">
       <DependentUpon>StreamingPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utilitys.cs" />
-    <Page Include="DeviceInfo.xaml">
+    <Compile Include="Sources\Utilitys.cs" />
+    <Page Include="Pages\DeviceInfo.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="DeviceSelectionPage.xaml">
+    <Page Include="Pages\DeviceSelectionPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -110,11 +113,15 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="SourcesManagePage.xaml">
+    <Page Include="Pages\Settings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\SourcesManagePage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="StreamingPage.xaml">
+    <Page Include="Pages\StreamingPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -174,8 +181,6 @@
       <Version>4.9.0.20240103</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

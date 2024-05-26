@@ -186,4 +186,31 @@
   <data name="label.Content" xml:space="preserve">
     <value>No available devices.</value>
   </data>
+  <data name="Settings.ShowUnsupportedDevice" xml:space="preserve">
+    <value>Show unsupported devices</value>
+  </data>
+  <data name="Tips0.Content" xml:space="preserve">
+    <value>No frame source has been selected.&amp;#xD;&amp;#xA;Quick start:</value>
+  </data>
+  <data name="Tips1.Content" xml:space="preserve">
+    <value>1.    Configure source.</value>
+  </data>
+  <data name="Tips2.Content" xml:space="preserve">
+    <value>2.    Select source.</value>
+  </data>
+  <data name="Tips3.Content" xml:space="preserve">
+    <value>3.    Begin/Stop streaming.</value>
+  </data>
+  <data name="Tips4.Content" xml:space="preserve">
+    <value>4.    Drag and zoom on preview to adjust.</value>
+  </data>
+  <data name="Tips5.Content" xml:space="preserve">
+    <value>5.    Reload source and reset transform.</value>
+  </data>
+  <data name="RestartAppLabel.Content" xml:space="preserve">
+    <value>The language setting will take effect&amp;#xD;&amp;#xA; after the application is restarted.</value>
+  </data>
+  <data name="RestartAppButton.Content" xml:space="preserve">
+    <value>Restart</value>
+  </data>
 </root>

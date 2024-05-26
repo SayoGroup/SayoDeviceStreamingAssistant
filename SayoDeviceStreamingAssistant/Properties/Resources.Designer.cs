@@ -177,6 +177,33 @@ namespace SayoDeviceStreamingAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restart.
+        /// </summary>
+        public static string RestartAppButton_Content {
+            get {
+                return ResourceManager.GetString("RestartAppButton.Content", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The language setting will take effect&amp;#xD;&amp;#xA; after the application is restarted..
+        /// </summary>
+        public static string RestartAppLabel_Content {
+            get {
+                return ResourceManager.GetString("RestartAppLabel.Content", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show unsupported devices.
+        /// </summary>
+        public static string Settings_ShowUnsupportedDevice {
+            get {
+                return ResourceManager.GetString("Settings.ShowUnsupportedDevice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Select content type.
         /// </summary>
         public static string SourceCombo_ToolTip {
@@ -263,6 +290,60 @@ namespace SayoDeviceStreamingAssistant.Properties {
         public static string StreamingPage_SetStreamButton_Pause_streaming {
             get {
                 return ResourceManager.GetString("StreamingPage_SetStreamButton_Pause_streaming", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No frame source has been selected.&amp;#xD;&amp;#xA;Quick start:.
+        /// </summary>
+        public static string Tips0_Content {
+            get {
+                return ResourceManager.GetString("Tips0.Content", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 1.    Configure source..
+        /// </summary>
+        public static string Tips1_Content {
+            get {
+                return ResourceManager.GetString("Tips1.Content", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 2.    Select source..
+        /// </summary>
+        public static string Tips2_Content {
+            get {
+                return ResourceManager.GetString("Tips2.Content", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 3.    Begin/Stop streaming..
+        /// </summary>
+        public static string Tips3_Content {
+            get {
+                return ResourceManager.GetString("Tips3.Content", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 4.    Drag and zoom on preview to adjust..
+        /// </summary>
+        public static string Tips4_Content {
+            get {
+                return ResourceManager.GetString("Tips4.Content", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 5.    Reload source and reset transform..
+        /// </summary>
+        public static string Tips5_Content {
+            get {
+                return ResourceManager.GetString("Tips5.Content", resourceCulture);
             }
         }
     }
