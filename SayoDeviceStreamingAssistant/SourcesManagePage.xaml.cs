@@ -108,12 +108,28 @@ namespace SayoDeviceStreamingAssistant {
                     // foreach (var window in windows) {
                     //     Console.WriteLine(window.Name);
                     // }
-                    foreach (var wnd in windows.Where(wnd => Windows.ToList().Find((p) => p.hWnd == wnd.hWnd) == null)) {
-                        Dispatcher.Invoke(() => Windows.Add(wnd));
+
+
+                    foreach (var wnd in windows)
+                    {
+                        var old = Windows.ToList().Find((p) => p.hWnd == wnd.hWnd);
+                        if (old != null)
+                        {
+                            old.Title = wnd.Title;
+                            old.proc = wnd.proc;
+                            continue;
+                        } else
+                        {
+                            Dispatcher.Invoke(() => Windows.Add(wnd));
+                        }
                     }
-                    foreach (var wnd in Windows.ToArray()) {
-                        if (windows.Find((p) => p.hWnd == wnd.hWnd) == null) {
-                            Dispatcher.Invoke(() => {
+
+                    foreach (var wnd in Windows.ToArray())
+                    {
+                        if (windows.Find((p) => p.hWnd == wnd.hWnd) == null)
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
                                 var source = selectedSource?.Source;
                                 Windows.Remove(wnd);
                                 if (source != null)
