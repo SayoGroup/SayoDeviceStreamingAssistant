@@ -199,8 +199,12 @@ namespace SayoDeviceStreamingAssistant {
             if (devices.TryGetValue(0xFF020002, out var streamingDevice)) device = streamingDevice;
             return device.GetProductName();
         }
+
+        private ScreenInfoPacket screenInfoPacket;
         public ScreenInfoPacket GetScreenInfo() {
             if (!devices.ContainsKey(0xFF020002)) return null;
+            if (screenInfoPacket != null)
+                return screenInfoPacket;
             try {
                 var buffer = buffers[0xFF020002];
                 var stream = streams[0xFF020002];
@@ -229,7 +233,7 @@ namespace SayoDeviceStreamingAssistant {
                     return null;
                 });
                 task.Wait();
-                return task.Result;
+                return screenInfoPacket = task.Result;
             } catch {
                 return null;
             }

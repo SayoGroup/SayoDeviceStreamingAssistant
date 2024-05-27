@@ -153,7 +153,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
             foreach (var source in FrameSources) {
                 source.Dispose();
             }
-            _contentUpdateTimer.Dispose();
+            _contentUpdateTimer?.Dispose();
             _contentUpdateTimer = null;
             previewTimer.Stop();
             previewTimer = null;

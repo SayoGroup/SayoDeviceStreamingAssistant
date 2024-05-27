@@ -189,6 +189,7 @@ namespace SayoDeviceStreamingAssistant {
                 DeviceSelectButton.IsEnabled = true;
                 PlayButton.Visibility = Visibility.Visible;
             }
+            
             Status = status;
             PlayButton.ToolTip = Streaming ? Properties.Resources.StreamingPage_SetStreamButton_Pause_streaming 
                 : Properties.Resources.StreamingPage_SetStreamButton_Begin_streaming;
@@ -205,6 +206,7 @@ namespace SayoDeviceStreamingAssistant {
                 } else
                     labelScreenInfo.Content = "";
             }
+            
         }
         public void Dispose() {
             Device?.Dispose();
