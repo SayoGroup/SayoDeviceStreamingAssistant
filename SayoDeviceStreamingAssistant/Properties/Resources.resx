@@ -216,4 +216,13 @@
   <data name="DeviceInfo_UpdateStatus_Switch_to_8k_pulling_rate_to_enable_streaming" xml:space="preserve">
     <value>Switch to 8k pulling rate to enable streaming</value>
   </data>
+  <data name="FrameTimeLabel.ToolTip" xml:space="preserve">
+    <value>Time taken to capture and process the frame.</value>
+  </data>
+  <data name="SendImageElapsedLabel.ToolTip" xml:space="preserve">
+    <value>Time taken to send frame to device.</value>
+  </data>
+  <data name="FPSLabel.ToolTip" xml:space="preserve">
+    <value>Current/max fps. Limited by device and source.</value>
+  </data>
 </root>

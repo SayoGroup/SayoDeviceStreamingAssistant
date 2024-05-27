@@ -44,9 +44,9 @@
                 <fa:ImageAwesome Icon="Refresh" Foreground="#FFBFBFBF"/>
             </Button.Content>
         </Button>
-        <Label x:Name="FrameTimeLabel" Content="Process: 0ms" HorizontalAlignment="Left" Margin="10,200,0,0" VerticalAlignment="Top" Width="101" RenderTransformOrigin="0.636,0.225" Foreground="#FFA4A4A4"/>
-        <Label x:Name="SendImageElapsedLabel" Content="Process: 0ms" HorizontalAlignment="Left" Margin="116,200,0,0" VerticalAlignment="Top" Width="96" RenderTransformOrigin="0.636,0.225" Foreground="#FFA4A4A4"/>
-        <Label x:Name="FPSLabel" Content="00.00/000.00 FPS" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="217,200,0,0" VerticalAlignment="Top" Width="114" Foreground="#FFA4A4A4"/>
+        <Label x:Name="FrameTimeLabel" ToolTip="{x:Static properties:Resources.FrameTimeLabel_ToolTip}" Content="Process: 0ms" HorizontalAlignment="Left" Margin="10,200,0,0" VerticalAlignment="Top" Width="101" RenderTransformOrigin="0.636,0.225" Foreground="#FFA4A4A4"/>
+        <Label x:Name="SendImageElapsedLabel" ToolTip="{x:Static properties:Resources.SendImageElapsedLabel_ToolTip}" Content="Send: 0ms" HorizontalAlignment="Left" Margin="116,200,0,0" VerticalAlignment="Top" Width="96" RenderTransformOrigin="0.636,0.225" Foreground="#FFA4A4A4"/>
+        <Label x:Name="FPSLabel" Content="00.00/000.00 FPS" ToolTip="{x:Static properties:Resources.FPSLabel_ToolTip}" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="217,200,0,0" VerticalAlignment="Top" Width="114" Foreground="#FFA4A4A4"/>
         <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Height="161" Width="321">
             <Image x:Name="Preview" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Height="160" Width="320" MouseWheel="Preview_MouseWheel" MouseDown="Preview_MouseDown" MouseUp="Preview_MouseUp" MouseMove="Preview_MouseMove" MouseLeave="Preview_MouseLeave" Visibility="Hidden"/>
         </Border>
