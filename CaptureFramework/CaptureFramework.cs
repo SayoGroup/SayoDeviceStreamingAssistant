@@ -155,24 +155,24 @@ namespace CaptureFramework {
             return compositor.CreateCompositionSurfaceForSwapChain(_swapChain);
         }
 
+        private Mat scaleMat = new Mat(640, 1280, Depth.U8, 4);
         private bool reading = false;
-        public Mat ReadFrame() {
-            Mat res;
+        public bool ReadFrame(Func<Mat,bool> onFrameReady) {
             if (!dispatcher.CheckAccess()) {
-                return dispatcher.Invoke(ReadFrame);  
+                return dispatcher.Invoke(() => ReadFrame(onFrameReady));;
             }
-            if (!initialized) return null;
+            if (!initialized) return false;
             reading = true;
             if (_item.Size.Width == 0 || _item.Size.Height == 0) {
                 reading = false;
                 ItemeDestroyed?.Invoke();
-                return null;
+                return false;
             }
             var newSize = false;
             using (var frame = _framePool.TryGetNextFrame()) {
                 if (frame == null) {
                     reading = false;
-                    return null;
+                    return false;
                 }
 
                 if (frame.ContentSize.Width != _lastSize.Width ||
@@ -210,9 +210,10 @@ namespace CaptureFramework {
                     var bmat = new Mat(_stagingTexture.Description.Height,
                         data.RowPitch/4, Depth.U8, 4,
                         data.DataPointer);
-    
+                    
                     //cut the mat to the correct size
-                    res = bmat.Clone();
+                    //res = bmat.Clone();
+                    onFrameReady(bmat);
                     //CV.Copy(bmat.GetRows(0, _lastSize.Height).GetCols(0, _lastSize.Width),mat);
                     //mat = bmat.GetRows(0, _lastSize.Height).GetCols(0, _lastSize.Width);
                     //new Mat(bmat, new Rect(0, 0, _lastSize.Width, _lastSize.Height)).CopyTo(mat);
@@ -231,7 +232,7 @@ namespace CaptureFramework {
                 }
             }
             reading = false;
-            return res;
+            return true;
         }
     }
 }

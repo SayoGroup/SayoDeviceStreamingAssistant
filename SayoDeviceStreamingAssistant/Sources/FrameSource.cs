@@ -97,7 +97,7 @@ namespace SayoDeviceStreamingAssistant {
 
         private CaptureFramework.CaptureFramework capture;
         private Capture video;
-        private Func<Mat> readRawFrame;
+        private Func<Func<Mat,bool>,bool> readRawFrame;
 
         public FrameSource(string name, Guid? guid = null) {
             this.Guid = guid ?? Guid.NewGuid();
@@ -106,20 +106,7 @@ namespace SayoDeviceStreamingAssistant {
             readFrameTimer.Interval = (long)Math.Round(1e6 / 60);
             readFrameTimer.MicroTimerElapsed += (o, e) => {
                 var sw = Stopwatch.StartNew();
-                if (ReadFrame()) {
-                    //OnFrameReady?.Invoke(rawFrame);
-                    foreach (var listener in onFrameListeners.ToArray()) {
-                        var onFrame = listener.Key;
-                        var (expectedFps, beginFrameCount, sendFrameCount) = listener.Value;
-                        var frameElapsedCount = FrameCount - beginFrameCount;
-                        var fpsRatio = expectedFps / Fps;
-                        if ((double)sendFrameCount / frameElapsedCount > fpsRatio) continue;
-                        onFrame(rawFrame);
-                        if(onFrameListeners.ContainsKey(listener.Key))
-                            onFrameListeners[listener.Key] = (expectedFps, beginFrameCount, sendFrameCount + 1);
-                    }
-                    ++FrameCount;
-                }
+                ReadFrame();
                 FrameTime = sw.Elapsed.TotalMilliseconds;
                 sw.Stop();
             };
@@ -213,10 +200,11 @@ namespace SayoDeviceStreamingAssistant {
                     if (File.Exists(Source) == false) break;
                     video = Capture.CreateFileCapture(Source);
                     //video.Open(Source);
-                    readRawFrame = () => {
+                    readRawFrame = (onFrameReady) => {
                         var res = video.GrabFrame();
-                        if (!res) return null;
-                        return video.RetrieveFrame().GetMat().Clone();
+                        if (!res) return false;
+                        onFrameReady(video.RetrieveFrame().GetMat());
+                        return true;
                     };
                     break;
             }
@@ -263,13 +251,25 @@ namespace SayoDeviceStreamingAssistant {
                 video.GetProperty(CaptureProperty.FrameCount))
                 video.SetProperty(CaptureProperty.PosFrames, 0);
             
-            var res = readRawFrame();
-            if (res == null) {
+            var res = readRawFrame((mat) => {
+                rawFrame = mat;
+                foreach (var listener in onFrameListeners.ToArray()) {
+                    var onFrame = listener.Key;
+                    var (expectedFps, beginFrameCount, sendFrameCount) = listener.Value;
+                    var frameElapsedCount = FrameCount - beginFrameCount;
+                    var fpsRatio = expectedFps / Fps;
+                    if ((double)sendFrameCount / frameElapsedCount > fpsRatio) continue;
+                    onFrame(rawFrame);
+                    if(onFrameListeners.ContainsKey(listener.Key))
+                        onFrameListeners[listener.Key] = (expectedFps, beginFrameCount, sendFrameCount + 1);
+                }
+                ++FrameCount;
+                return true;
+            });
+            if (res == false) {
                 reading = false;
                 return false;
             }
-
-            rawFrame = res;
             if (FrameCount % 30 == 0)
                 GC.Collect();
             reading = false;
