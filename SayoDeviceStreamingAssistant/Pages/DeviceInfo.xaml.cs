@@ -196,13 +196,15 @@ namespace SayoDeviceStreamingAssistant {
                 new ImageAwesome { Icon = FontAwesomeIcon.Play };
             ((ImageAwesome)PlayButton.Content).Foreground = Streaming ? Brushes.Red : Brushes.Green;
             
-            var screenInfo = Device.GetScreenInfo();
-            if (screenInfo != null) {
-                ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
-                var screenInfoStr = $"{screenInfo.Width}x{screenInfo.Height}@{screenInfo.RefreshRate}Hz";
-                labelScreenInfo.Content = screenInfoStr;
-            } else
-                labelScreenInfo.Content = "";
+            if (ScreenMat == null) {
+                var screenInfo = Device.GetScreenInfo();
+                if (screenInfo != null) {
+                    ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
+                    var screenInfoStr = $"{screenInfo.Width}x{screenInfo.Height}@{screenInfo.RefreshRate}Hz";
+                    labelScreenInfo.Content = screenInfoStr;
+                } else
+                    labelScreenInfo.Content = "";
+            }
         }
         public void Dispose() {
             Device?.Dispose();
