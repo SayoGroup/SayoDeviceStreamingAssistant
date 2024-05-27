@@ -13,13 +13,8 @@ using OpenCV.Net;
 using SharpDX.DXGI;
 using D3D11 = SharpDX.Direct3D11;
 
-
-
 namespace CaptureFramework {
-    
     public class CaptureFramework : IDisposable {
-        const int CV_8UC4 = 24;
-        
         static IDirect3DDevice _device = Direct3D11Helper.CreateDevice();
         private GraphicsCaptureItem _item;
         private Direct3D11CaptureFramePool _framePool;
@@ -211,11 +206,10 @@ namespace CaptureFramework {
                     var data = _d3dDevice.ImmediateContext.MapSubresource(_stagingTexture, 0, D3D11.MapMode.Read,
                         D3D11.MapFlags.None);
 
-
                     //bitmap has 32 bytes(8 pixels) alignment
                     var bmat = new Mat(_stagingTexture.Description.Height,
-                        _stagingTexture.Description.Width + ((32 - (_lastSize.Width % 32)) % 32), 
-                        Depth.U8, 4, data.DataPointer);
+                        data.RowPitch/4, Depth.U8, 4,
+                        data.DataPointer);
     
                     //cut the mat to the correct size
                     res = bmat.Clone();

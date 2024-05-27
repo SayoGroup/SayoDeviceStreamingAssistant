@@ -141,6 +141,15 @@ namespace SayoDeviceStreamingAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Switch to 8k pulling rate to enable streaming.
+        /// </summary>
+        public static string DeviceInfo_UpdateStatus_Switch_to_8k_pulling_rate_to_enable_streaming {
+            get {
+                return ResourceManager.GetString("DeviceInfo_UpdateStatus_Switch_to_8k_pulling_rate_to_enable_streaming", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No available devices..
         /// </summary>
         public static string label_Content {

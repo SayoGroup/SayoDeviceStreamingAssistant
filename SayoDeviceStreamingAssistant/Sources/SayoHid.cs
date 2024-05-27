@@ -113,6 +113,13 @@ namespace SayoDeviceStreamingAssistant {
                 if (!deviceDict.ContainsKey(serialNumber))
                     deviceDict[serialNumber] = new Dictionary<uint, HidDevice>();
                 deviceDict[serialNumber][(uint)usage] = device;
+                
+                
+                Console.WriteLine($"Product: {device.GetProductName()}");
+                Console.WriteLine($"    Serial: {serialNumber}");
+                Console.WriteLine($"    Usage: {usage:X}");
+                
+                
             }
 
             foreach (var sayoDevice in Devices) { //remove devices that are not connected
@@ -136,9 +143,9 @@ namespace SayoDeviceStreamingAssistant {
             }
         }
         
-        private static void SetHidMessageHeader(IList<byte> buffer, byte id, byte echo, ushort flag, byte cmd, byte index, ushort len) {
+        private static void SetHidMessageHeader(IList<byte> buffer, byte echo, ushort flag, byte cmd, byte index, ushort len) {
             len += 4;
-            buffer[0] = id;
+            buffer[0] = (byte)(buffer.Count == 64 ? 0x21 : 0x22);
             buffer[1] = echo;
             buffer[2] = (byte)(flag & 0xFF);
             buffer[3] = (byte)(flag >> 8);
@@ -158,10 +165,14 @@ namespace SayoDeviceStreamingAssistant {
         public event Action<bool> OnDeviceConnectionChanged;
 
         public bool Connected => devices.Count > 0;
-        public bool SupportStreaming {
+        public bool? SupportStreaming {
             get {
                 var screenInfo = GetScreenInfo();
-                return screenInfo != null && screenInfo.Width != 0 && screenInfo.Height != 0;
+                var hardwareSupport = screenInfo != null && screenInfo.Width != 0 && screenInfo.Height != 0;
+                var softwareSupport = devices.ContainsKey(0xFF020002);
+                if(hardwareSupport && softwareSupport) return true;
+                if(hardwareSupport) return null;
+                return false;
             }
         }
         
@@ -198,21 +209,25 @@ namespace SayoDeviceStreamingAssistant {
             if (devices.TryGetValue(0xFF020002, out var streamingDevice)) device = streamingDevice;
             return device.GetProductName();
         }
+
+        private ScreenInfoPacket screenInfoPacket;
         public ScreenInfoPacket GetScreenInfo() {
-            if (!devices.ContainsKey(0xFF020002)) return null;
+            if (!devices.ContainsKey(0xFF020002) && !devices.ContainsKey(0xFF010002)) return null;
+            if (screenInfoPacket != null)
+                return screenInfoPacket;
+            var usage = devices.ContainsKey(0xFF020002) ? 0xFF020002 : 0xFF010002;
             try {
-                var buffer = buffers[0xFF020002];
-                var stream = streams[0xFF020002];
+                var buffer = buffers[usage];
+                var stream = streams[usage];
                 SetHidMessageHeader(
                     buffer: buffer,
-                    id: 0x22,
                     echo: SayoHidPacketBase.ApplicationEcho,
                     flag: 0x7296,
                     cmd: ScreenInfoPacket.Cmd,
                     index: 0,
                     len: 0);
                 //ScreenInfoPacket screenInfo;
-                streams[0xFF020002].Write(buffers[0xFF020002], 0, 8);
+                stream.Write(buffer, 0, 8);
                 var task = Task.Run(() => {
                     var sw = new Stopwatch();
                     sw.Start();
@@ -228,8 +243,10 @@ namespace SayoDeviceStreamingAssistant {
                     return null;
                 });
                 task.Wait();
-                return task.Result;
-            } catch {
+                Console.WriteLine(task.Result?.RefreshRate.ToString()??"null");
+                return screenInfoPacket = task.Result;
+            } catch (Exception e){
+                Console.WriteLine(e);
                 return null;
             }
         }
@@ -263,7 +280,6 @@ namespace SayoDeviceStreamingAssistant {
                     //Array.Copy(rgb565, j, _buffer, 12, pixelCount);
                     SetHidMessageHeader(
                         buffer: buffer,
-                        id: 0x22,
                         echo: SayoHidPacketBase.ApplicationEcho,
                         flag: 0x7296,
                         cmd: 0x25,
@@ -295,7 +311,6 @@ namespace SayoDeviceStreamingAssistant {
                     Array.Copy(rgb565, j, buffer, 12, pixelCount);
                     SetHidMessageHeader(
                         buffer: buffer,
-                        id: 0x22,
                         echo: SayoHidPacketBase.ApplicationEcho,
                         flag: 0x7296,
                         cmd: 0x25,
