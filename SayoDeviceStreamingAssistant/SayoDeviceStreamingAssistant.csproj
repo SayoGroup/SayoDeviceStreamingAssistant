@@ -54,6 +54,11 @@
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>if not exist "$(ProjectDir)$(OutDir)dll" mkdir "$(ProjectDir)$(OutDir)dll"
+move "$(ProjectDir)$(OutDir)*.dll" "$(ProjectDir)$(OutDir)dll\"
+del "$(ProjectDir)$(OutDir)*.pdb"</PostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
