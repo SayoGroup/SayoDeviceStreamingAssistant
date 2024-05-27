@@ -207,7 +207,7 @@ namespace CaptureFramework {
 
                     //bitmap has 32 bytes(8 pixels) alignment
                     var bmat = new Mat(_stagingTexture.Description.Height,
-                        _stagingTexture.Description.Width + ((32 - (_lastSize.Width % 32)) % 32), MatType.CV_8UC4,
+                        data.RowPitch/4, MatType.CV_8UC4,
                         data.DataPointer);
 
                     //cut the mat to the correct size
