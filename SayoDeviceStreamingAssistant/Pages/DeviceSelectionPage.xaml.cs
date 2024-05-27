@@ -62,8 +62,12 @@ namespace SayoDeviceStreamingAssistant {
                 Dispatcher.Invoke(UpdateDeviceList);
             };
         }
-
-        private void UpdateDeviceList() {
+        public void UpdateAllDeviceInfos() {
+            foreach (var deviceInfo in deviceInfos) {
+                deviceInfo.UpdateStatus();
+            }
+        }
+        public void UpdateDeviceList() {
             var devices = SayoHidDevice.Devices;
             foreach (var kv in devices) {
                 label.Visibility = System.Windows.Visibility.Hidden;

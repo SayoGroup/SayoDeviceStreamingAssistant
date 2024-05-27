@@ -16,10 +16,10 @@
                     <Label Content="Language" Foreground="#FFB3B3B3" />
                     <ComboBox x:Name="LanguageComboBox" DisplayMemberPath="Name" Width="150" Height="22" Margin="0,0,0,0" HorizontalAlignment="Right" SelectionChanged="LanguageComboBox_SelectionChanged"/>
                 </Grid>
-                <!-- <Grid Width="317" Height="32"> -->
-                <!--     <Label Content="{x:Static properties:Resources.Settings_ShowUnsupportedDevice}" Foreground="#FFB3B3B3" /> -->
-                <!--     <CheckBox x:Name="ShowUnsupportedDeviceCheckBox"  Height="16" Margin="0,0,0,0" HorizontalAlignment="Right" IsChecked="True" Click="ShowUnsupportedDeviceCheckBox_Click"/> -->
-                <!-- </Grid> -->
+                <Grid Width="317" Height="32">
+                    <Label Content="{x:Static properties:Resources.Settings_ShowUnsupportedDevice}" Foreground="#FFB3B3B3" />
+                    <CheckBox x:Name="ShowUnsupportedDeviceCheckBox"  Height="16" Margin="0,0,0,0" HorizontalAlignment="Right" IsChecked="True" Click="ShowUnsupportedDeviceCheckBox_Click"/>
+                </Grid>
             </WrapPanel>
         </ScrollViewer>
         <Grid x:Name="RestartAppBar" Background="#FF484646" Height="0" VerticalAlignment="Bottom">

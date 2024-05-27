@@ -12,7 +12,7 @@ namespace SayoDeviceStreamingAssistant {
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
     public partial class MainWindow {
-        public readonly Settings settingsPage = new Settings();
+        private readonly Settings settingsPage = new Settings();
         private readonly StreamingPage streamingPage = new StreamingPage();
         private readonly SourcesManagePage sourcesManagePage = new SourcesManagePage();
         private readonly DeviceSelectionPage deviceSelectionPage = new DeviceSelectionPage();
@@ -31,6 +31,9 @@ namespace SayoDeviceStreamingAssistant {
                 settingsPage.Dispose();
             };
             currentPage = deviceSelectionPage;
+        }
+        public void UpdateDeviceList() {
+            deviceSelectionPage.UpdateAllDeviceInfos();
         }
         public void ShowStreamingPage(DeviceInfo device) {
             currentPage = streamingPage;

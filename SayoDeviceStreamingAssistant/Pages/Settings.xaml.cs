@@ -13,12 +13,14 @@ namespace SayoDeviceStreamingAssistant.Pages
     /// <summary>
     /// Settings.xaml 的交互逻辑
     /// </summary>
-    public partial class Settings : Page, IDisposable
-    {
-        ///public bool ShowUnsupportedDevice => ShowUnsupportedDeviceCheckBox.IsChecked ?? true;
+    public partial class Settings : Page, IDisposable {
+        public static Settings Instance;
+        
+        public bool ShowUnsupportedDevice => ShowUnsupportedDeviceCheckBox.IsChecked ?? true;
         private readonly BsonDocument settings;
         public Settings()
         {
+            Instance = this;
             InitializeComponent();
             var languages = new[]
             {
@@ -31,20 +33,22 @@ namespace SayoDeviceStreamingAssistant.Pages
             {
                 settings = BsonDocument.Parse(File.ReadAllText("./settings.json"));
                 LanguageComboBox.SelectedValue = languages[Array.FindIndex(languages, l => l.Value == settings["language"].AsString)];
-                //ShowUnsupportedDeviceCheckBox.IsChecked = settings["showUnsupportedDevice"].AsBoolean;
+                ShowUnsupportedDeviceCheckBox.IsChecked = settings["showUnsupportedDevice"].AsBoolean;
             }catch (Exception)
             {
                 settings = new BsonDocument
                 {
                     {"language", "auto"},
-                    //{"showUnsupportedDevice", true}
+                    {"showUnsupportedDevice", true}
                 };
                 LanguageComboBox.SelectedValue = languages[0];
+                ShowUnsupportedDeviceCheckBox.IsChecked = true;
             }
         }
         public void Dispose()
         {
             settings["language"] = (LanguageComboBox.SelectedValue as dynamic).Value;
+            settings["showUnsupportedDevice"] = ShowUnsupportedDeviceCheckBox.IsChecked;
             File.WriteAllText("./settings.json", settings.ToJson());
         }
 
@@ -78,7 +82,8 @@ namespace SayoDeviceStreamingAssistant.Pages
 
         private void ShowUnsupportedDeviceCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            //settings["showUnsupportedDevice"] = ShowUnsupportedDeviceCheckBox.IsChecked;
+            var mainWindow = (MainWindow)Application.Current.MainWindow;
+            mainWindow?.UpdateDeviceList();
         }
 
         private void RestartAppButton_Click(object sender, RoutedEventArgs e)
