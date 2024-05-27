@@ -8,7 +8,6 @@ using Windows.Graphics.DirectX;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.UI.Composition;
 using Composition.WindowsRuntimeHelpers;
-using OpenCV;
 using OpenCV.Net;
 using SharpDX.DXGI;
 using D3D11 = SharpDX.Direct3D11;
@@ -27,9 +26,9 @@ namespace CaptureFramework {
         private D3D11.Texture2DDescription _stagingTextureDesc;
         private D3D11.Texture2D _stagingTexture;
 
-        public event Action ItemeDestroyed;
+        public event Action ItemDestroyed;
 
-        private Thread workThread;
+        private readonly Thread workThread;
         private Dispatcher dispatcher;
         private bool initialized {
             get;
@@ -165,7 +164,7 @@ namespace CaptureFramework {
             reading = true;
             if (_item.Size.Width == 0 || _item.Size.Height == 0) {
                 reading = false;
-                ItemeDestroyed?.Invoke();
+                ItemDestroyed?.Invoke();
                 return false;
             }
             var newSize = false;

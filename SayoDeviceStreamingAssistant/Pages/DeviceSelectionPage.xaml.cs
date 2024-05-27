@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using OpenCV.Net;
-using SayoDeviceStreamingAssistant.Pages;
+using SayoDeviceStreamingAssistant.Sources;
 
-namespace SayoDeviceStreamingAssistant {
+namespace SayoDeviceStreamingAssistant.Pages {
     internal class DeviceConfig {
         public Guid Source;
         //source id, rect

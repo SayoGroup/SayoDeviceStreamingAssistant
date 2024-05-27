@@ -1,6 +1,4 @@
-﻿using Composition.WindowsRuntimeHelpers;
-using OpenCV.Net;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -8,8 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using MongoDB.Bson;
+using OpenCV.Net;
 
-namespace SayoDeviceStreamingAssistant {
+namespace SayoDeviceStreamingAssistant.Sources {
     public class FrameSource : IDisposable, INotifyPropertyChanged {
         public readonly Guid Guid;
         public event PropertyChangedEventHandler PropertyChanged;
@@ -43,6 +42,7 @@ namespace SayoDeviceStreamingAssistant {
         public string Source {
             get => source;
             set {
+                if (value == null) value = "";
                 if (value == source) return;
                 source = value;
                 OnPropertyChanged(nameof(Source));
@@ -72,7 +72,7 @@ namespace SayoDeviceStreamingAssistant {
         private bool Enabled {
             get => onFrameListeners.Count != 0;
             set {
-                Console.WriteLine("set timer enabled: " + value);
+                //Console.WriteLine("set timer enabled: " + value);
                 if (!value) readFrameTimer.Stop();
                 else readFrameTimer.Enabled = true;
                 if (capture == null) return;
@@ -138,7 +138,8 @@ namespace SayoDeviceStreamingAssistant {
             Dispose();
             initTimer = new Timer((state) => Init(), null, 0, 1000);
         }
-        public bool Initialized => initTimer == null;
+
+        private bool Initialized => initTimer == null;
         private Timer initTimer;
         private bool initializing;
         private readonly Stopwatch sinceInitialized = new Stopwatch();
@@ -155,7 +156,7 @@ namespace SayoDeviceStreamingAssistant {
                     if (monitor == null)
                         break;
                     capture = new CaptureFramework.CaptureFramework(monitor.Hmon, CaptureFramework.CaptureFramework.SourceType.Monitor);
-                    capture.ItemeDestroyed += Capture_ItemDestroyed;
+                    capture.ItemDestroyed += Capture_ItemDestroyed;
                     if (Enabled) capture.Init();
                     readRawFrame = capture.ReadFrame;
                     
@@ -177,7 +178,7 @@ namespace SayoDeviceStreamingAssistant {
                     foreach (var wnd in WindowEnumerationHelper.GetWindows()) {
                         if (wnd.Name != Source) continue;
                         capture = new CaptureFramework.CaptureFramework(wnd.hWnd, CaptureFramework.CaptureFramework.SourceType.Window);
-                        capture.ItemeDestroyed += Capture_ItemDestroyed;
+                        capture.ItemDestroyed += Capture_ItemDestroyed;
                         if (Enabled) capture.Init();
                         readRawFrame = capture.ReadFrame;
                         break;
@@ -192,7 +193,7 @@ namespace SayoDeviceStreamingAssistant {
                     foreach (var p in process) {
                         if (!WindowEnumerationHelper.IsWindowValidForCapture(p.MainWindowHandle)) continue;
                         capture = new CaptureFramework.CaptureFramework(p.MainWindowHandle, CaptureFramework.CaptureFramework.SourceType.Window);
-                        capture.ItemeDestroyed += Capture_ItemDestroyed;
+                        capture.ItemDestroyed += Capture_ItemDestroyed;
                         if (Enabled) capture.Init();
                         readRawFrame = capture.ReadFrame;
                     }

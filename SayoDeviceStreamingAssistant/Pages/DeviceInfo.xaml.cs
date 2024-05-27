@@ -1,15 +1,14 @@
-﻿using OpenCV.Net;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 using FontAwesome.WPF;
-using SayoDeviceStreamingAssistant.Pages;
-using static SayoDeviceStreamingAssistant.FrameSource;
+using OpenCV.Net;
+using SayoDeviceStreamingAssistant.Sources;
+using static SayoDeviceStreamingAssistant.Sources.FrameSource;
 using Rect = OpenCV.Net.Rect;
 
-namespace SayoDeviceStreamingAssistant {
-
+namespace SayoDeviceStreamingAssistant.Pages {
     public partial class DeviceInfo : IDisposable {
         public string DeviceName {
             get => labelName.Content.ToString();

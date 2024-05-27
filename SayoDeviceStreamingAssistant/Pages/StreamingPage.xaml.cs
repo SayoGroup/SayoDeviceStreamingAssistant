@@ -1,16 +1,16 @@
-﻿using FontAwesome.WPF;
-using OpenCV.Net;
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using SayoDeviceStreamingAssistant.Pages;
+using FontAwesome.WPF;
+using OpenCV.Net;
+using SayoDeviceStreamingAssistant.Sources;
 using Point = OpenCV.Net.Point;
 using Window = System.Windows.Window;
 
-namespace SayoDeviceStreamingAssistant {
+namespace SayoDeviceStreamingAssistant.Pages {
     /// <summary>
     /// StreamingPage.xaml 的交互逻辑
     /// </summary>

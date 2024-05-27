@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Windows.Devices.Sensors;
 using OpenCV.Net;
 
-namespace SayoDeviceStreamingAssistant {
+namespace SayoDeviceStreamingAssistant.Sources {
     internal static class MatExtension {
         public static Rect GetDefaultRect(Size srcSize, Size dstSize) {
             Rect rect;

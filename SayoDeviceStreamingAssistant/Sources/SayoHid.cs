@@ -3,13 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using HidSharp;
 using OpenCV.Net;
 
-namespace SayoDeviceStreamingAssistant {
+namespace SayoDeviceStreamingAssistant.Sources {
     public class SayoHidPacketBase {
         public const byte ApplicationEcho = 0x04;
         public byte ReportId;
@@ -114,12 +113,9 @@ namespace SayoDeviceStreamingAssistant {
                     deviceDict[serialNumber] = new Dictionary<uint, HidDevice>();
                 deviceDict[serialNumber][(uint)usage] = device;
                 
-                
-                Console.WriteLine($"Product: {device.GetProductName()}");
-                Console.WriteLine($"    Serial: {serialNumber}");
-                Console.WriteLine($"    Usage: {usage:X}");
-                
-                
+                // Console.WriteLine($"Product: {device.GetProductName()}");
+                // Console.WriteLine($"    Serial: {serialNumber}");
+                // Console.WriteLine($"    Usage: {usage:X}");
             }
 
             foreach (var sayoDevice in Devices) { //remove devices that are not connected
@@ -156,7 +152,7 @@ namespace SayoDeviceStreamingAssistant {
         }
     }
     
-    public partial class SayoHidDevice : IDisposable {
+    public partial class SayoHidDevice {
         public string SerialNumber { get; private set; }
         //usage, device
         private readonly ConcurrentDictionary<uint, HidDevice> devices = new ConcurrentDictionary<uint, HidDevice>();

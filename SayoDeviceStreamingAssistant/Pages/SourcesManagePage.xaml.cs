@@ -13,6 +13,7 @@ using System.Windows.Threading;
 using Microsoft.Win32;
 using MongoDB.Bson;
 using OpenCV.Net;
+using SayoDeviceStreamingAssistant.Sources;
 
 namespace SayoDeviceStreamingAssistant.Pages {
     /// <summary>
@@ -165,10 +166,12 @@ namespace SayoDeviceStreamingAssistant.Pages {
         public void ShowPage(FrameSource source) {
             var index = FrameSources.IndexOf(source);
             SourcesList.SelectedIndex = index;
+            _contentUpdateTimer = new Timer(UpdateContent, null, 0, 1000);
         }
 
         public void HidePage() {
             SourcesList.SelectedIndex = -1;
+            _contentUpdateTimer?.Dispose();
         }
 
         private void AddNewButton_Click(object sender, RoutedEventArgs e) {

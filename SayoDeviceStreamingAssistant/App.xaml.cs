@@ -3,7 +3,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Windows;
-using Windows.Globalization;
 
 namespace SayoDeviceStreamingAssistant {
     /// <summary>
