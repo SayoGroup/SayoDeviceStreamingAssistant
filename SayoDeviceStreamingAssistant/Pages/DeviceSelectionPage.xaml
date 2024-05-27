@@ -11,7 +11,7 @@
       Title="DeviceSelectionPage">
 
     <Grid Background="#FF313131" Margin="0,0,0,0">
-        <Label x:Name="label" Content="{x:Static properties:Resources.label_Content}" Margin="20,20,179,178" Foreground="#FFD8D8D8"/>
+        <Label Content="{x:Static properties:Resources.label_Content}" Margin="20,20,179,178" Foreground="#FFD8D8D8"/>
         <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="12,12,12,12">
             <WrapPanel x:Name="DeviceList">
 

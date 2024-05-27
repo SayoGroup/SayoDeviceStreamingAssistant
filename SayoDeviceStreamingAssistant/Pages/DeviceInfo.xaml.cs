@@ -172,7 +172,8 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 PlayButton.Visibility = Visibility.Hidden;
                 Visibility = Visibility.Visible;
                 Visibility = Settings.Instance.ShowUnsupportedDevice ? Visibility.Visible : 
-                    Device.SupportStreaming == true ? Visibility.Visible : Visibility.Collapsed;
+                    Device.SupportStreaming != false ? Visibility.Visible : Visibility.Collapsed;
+                
             } else if (Device.SupportStreaming == false) {
                 status = Properties.Resources.DeviceInfo_UpdateStatus_Not_Supported;
                 DeviceStatus.Fill = Brushes.Red;
@@ -208,7 +209,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 new ImageAwesome { Icon = FontAwesomeIcon.Play };
             ((ImageAwesome)PlayButton.Content).Foreground = Streaming ? Brushes.Red : Brushes.Green;
 
-            if (ScreenMat == null) {
+            if (ScreenMat == null && Device.SupportStreaming == true) {
                 var screenInfo = Device.GetScreenInfo();
                 if (screenInfo != null) {
                     ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, Depth.U8, 2);

@@ -208,9 +208,9 @@ namespace SayoDeviceStreamingAssistant.Sources {
 
         private ScreenInfoPacket screenInfoPacket;
         public ScreenInfoPacket GetScreenInfo() {
-            if (!devices.ContainsKey(0xFF020002) && !devices.ContainsKey(0xFF010002)) return null;
             if (screenInfoPacket != null)
                 return screenInfoPacket;
+            if (!devices.ContainsKey(0xFF020002) && !devices.ContainsKey(0xFF010002)) return null;
             var usage = devices.ContainsKey(0xFF020002) ? 0xFF020002 : 0xFF010002;
             try {
                 var buffer = buffers[usage];

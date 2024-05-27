@@ -69,7 +69,6 @@ namespace SayoDeviceStreamingAssistant.Pages {
         public void UpdateDeviceList() {
             var devices = SayoHidDevice.Devices;
             foreach (var kv in devices) {
-                label.Visibility = System.Windows.Visibility.Hidden;
                 var serialNumber = kv.Key;
                 var device = kv.Value;
                 var deviceInfo = deviceInfos.Find(info => info.Device.SerialNumber == serialNumber);
