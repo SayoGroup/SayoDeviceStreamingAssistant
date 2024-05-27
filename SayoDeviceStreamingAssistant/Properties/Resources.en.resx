@@ -215,4 +215,7 @@ Quick start:</value>
   <data name="RestartAppButton.Content" xml:space="preserve">
     <value>Restart</value>
   </data>
+  <data name="DeviceInfo_UpdateStatus_Switch_to_8k_pulling_rate_to_enable_streaming" xml:space="preserve">
+    <value>Switch to 8k pulling rate to enable streaming</value>
+  </data>
 </root>

@@ -39,6 +39,7 @@ namespace SayoDeviceStreamingAssistant.Pages
                     {"language", "auto"},
                     //{"showUnsupportedDevice", true}
                 };
+                LanguageComboBox.SelectedValue = languages[0];
             }
         }
         public void Dispose()

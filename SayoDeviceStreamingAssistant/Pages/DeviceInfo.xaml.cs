@@ -171,11 +171,17 @@ namespace SayoDeviceStreamingAssistant {
                 DeviceSelectButton.IsEnabled = false;
                 DeviceSelectButton.ToolTip = Properties.Resources.DeviceInfo_UpdateStatus_Device_is_disconnected;
                 PlayButton.Visibility = Visibility.Hidden;
-            } else if (!Device.SupportStreaming) {
+            } else if (Device.SupportStreaming == false) {
                 status = Properties.Resources.DeviceInfo_UpdateStatus_Not_Supported;
                 DeviceStatus.Fill = Brushes.Red;
                 DeviceSelectButton.IsEnabled = false;
                 DeviceSelectButton.ToolTip = Properties.Resources.DeviceInfo_UpdateStatus_Device_does_not_support_streaming;
+                PlayButton.Visibility = Visibility.Hidden;
+            } else if (Device.SupportStreaming == null) {
+                status = Properties.Resources.DeviceInfo_UpdateStatus_Switch_to_8k_pulling_rate_to_enable_streaming;
+                DeviceStatus.Fill = Brushes.Orange;
+                DeviceSelectButton.IsEnabled = false;
+                DeviceSelectButton.ToolTip = "Switch to 8k pulling rate to enable streaming";
                 PlayButton.Visibility = Visibility.Hidden;
             } else if (!Streaming) {
                 status = frameSource == null ? Properties.Resources.DeviceInfo_UpdateStatus_Ready 

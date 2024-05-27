@@ -214,4 +214,7 @@
   <data name="RestartAppButton.Content" xml:space="preserve">
     <value>重启</value>
   </data>
+  <data name="DeviceInfo_UpdateStatus_Switch_to_8k_pulling_rate_to_enable_streaming" xml:space="preserve">
+    <value>切换到8k刷新率以开启串流功能</value>
+  </data>
 </root>
