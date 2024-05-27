@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using Windows.Foundation;
 
 
 public class MonitorInfo {
     public bool IsPrimary { get; set; }
-    public Vector2 ScreenSize { get; set; }
+    public Size ScreenSize { get; set; }
     public Rect MonitorArea { get; set; }
     public Rect WorkArea { get; set; }
     public string DeviceName { get; set; }
@@ -58,7 +57,7 @@ public static class MonitorEnumerationHelper {
                 bool success = GetMonitorInfo(hMonitor, ref mi);
                 if (success) {
                     var info = new MonitorInfo {
-                        ScreenSize = new Vector2(mi.Monitor.right - mi.Monitor.left, mi.Monitor.bottom - mi.Monitor.top),
+                        ScreenSize = new Size(mi.Monitor.right - mi.Monitor.left, mi.Monitor.bottom - mi.Monitor.top),
                         MonitorArea = new Rect(mi.Monitor.left, mi.Monitor.top, mi.Monitor.right - mi.Monitor.left, mi.Monitor.bottom - mi.Monitor.top),
                         WorkArea = new Rect(mi.WorkArea.left, mi.WorkArea.top, mi.WorkArea.right - mi.WorkArea.left, mi.WorkArea.bottom - mi.WorkArea.top),
                         IsPrimary = mi.Flags > 0,

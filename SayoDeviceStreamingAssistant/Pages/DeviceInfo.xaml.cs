@@ -1,4 +1,4 @@
-﻿using OpenCvSharp;
+﻿using OpenCV.Net;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -6,7 +6,7 @@ using System.Windows.Media;
 using FontAwesome.WPF;
 using SayoDeviceStreamingAssistant.Pages;
 using static SayoDeviceStreamingAssistant.FrameSource;
-using Rect = OpenCvSharp.Rect;
+using Rect = OpenCV.Net.Rect;
 
 namespace SayoDeviceStreamingAssistant {
 
@@ -131,10 +131,10 @@ namespace SayoDeviceStreamingAssistant {
                 return;
             }
             if (rectDirty) {
-                ScreenMat.SetTo(new Scalar(0, 0, 0));
+                ScreenMat.Set(new Scalar(0, 0, 0));
                 rectDirty = false;
             }
-            frame.DrawTo(ScreenMat, FrameRect.Value);
+            frame.DrawToBgr565(ScreenMat, FrameRect.Value);
             onFrameReady?.Invoke(ScreenMat);
         }
         
@@ -146,8 +146,8 @@ namespace SayoDeviceStreamingAssistant {
                 FrameRect = GetDefaultRect();
                 return;
             }
-            ScreenMat.SetTo(new Scalar(0, 0, 0));
-            frame.DrawTo(ScreenMat, FrameRect.Value);
+            ScreenMat.Set(new Scalar(0, 0, 0));
+            frame.DrawToBgr565(ScreenMat, FrameRect.Value);
 
             if (onFrameReady == null) return;
             foreach (var cb in onFrameReady.GetInvocationList()) {
@@ -159,7 +159,7 @@ namespace SayoDeviceStreamingAssistant {
         public Rect? GetDefaultRect() {
             var srcSize = frameSource?.GetContentRawSize();
             if (srcSize == null || srcSize.Value.Width == 0 || srcSize.Value.Height == 0) return null;
-            var dstSize = ScreenMat.Size();
+            var dstSize = ScreenMat.Size;
             return MatExtension.GetDefaultRect(srcSize.Value, dstSize);
         }
 
@@ -202,24 +202,22 @@ namespace SayoDeviceStreamingAssistant {
                 PlayButton.Visibility = Visibility.Visible;
                 Visibility = Visibility.Visible;
             }
-            
             Status = status;
             PlayButton.ToolTip = Streaming ? Properties.Resources.StreamingPage_SetStreamButton_Pause_streaming 
                 : Properties.Resources.StreamingPage_SetStreamButton_Begin_streaming;
             PlayButton.Content = Streaming ? new ImageAwesome { Icon = FontAwesomeIcon.Pause } :
                 new ImageAwesome { Icon = FontAwesomeIcon.Play };
             ((ImageAwesome)PlayButton.Content).Foreground = Streaming ? Brushes.Red : Brushes.Green;
-            
+
             if (ScreenMat == null) {
                 var screenInfo = Device.GetScreenInfo();
                 if (screenInfo != null) {
-                    ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, MatType.CV_8UC2);
+                    ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, Depth.U8, 2);
                     var screenInfoStr = $"{screenInfo.Width}x{screenInfo.Height}@{screenInfo.RefreshRate}Hz";
                     labelScreenInfo.Content = screenInfoStr;
                 } else
                     labelScreenInfo.Content = "";
             }
-            
         }
         public void Dispose() {
             Device?.Dispose();

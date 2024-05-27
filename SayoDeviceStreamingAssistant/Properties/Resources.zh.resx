@@ -217,4 +217,13 @@
   <data name="DeviceInfo_UpdateStatus_Switch_to_8k_pulling_rate_to_enable_streaming" xml:space="preserve">
     <value>切换到8k刷新率以开启串流功能</value>
   </data>
+  <data name="FrameTimeLabel.ToolTip" xml:space="preserve">
+    <value>获取并处理一帧所消耗的时间</value>
+  </data>
+  <data name="SendImageElapsedLabel.ToolTip" xml:space="preserve">
+    <value>发送一帧到设备所消耗的时间</value>
+  </data>
+  <data name="FPSLabel.ToolTip" xml:space="preserve">
+    <value>当前/最大刷新率，最大刷新率由设备和源刷新率限制</value>
+  </data>
 </root>

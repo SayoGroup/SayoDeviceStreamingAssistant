@@ -1,5 +1,5 @@
 ﻿using FontAwesome.WPF;
-using OpenCvSharp;
+using OpenCV.Net;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,7 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using SayoDeviceStreamingAssistant.Pages;
-using Point = OpenCvSharp.Point;
+using Point = OpenCV.Net.Point;
 using Window = System.Windows.Window;
 
 namespace SayoDeviceStreamingAssistant {
@@ -17,7 +17,7 @@ namespace SayoDeviceStreamingAssistant {
     public partial class StreamingPage {
         private DeviceInfo bindDeviceInfo;
         private WriteableBitmap previewBitmap;
-        private readonly Mat previewMat = new Mat();
+        private readonly Mat previewMat = new Mat(80,160, Depth.U8, 2);
         private bool newFrame;
         private readonly DispatcherTimer previewTimer = new DispatcherTimer();
         public StreamingPage() {
@@ -30,7 +30,7 @@ namespace SayoDeviceStreamingAssistant {
 
         public void ShowPage(DeviceInfo deviceInfo) {
             this.bindDeviceInfo = deviceInfo;
-            var screenSize = bindDeviceInfo.ScreenMat.Size();
+            var screenSize = bindDeviceInfo.ScreenMat.Size;
             previewBitmap = new WriteableBitmap(screenSize.Width, screenSize.Height, 96, 96, PixelFormats.Bgr565, null);
             Preview.Source = previewBitmap;
             SourceCombo.SelectedIndex = SourcesManagePage.FrameSources.IndexOf(bindDeviceInfo.FrameSource);
@@ -51,15 +51,15 @@ namespace SayoDeviceStreamingAssistant {
             bindDeviceInfo = null;
         }
         private void OnBindDeviceFrameReady(Mat frame) {
-            frame.CopyTo(previewMat);
+            CV.Copy(frame,previewMat);
             newFrame = true;
         }
         private void UpdatePreview() {
             if (previewMat != null && newFrame) {
-                var len = previewMat.Height * previewMat.Width * 2;
+                var len = previewMat.Rows * previewMat.Cols * 2;
                 previewBitmap.Lock();
                 WinApi.CopyMemory(previewBitmap.BackBuffer, previewMat.Data, (uint)len);
-                previewBitmap.AddDirtyRect(new Int32Rect(0, 0, previewMat.Width, previewMat.Height));
+                previewBitmap.AddDirtyRect(new Int32Rect(0, 0, previewMat.Cols, previewMat.Rows));
                 previewBitmap.Unlock();
                 newFrame = false;
             }
@@ -85,7 +85,7 @@ namespace SayoDeviceStreamingAssistant {
             }
             Preview.Visibility = Visibility.Visible;
             previewTimer.Interval = TimeSpan.FromMilliseconds(1e3 / bindDeviceInfo.FrameSource.Fps);
-            previewMat.SetTo(new Scalar(0, 0, 0));
+            previewMat.Set(new Scalar(0, 0, 0));
             newFrame = true;
             previewTimer.Start();
         }
@@ -105,7 +105,7 @@ namespace SayoDeviceStreamingAssistant {
         }
 
         private void Preview_MouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e) {
-            var mousePos = new Point(e.GetPosition(Preview).X / 2, e.GetPosition(Preview).Y / 2);
+            var mousePos = new Point((int)e.GetPosition(Preview).X / 2, (int)e.GetPosition(Preview).Y / 2);
             var deltaScale = e.Delta > 0 ? 1.1 : 0.9;
 
             if (bindDeviceInfo.FrameRect == null)
@@ -115,14 +115,14 @@ namespace SayoDeviceStreamingAssistant {
             var cursorVec = new Point(mousePos.X - rect.X, mousePos.Y - rect.Y);
             rect.Width = (int)(rect.Width * deltaScale);
             rect.Height = (int)(rect.Height * deltaScale);
-            rect.Left = (int)(rect.X - cursorVec.X * (deltaScale - 1));
-            rect.Top = (int)(rect.Y - cursorVec.Y * (deltaScale - 1));
+            rect.X = (int)(rect.X - cursorVec.X * (deltaScale - 1));
+            rect.Y = (int)(rect.Y - cursorVec.Y * (deltaScale - 1));
             bindDeviceInfo.FrameRect = rect;
-            bindDeviceInfo.PeekFrame();
+            //bindDeviceInfo.PeekFrame();
         }
 
         private System.Windows.Point? mouseDownPose;
-        private OpenCvSharp.Rect? mouseDownFrameRect;
+        private OpenCV.Net.Rect? mouseDownFrameRect;
         private void Preview_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
             mouseDownPose = e.GetPosition(Preview);
             mouseDownFrameRect = bindDeviceInfo.FrameRect;
@@ -139,18 +139,18 @@ namespace SayoDeviceStreamingAssistant {
                 return;
             var rect = mouseDownFrameRect.Value;
             var pos = e.GetPosition(Preview);
-            var delta = new Point(pos.X - mouseDownPose.Value.X, pos.Y - mouseDownPose.Value.Y);
-            rect.Left += delta.X / 2;
-            rect.Top += delta.Y / 2;
+            var delta = new Point((int)(pos.X - mouseDownPose.Value.X), (int)(pos.Y - mouseDownPose.Value.Y));
+            rect.X += delta.X / 2;
+            rect.Y += delta.Y / 2;
             bindDeviceInfo.FrameRect = rect;
-            bindDeviceInfo.PeekFrame();
+            //bindDeviceInfo.PeekFrame();
         }
 
         private void ResetPreviewRect_Click(object sender, RoutedEventArgs e) {
             var rect = bindDeviceInfo.GetDefaultRect();
             if (rect != null)
                 bindDeviceInfo.FrameRect = rect.Value;
-            bindDeviceInfo.PeekFrame();
+            //bindDeviceInfo.PeekFrame();
             bindDeviceInfo.FrameSource?.ReInit();
         }
 

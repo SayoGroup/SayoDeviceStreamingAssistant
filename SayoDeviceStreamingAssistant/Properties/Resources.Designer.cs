@@ -150,6 +150,24 @@ namespace SayoDeviceStreamingAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Current/max fps. Limited by device and source..
+        /// </summary>
+        public static string FPSLabel_ToolTip {
+            get {
+                return ResourceManager.GetString("FPSLabel.ToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time taken to capture and process the frame..
+        /// </summary>
+        public static string FrameTimeLabel_ToolTip {
+            get {
+                return ResourceManager.GetString("FrameTimeLabel.ToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No available devices..
         /// </summary>
         public static string label_Content {
@@ -200,6 +218,15 @@ namespace SayoDeviceStreamingAssistant.Properties {
         public static string RestartAppLabel_Content {
             get {
                 return ResourceManager.GetString("RestartAppLabel.Content", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time taken to send frame to device..
+        /// </summary>
+        public static string SendImageElapsedLabel_ToolTip {
+            get {
+                return ResourceManager.GetString("SendImageElapsedLabel.ToolTip", resourceCulture);
             }
         }
         

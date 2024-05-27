@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using MongoDB.Bson;
-using OpenCvSharp;
+using OpenCV.Net;
 
 namespace SayoDeviceStreamingAssistant.Pages {
     /// <summary>
@@ -31,7 +31,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
         private static Timer _contentUpdateTimer;
 
         private WriteableBitmap previewBitmap;
-        private Mat previewMat = new Mat(80, 160, MatType.CV_8UC2);
+        private Mat previewMat = new Mat(80, 160, Depth.U8, 2);
         private bool newFrame;
         private DispatcherTimer previewTimer = new DispatcherTimer();
 
@@ -92,7 +92,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
             };
             previewTimer.Interval = TimeSpan.FromMilliseconds(1e3 / 60);
             previewTimer.Start();
-            previewBitmap = new WriteableBitmap(previewMat.Width, previewMat.Height, 96, 96, PixelFormats.Bgr565, null);
+            previewBitmap = new WriteableBitmap(previewMat.Cols, previewMat.Rows, 96, 96, PixelFormats.Bgr565, null);
             Preview.Source = previewBitmap;
         }
 
@@ -165,12 +165,10 @@ namespace SayoDeviceStreamingAssistant.Pages {
         public void ShowPage(FrameSource source) {
             var index = FrameSources.IndexOf(source);
             SourcesList.SelectedIndex = index;
-            _contentUpdateTimer = new Timer(UpdateContent, null, 0, 1000);
         }
 
         public void HidePage() {
             SourcesList.SelectedIndex = -1;
-            _contentUpdateTimer.Dispose();
         }
 
         private void AddNewButton_Click(object sender, RoutedEventArgs e) {
@@ -280,11 +278,11 @@ namespace SayoDeviceStreamingAssistant.Pages {
         }
 
         private void ClearPreview() {
-            previewMat.SetTo(new Scalar(0, 0, 0));
+            previewMat.Set(new Scalar(0, 0, 0));
             newFrame = true;
         }
         private void OnFrameReady(Mat frame) {
-            frame.DrawTo(previewMat, MatExtension.GetDefaultRect(frame.Size(), previewMat.Size()));
+            frame.DrawToBgr565(previewMat, MatExtension.GetDefaultRect(frame.Size, previewMat.Size));
             newFrame = true;
         }
         DateTime lastUpdate = DateTime.Now;
@@ -295,10 +293,10 @@ namespace SayoDeviceStreamingAssistant.Pages {
                     ClearPreview();
                 return;
             }
-            var len = previewMat.Height * previewMat.Width * 2;
+            var len = previewMat.Rows * previewMat.Cols * 2;
             previewBitmap.Lock();
             WinApi.CopyMemory(previewBitmap.BackBuffer, previewMat.Data, (uint)len);
-            previewBitmap.AddDirtyRect(new Int32Rect(0, 0, previewMat.Width, previewMat.Height));
+            previewBitmap.AddDirtyRect(new Int32Rect(0, 0, previewMat.Cols, previewMat.Rows));
             previewBitmap.Unlock();
             newFrame = false;
             lastUpdate = DateTime.Now;

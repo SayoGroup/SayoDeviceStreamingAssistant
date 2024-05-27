@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using OpenCvSharp;
+using OpenCV.Net;
 using SayoDeviceStreamingAssistant.Pages;
 
 namespace SayoDeviceStreamingAssistant {

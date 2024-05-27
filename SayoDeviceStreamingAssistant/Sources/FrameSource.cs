@@ -1,5 +1,5 @@
 ﻿using Composition.WindowsRuntimeHelpers;
-using OpenCvSharp;
+using OpenCV.Net;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -85,19 +85,19 @@ namespace SayoDeviceStreamingAssistant {
         public double Fps { get; private set; } = 60;
 
         private void SetFps() {
-            Fps = video?.Fps ?? 
+            Fps = video?.GetProperty(CaptureProperty.Fps) ?? 
                   (onFrameListeners.Any() ? onFrameListeners.Values.Select((i)=>i.Item1).Max() : 60);
             readFrameTimer.Interval = (long)Math.Round(1e6 / Fps);
         }
 
         public uint FrameCount { get; private set; }
 
-        private readonly Mat rawFrame = new Mat();
+        private Mat rawFrame = new Mat(10,10, Depth.U8, 4);
         private readonly MicroTimer readFrameTimer = new MicroTimer();
 
         private CaptureFramework.CaptureFramework capture;
-        private VideoCapture video;
-        private Func<Mat, bool> readRawFrame;
+        private Capture video;
+        private Func<Func<Mat,bool>,bool> readRawFrame;
 
         public FrameSource(string name, Guid? guid = null) {
             this.Guid = guid ?? Guid.NewGuid();
@@ -106,21 +106,9 @@ namespace SayoDeviceStreamingAssistant {
             readFrameTimer.Interval = (long)Math.Round(1e6 / 60);
             readFrameTimer.MicroTimerElapsed += (o, e) => {
                 var sw = Stopwatch.StartNew();
-                if (ReadFrame()) {
-                    //OnFrameReady?.Invoke(rawFrame);
-                    foreach (var listener in onFrameListeners.ToArray()) {
-                        var onFrame = listener.Key;
-                        var (expectedFps, beginFrameCount, sendFrameCount) = listener.Value;
-                        var frameElapsedCount = FrameCount - beginFrameCount;
-                        var fpsRatio = expectedFps / Fps;
-                        if ((double)sendFrameCount / frameElapsedCount > fpsRatio) continue;
-                        onFrame(rawFrame);
-                        if(onFrameListeners.ContainsKey(listener.Key))
-                            onFrameListeners[listener.Key] = (expectedFps, beginFrameCount, sendFrameCount + 1);
-                    }
-                    ++FrameCount;
-                }
-                FrameTime = sw.Elapsed.TotalMilliseconds;
+                bool success = ReadFrame();
+                if(success)
+                    FrameTime = sw.Elapsed.TotalMilliseconds;
                 sw.Stop();
             };
         }
@@ -211,9 +199,14 @@ namespace SayoDeviceStreamingAssistant {
                     break;
                 case 2: //"Media"
                     if (File.Exists(Source) == false) break;
-                    video = new VideoCapture(Source);
+                    video = Capture.CreateFileCapture(Source);
                     //video.Open(Source);
-                    readRawFrame = video.Read;
+                    readRawFrame = (onFrameReady) => {
+                        var res = video.GrabFrame();
+                        if (!res) return false;
+                        onFrameReady(video.RetrieveFrame().GetMat());
+                        return true;
+                    };
                     break;
             }
             if (readRawFrame != null) {
@@ -254,17 +247,32 @@ namespace SayoDeviceStreamingAssistant {
             if (reading || !Initialized || readRawFrame == null) 
                 return false;
             reading = true;
+
+            if (video != null && video.GetProperty(CaptureProperty.PosFrames) >=
+                video.GetProperty(CaptureProperty.FrameCount))
+                video.SetProperty(CaptureProperty.PosFrames, 0);
             
-            if (video != null && video.PosFrames >= video.FrameCount) 
-                video.PosFrames = 0;
-            
-            if (!readRawFrame(rawFrame)) {
+            var res = readRawFrame((mat) => {
+                rawFrame = mat;
+                foreach (var listener in onFrameListeners.ToArray()) {
+                    var onFrame = listener.Key;
+                    var (expectedFps, beginFrameCount, sendFrameCount) = listener.Value;
+                    var frameElapsedCount = FrameCount - beginFrameCount;
+                    var fpsRatio = expectedFps / Fps;
+                    if ((double)sendFrameCount / frameElapsedCount > fpsRatio) continue;
+                    onFrame(rawFrame);
+                    if(onFrameListeners.ContainsKey(listener.Key))
+                        onFrameListeners[listener.Key] = (expectedFps, beginFrameCount, sendFrameCount + 1);
+                }
+                ++FrameCount;
+                return true;
+            });
+            if (res == false) {
                 reading = false;
                 return false;
             }
-            
-            if (FrameCount % 30 == 0)
-                GC.Collect();
+            // if (FrameCount % 30 == 0)
+            //     GC.Collect();
             reading = false;
             return true;
         }
@@ -278,7 +286,7 @@ namespace SayoDeviceStreamingAssistant {
         private Size? GetVideoSize() {
             if (video == null)
                 return null;
-            return new Size(video.FrameWidth, video.FrameHeight);
+            return new Size((int)video.GetProperty(CaptureProperty.FrameWidth), (int)video.GetProperty(CaptureProperty.FrameHeight));
         }
     }
 }
