@@ -86,10 +86,18 @@ namespace SayoDeviceStreamingAssistant.Pages {
             SourceType.ItemsSource = SourceTypes;
             SourcesList.ItemsSource = FrameSources;
             SourceConfigPanel.Visibility = Visibility.Collapsed;
+            
+            previewTimer.Tick += (sender, e) => {
+                UpdatePreview();
+            };
+            previewTimer.Interval = TimeSpan.FromMilliseconds(1e3 / 60);
+            previewTimer.Start();
+            previewBitmap = new WriteableBitmap(previewMat.Width, previewMat.Height, 96, 96, PixelFormats.Bgr565, null);
+            Preview.Source = previewBitmap;
+        }
 
-            if (_contentUpdateTimer == null) {
-                _contentUpdateTimer = new Timer((state) => {
-                    if (Dispatcher.HasShutdownStarted) return;
+        private void UpdateContent(object sender) {
+            if (Dispatcher.HasShutdownStarted) return;
                     var monitors = MonitorEnumerationHelper.GetMonitors();
                     var monitorInfos = monitors as MonitorInfo[] ?? monitors.ToArray();
                     foreach (var monitor in monitorInfos) {
@@ -136,15 +144,6 @@ namespace SayoDeviceStreamingAssistant.Pages {
                             });
                         }
                     }
-                }, null, 0, 1000);
-            }
-            previewTimer.Tick += (sender, e) => {
-                UpdatePreview();
-            };
-            previewTimer.Interval = TimeSpan.FromMilliseconds(1e3 / 60);
-            previewTimer.Start();
-            previewBitmap = new WriteableBitmap(previewMat.Width, previewMat.Height, 96, 96, PixelFormats.Bgr565, null);
-            Preview.Source = previewBitmap;
         }
 
         public void Dispose() {
@@ -166,10 +165,12 @@ namespace SayoDeviceStreamingAssistant.Pages {
         public void ShowPage(FrameSource source) {
             var index = FrameSources.IndexOf(source);
             SourcesList.SelectedIndex = index;
+            _contentUpdateTimer = new Timer(UpdateContent, null, 0, 1000);
         }
 
         public void HidePage() {
             SourcesList.SelectedIndex = -1;
+            _contentUpdateTimer.Dispose();
         }
 
         private void AddNewButton_Click(object sender, RoutedEventArgs e) {
