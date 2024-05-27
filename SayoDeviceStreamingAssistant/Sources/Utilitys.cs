@@ -21,7 +21,7 @@ namespace SayoDeviceStreamingAssistant {
             }
             return rect;
         }
-        public static void DrawToBGR565(this Mat src, Mat dst, Rect rect) {
+        public static void DrawToBgr565(this Mat src, Mat dst, Rect rect) {
             if (src == null || dst == null || src.Cols == 0 || src.Rows == 0)
                 return;
             if (rect.X >= dst.Cols || rect.Y >= dst.Rows || rect.X + rect.Width <= 0 || rect.Y + rect.Height <= 0)
@@ -49,6 +49,8 @@ namespace SayoDeviceStreamingAssistant {
             CV.Copy(ccRoi, dst.GetSubRect(roiRect));
         }
 
+        private static Mat _mat640P;
+        private static object _resizeLock = new object();
         private static Mat Resize(Mat mat, Size size) {
             var srcPixelCount = mat.Cols * mat.Rows;
             var dstPixelCount = size.Width * size.Height;
@@ -56,9 +58,12 @@ namespace SayoDeviceStreamingAssistant {
             var deltaPixelCount = srcPixelCount - dstPixelCount;
             var res = new Mat(size, mat.Depth, mat.Channels);
             if (scale < 1 && deltaPixelCount > 1e6) {
-                var mat640P = new Mat(640, 1280, mat.Depth, mat.Channels);
-                CV.Resize(mat,mat640P);
-                CV.Resize(mat640P, res, SubPixelInterpolation.Area);
+                lock (_resizeLock) {
+                    if(_mat640P == null || _mat640P.Depth != mat.Depth || _mat640P.Channels != mat.Channels)
+                        _mat640P = new Mat(640, 480, mat.Depth, mat.Channels);
+                    CV.Resize(mat,_mat640P);
+                    CV.Resize(_mat640P, res, SubPixelInterpolation.Area);
+                }
                 return res;
             }
             CV.Resize(mat, res, SubPixelInterpolation.Area);

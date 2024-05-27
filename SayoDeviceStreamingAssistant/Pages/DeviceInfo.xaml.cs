@@ -134,7 +134,7 @@ namespace SayoDeviceStreamingAssistant {
                 ScreenMat.Set(new Scalar(0, 0, 0));
                 rectDirty = false;
             }
-            frame.DrawToBGR565(ScreenMat, FrameRect.Value);
+            frame.DrawToBgr565(ScreenMat, FrameRect.Value);
             onFrameReady?.Invoke(ScreenMat);
         }
         
@@ -147,7 +147,7 @@ namespace SayoDeviceStreamingAssistant {
                 return;
             }
             ScreenMat.Set(new Scalar(0, 0, 0));
-            frame.DrawToBGR565(ScreenMat, FrameRect.Value);
+            frame.DrawToBgr565(ScreenMat, FrameRect.Value);
 
             if (onFrameReady == null) return;
             foreach (var cb in onFrameReady.GetInvocationList()) {

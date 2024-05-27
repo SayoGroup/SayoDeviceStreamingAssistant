@@ -106,8 +106,9 @@ namespace SayoDeviceStreamingAssistant {
             readFrameTimer.Interval = (long)Math.Round(1e6 / 60);
             readFrameTimer.MicroTimerElapsed += (o, e) => {
                 var sw = Stopwatch.StartNew();
-                ReadFrame();
-                FrameTime = sw.Elapsed.TotalMilliseconds;
+                bool success = ReadFrame();
+                if(success)
+                    FrameTime = sw.Elapsed.TotalMilliseconds;
                 sw.Stop();
             };
         }
@@ -270,8 +271,8 @@ namespace SayoDeviceStreamingAssistant {
                 reading = false;
                 return false;
             }
-            if (FrameCount % 30 == 0)
-                GC.Collect();
+            // if (FrameCount % 30 == 0)
+            //     GC.Collect();
             reading = false;
             return true;
         }

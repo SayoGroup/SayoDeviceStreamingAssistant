@@ -207,22 +207,22 @@ namespace CaptureFramework {
                         D3D11.MapFlags.None);
 
                     //bitmap has 32 bytes(8 pixels) alignment
-                    var bmat = new Mat(_stagingTexture.Description.Height,
+                    var wrapMat = new Mat(_stagingTexture.Description.Height,
                         data.RowPitch/4, Depth.U8, 4,
                         data.DataPointer);
                     
                     //cut the mat to the correct size
                     //res = bmat.Clone();
-                    onFrameReady(bmat);
+                    onFrameReady?.Invoke(wrapMat);
                     //CV.Copy(bmat.GetRows(0, _lastSize.Height).GetCols(0, _lastSize.Width),mat);
                     //mat = bmat.GetRows(0, _lastSize.Height).GetCols(0, _lastSize.Width);
                     //new Mat(bmat, new Rect(0, 0, _lastSize.Width, _lastSize.Height)).CopyTo(mat);
-
-                    bmat.Dispose();
+                    wrapMat.Close();
+                    wrapMat.Dispose();
                     _d3dDevice.ImmediateContext.UnmapSubresource(_stagingTexture, 0);
                 }
-
-                _swapChain.Present(0, PresentFlags.None);
+                
+                //_swapChain.Present(0, PresentFlags.None);
                 if (newSize) {
                     _framePool.Recreate(
                         _device,

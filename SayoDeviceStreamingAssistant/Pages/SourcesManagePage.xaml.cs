@@ -282,7 +282,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
             newFrame = true;
         }
         private void OnFrameReady(Mat frame) {
-            frame.DrawToBGR565(previewMat, MatExtension.GetDefaultRect(frame.Size, previewMat.Size));
+            frame.DrawToBgr565(previewMat, MatExtension.GetDefaultRect(frame.Size, previewMat.Size));
             newFrame = true;
         }
         DateTime lastUpdate = DateTime.Now;
