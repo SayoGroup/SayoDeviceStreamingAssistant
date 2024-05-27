@@ -1,5 +1,5 @@
 ﻿using Composition.WindowsRuntimeHelpers;
-using OpenCvSharp;
+using OpenCV.Net;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -85,19 +85,19 @@ namespace SayoDeviceStreamingAssistant {
         public double Fps { get; private set; } = 60;
 
         private void SetFps() {
-            Fps = video?.Fps ?? 
+            Fps = video?.GetProperty(CaptureProperty.Fps) ?? 
                   (onFrameListeners.Any() ? onFrameListeners.Values.Select((i)=>i.Item1).Max() : 60);
             readFrameTimer.Interval = (long)Math.Round(1e6 / Fps);
         }
 
         public uint FrameCount { get; private set; }
 
-        private readonly Mat rawFrame = new Mat();
+        private Mat rawFrame = new Mat(10,10, Depth.U8, 4);
         private readonly MicroTimer readFrameTimer = new MicroTimer();
 
         private CaptureFramework.CaptureFramework capture;
-        private VideoCapture video;
-        private Func<Mat, bool> readRawFrame;
+        private Capture video;
+        private Func<Mat> readRawFrame;
 
         public FrameSource(string name, Guid? guid = null) {
             this.Guid = guid ?? Guid.NewGuid();
@@ -211,9 +211,13 @@ namespace SayoDeviceStreamingAssistant {
                     break;
                 case 2: //"Media"
                     if (File.Exists(Source) == false) break;
-                    video = new VideoCapture(Source);
+                    video = Capture.CreateFileCapture(Source);
                     //video.Open(Source);
-                    readRawFrame = video.Read;
+                    readRawFrame = () => {
+                        var res = video.GrabFrame();
+                        if (!res) return null;
+                        return video.RetrieveFrame().GetMat().Clone();
+                    };
                     break;
             }
             if (readRawFrame != null) {
@@ -254,15 +258,18 @@ namespace SayoDeviceStreamingAssistant {
             if (reading || !Initialized || readRawFrame == null) 
                 return false;
             reading = true;
+
+            if (video != null && video.GetProperty(CaptureProperty.PosFrames) >=
+                video.GetProperty(CaptureProperty.FrameCount))
+                video.SetProperty(CaptureProperty.PosFrames, 0);
             
-            if (video != null && video.PosFrames >= video.FrameCount) 
-                video.PosFrames = 0;
-            
-            if (!readRawFrame(rawFrame)) {
+            var res = readRawFrame();
+            if (res == null) {
                 reading = false;
                 return false;
             }
-            
+
+            rawFrame = res;
             if (FrameCount % 30 == 0)
                 GC.Collect();
             reading = false;
@@ -278,7 +285,7 @@ namespace SayoDeviceStreamingAssistant {
         private Size? GetVideoSize() {
             if (video == null)
                 return null;
-            return new Size(video.FrameWidth, video.FrameHeight);
+            return new Size((int)video.GetProperty(CaptureProperty.FrameWidth), (int)video.GetProperty(CaptureProperty.FrameHeight));
         }
     }
 }

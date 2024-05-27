@@ -8,12 +8,18 @@ using Windows.Graphics.DirectX;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.UI.Composition;
 using Composition.WindowsRuntimeHelpers;
-using OpenCvSharp;
+using OpenCV;
+using OpenCV.Net;
 using SharpDX.DXGI;
 using D3D11 = SharpDX.Direct3D11;
 
+
+
 namespace CaptureFramework {
+    
     public class CaptureFramework : IDisposable {
+        const int CV_8UC4 = 24;
+        
         static IDirect3DDevice _device = Direct3D11Helper.CreateDevice();
         private GraphicsCaptureItem _item;
         private Direct3D11CaptureFramePool _framePool;
@@ -155,23 +161,23 @@ namespace CaptureFramework {
         }
 
         private bool reading = false;
-        public bool ReadFrame(Mat mat) {
+        public Mat ReadFrame() {
+            Mat res;
             if (!dispatcher.CheckAccess()) {
-                return dispatcher.Invoke(()=> ReadFrame(mat));  
+                return dispatcher.Invoke(ReadFrame);  
             }
-            if (!initialized) return false;
+            if (!initialized) return null;
             reading = true;
             if (_item.Size.Width == 0 || _item.Size.Height == 0) {
                 reading = false;
                 ItemeDestroyed?.Invoke();
-                return false;
+                return null;
             }
-            if (mat == null)
-                throw new ArgumentNullException(nameof(mat));
             var newSize = false;
             using (var frame = _framePool.TryGetNextFrame()) {
                 if (frame == null) {
-                    return reading = false;
+                    reading = false;
+                    return null;
                 }
 
                 if (frame.ContentSize.Width != _lastSize.Width ||
@@ -205,13 +211,16 @@ namespace CaptureFramework {
                     var data = _d3dDevice.ImmediateContext.MapSubresource(_stagingTexture, 0, D3D11.MapMode.Read,
                         D3D11.MapFlags.None);
 
+
                     //bitmap has 32 bytes(8 pixels) alignment
                     var bmat = new Mat(_stagingTexture.Description.Height,
-                        _stagingTexture.Description.Width + ((32 - (_lastSize.Width % 32)) % 32), MatType.CV_8UC4,
-                        data.DataPointer);
-
+                        _stagingTexture.Description.Width + ((32 - (_lastSize.Width % 32)) % 32), 
+                        Depth.U8, 4, data.DataPointer);
+    
                     //cut the mat to the correct size
-                    bmat.RowRange(0, _lastSize.Height).ColRange(0, _lastSize.Width).CopyTo(mat);
+                    res = bmat.Clone();
+                    //CV.Copy(bmat.GetRows(0, _lastSize.Height).GetCols(0, _lastSize.Width),mat);
+                    //mat = bmat.GetRows(0, _lastSize.Height).GetCols(0, _lastSize.Width);
                     //new Mat(bmat, new Rect(0, 0, _lastSize.Width, _lastSize.Height)).CopyTo(mat);
 
                     bmat.Dispose();
@@ -228,7 +237,7 @@ namespace CaptureFramework {
                 }
             }
             reading = false;
-            return true;
+            return res;
         }
     }
 }

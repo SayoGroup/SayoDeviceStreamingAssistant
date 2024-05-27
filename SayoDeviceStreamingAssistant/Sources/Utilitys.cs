@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Windows.Devices.Sensors;
-using OpenCvSharp;
+using OpenCV.Net;
 
 namespace SayoDeviceStreamingAssistant {
     internal static class MatExtension {
@@ -21,20 +21,20 @@ namespace SayoDeviceStreamingAssistant {
             }
             return rect;
         }
-        public static void DrawTo(this Mat src, Mat dst, Rect rect, ColorConversionCodes colorCvtCode = ColorConversionCodes.BGRA2BGR565) {
-            if (src == null || dst == null || src.Width == 0 || src.Height == 0)
+        public static void DrawToBGR565(this Mat src, Mat dst, Rect rect) {
+            if (src == null || dst == null || src.Cols == 0 || src.Rows == 0)
                 return;
-            if (rect.X >= dst.Width || rect.Y >= dst.Height || rect.Right <= 0 || rect.Bottom <= 0)
+            if (rect.X >= dst.Cols || rect.Y >= dst.Rows || rect.X + rect.Width <= 0 || rect.Y + rect.Height <= 0)
                 return;
             Rect roiRect;
             roiRect.X = rect.X < 0 ? 0 : rect.X;
             roiRect.Y = rect.Y < 0 ? 0 : rect.Y;
-            roiRect.Width = rect.Right > dst.Width ? dst.Width - roiRect.X : rect.Right - roiRect.X;
-            roiRect.Height = rect.Bottom > dst.Height ? dst.Height - roiRect.Y : rect.Bottom - roiRect.Y;
+            roiRect.Width = rect.X + rect.Width > dst.Cols ? dst.Cols - roiRect.X : rect.X + rect.Width - roiRect.X;
+            roiRect.Height = rect.Y + rect.Height > dst.Rows ? dst.Rows - roiRect.Y : rect.Y + rect.Height - roiRect.Y;
 
             Vector2 scale;
-            scale.X = (float)rect.Width / src.Width;
-            scale.Y = (float)rect.Height / src.Height;
+            scale.X = (float)rect.Width / src.Cols;
+            scale.Y = (float)rect.Height / src.Rows;
 
             Rect roi;
             roi.X = (int)((roiRect.X - rect.X) / scale.X);
@@ -42,23 +42,27 @@ namespace SayoDeviceStreamingAssistant {
             roi.Width = (int)(roiRect.Width / scale.X);
             roi.Height = (int)(roiRect.Height / scale.Y);
 
-            var roiMat = Resize(src.SubMat(roi), roiRect.Size);
+            var roiMat = Resize(src.GetSubRect(roi), new Size(roiRect.Width, roiRect.Height));
             //Cv2.ImShow("roi", roiMat);
-            Cv2.CvtColor(roiMat, roiMat, colorCvtCode);
-            roiMat.CopyTo(dst.RowRange(roiRect.Top, roiRect.Bottom).ColRange
-                (roiRect.Left, roiRect.Right));
+            var ccRoi = new Mat(roiMat.Size, Depth.U8, 2);
+            CV.CvtColor(roiMat, ccRoi, roiMat.Channels == 4 ? ColorConversion.Bgra2Bgr565 : ColorConversion.Bgr2Bgr565);
+            CV.Copy(ccRoi, dst.GetSubRect(roiRect));
         }
-        private static readonly Size Size720P = new Size(1280, 640);
+
         private static Mat Resize(Mat mat, Size size) {
-            var srcPixelCount = mat.Width * mat.Height;
+            var srcPixelCount = mat.Cols * mat.Rows;
             var dstPixelCount = size.Width * size.Height;
             var scale = Math.Sqrt((double)dstPixelCount / srcPixelCount);
             var deltaPixelCount = srcPixelCount - dstPixelCount;
-            if (scale < 1 && deltaPixelCount > 2e6) {
-                return mat.Resize(Size720P).Resize(size, 0, 0, InterpolationFlags.Area);
+            var res = new Mat(size, mat.Depth, mat.Channels);
+            if (scale < 1 && deltaPixelCount > 1e6) {
+                var mat640P = new Mat(640, 1280, mat.Depth, mat.Channels);
+                CV.Resize(mat,mat640P);
+                CV.Resize(mat640P, res, SubPixelInterpolation.Area);
+                return res;
             }
-
-            return mat.Resize(size, 0, 0, InterpolationFlags.Area);
+            CV.Resize(mat, res, SubPixelInterpolation.Area);
+            return res;
         }
     }
 

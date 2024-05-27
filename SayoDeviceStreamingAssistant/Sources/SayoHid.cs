@@ -7,8 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using HidSharp;
-using OpenCvSharp;
-using OpenCvSharp.Aruco;
+using OpenCV.Net;
 
 namespace SayoDeviceStreamingAssistant {
     public class SayoHidPacketBase {
@@ -252,7 +251,7 @@ namespace SayoDeviceStreamingAssistant {
                 var stream = streams[0xFF020002];
                 var sw = Stopwatch.StartNew();
                 sw.Start();
-                var len = image.Width * image.Height * 2;
+                var len = image.Cols * image.Rows * 2;
                 for (int j = 0; j < len;) {
                     var pixelCount = Math.Min(buffer.Length - 12, len - j);
                     buffer[8] = (byte)(j & 0xFF);
