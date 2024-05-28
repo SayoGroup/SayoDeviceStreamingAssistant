@@ -70,7 +70,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
             var fps = frameSource.Fps.ToString("F2");
             var frameTime = frameSource.FrameTime.ToString("F2");
             FPSLabel.Content = $"{bindDeviceInfo.SendImageRate:F2}/{fps} FPS";
-            FrameTimeLabel.Content = $"Process: {frameTime}ms";
+            FrameTimeLabel.Content = $"Capture: {frameTime}ms";
             SendImageElapsedLabel.Content = $"Send: {bindDeviceInfo.SendImageElapsed:F2}ms";
         }
         private void SourceCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) {

@@ -239,10 +239,10 @@ namespace SayoDeviceStreamingAssistant.Sources {
                     return null;
                 });
                 task.Wait();
-                Console.WriteLine(task.Result?.RefreshRate.ToString()??"null");
+                //Console.WriteLine(task.Result?.RefreshRate.ToString()??"null");
                 return screenInfoPacket = task.Result;
             } catch (Exception e){
-                Console.WriteLine(e);
+                //Console.WriteLine(e);
                 return null;
             }
         }
@@ -257,7 +257,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
         public double ImageSendElapsedMs { get; private set; }
         public double SendImageRate { get; private set; }
 
-        Queue<DateTime> fpsCounter = new Queue<DateTime>();
+        private readonly Queue<DateTime> fpsCounter = new Queue<DateTime>();
         public void SendImage(Mat image) {
             try {
                 var buffer = buffers[0xFF020002];

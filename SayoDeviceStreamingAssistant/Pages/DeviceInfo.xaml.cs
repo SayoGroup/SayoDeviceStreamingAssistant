@@ -163,46 +163,53 @@ namespace SayoDeviceStreamingAssistant.Pages {
         }
 
         public void UpdateStatus() {
-            string status;
             if (!Device.Connected) {
-                status = Properties.Resources.DeviceInfo_UpdateStatus_Disconnected;
+                Status = Properties.Resources.DeviceInfo_UpdateStatus_Disconnected;
                 DeviceStatus.Fill = Brushes.Gray;
-                DeviceSelectButton.IsEnabled = false;
+                //DeviceSelectButton.IsEnabled = false;
+                DeviceSelectButton.IsHitTestVisible = false;
+                DeviceSelectButton.Background = Brushes.Gray;
                 DeviceSelectButton.ToolTip = Properties.Resources.DeviceInfo_UpdateStatus_Device_is_disconnected;
                 PlayButton.Visibility = Visibility.Hidden;
                 Visibility = Visibility.Visible;
-                Visibility = Settings.Instance.ShowUnsupportedDevice ? Visibility.Visible : 
-                    Device.SupportStreaming != false ? Visibility.Visible : Visibility.Collapsed;
-                
+                Visibility = Settings.Instance.ShowUnsupportedDevice || Device.SupportStreaming != false ? 
+                    Visibility.Visible : Visibility.Collapsed;
             } else if (Device.SupportStreaming == false) {
-                status = Properties.Resources.DeviceInfo_UpdateStatus_Not_Supported;
+                Status = Properties.Resources.DeviceInfo_UpdateStatus_Not_Supported;
                 DeviceStatus.Fill = Brushes.Red;
-                DeviceSelectButton.IsEnabled = false;
+                //DeviceSelectButton.IsEnabled = false;
+                DeviceSelectButton.IsHitTestVisible = false;
+                DeviceSelectButton.Background = Brushes.Gray;
                 DeviceSelectButton.ToolTip = Properties.Resources.DeviceInfo_UpdateStatus_Device_does_not_support_streaming;
                 PlayButton.Visibility = Visibility.Hidden;
                 Visibility = Settings.Instance.ShowUnsupportedDevice ? Visibility.Visible : Visibility.Collapsed;
             } else if (Device.SupportStreaming == null) {
-                status = Properties.Resources.DeviceInfo_UpdateStatus_Switch_to_8k_pulling_rate_to_enable_streaming;
+                Status = Properties.Resources.DeviceInfo_UpdateStatus_Switch_to_8k_pulling_rate_to_enable_streaming;
                 DeviceStatus.Fill = Brushes.Orange;
-                DeviceSelectButton.IsEnabled = false;
-                DeviceSelectButton.ToolTip = "Switch to 8k pulling rate to enable streaming";
+                //DeviceSelectButton.IsEnabled = false;
+                DeviceSelectButton.IsHitTestVisible = false;
+                DeviceSelectButton.Background = Brushes.Gray;
+                DeviceSelectButton.ToolTip = Properties.Resources.DeviceInfo_UpdateStatus_Switch_to_8k_pulling_rate_to_enable_streaming;
                 PlayButton.Visibility = Visibility.Hidden;
                 Visibility = Visibility.Visible;
             } else if (!Streaming) {
-                status = frameSource == null ? Properties.Resources.DeviceInfo_UpdateStatus_Ready 
+                Status = frameSource == null ? Properties.Resources.DeviceInfo_UpdateStatus_Ready 
                     : string.Format(Properties.Resources.DeviceInfo_UpdateStatus_Paused___0_, frameSource.Name);
                 DeviceStatus.Fill = Brushes.Cyan;
-                DeviceSelectButton.IsEnabled = true;
+                //DeviceSelectButton.IsEnabled = true;
+                DeviceSelectButton.IsHitTestVisible = true;
+                DeviceSelectButton.Background = Brushes.Transparent;
                 PlayButton.Visibility = Visibility.Visible;
                 Visibility = Visibility.Visible;
             } else {
-                status = string.Format(Properties.Resources.DeviceInfo_UpdateStatus_Streaming___0_, frameSource.Name);
+                Status = string.Format(Properties.Resources.DeviceInfo_UpdateStatus_Streaming___0_, frameSource.Name);
                 DeviceStatus.Fill = Brushes.Green;
-                DeviceSelectButton.IsEnabled = true;
+                //DeviceSelectButton.IsEnabled = true;
+                DeviceSelectButton.IsHitTestVisible = true;
+                DeviceSelectButton.Background = Brushes.Transparent;
                 PlayButton.Visibility = Visibility.Visible;
                 Visibility = Visibility.Visible;
             }
-            Status = status;
             PlayButton.ToolTip = Streaming ? Properties.Resources.StreamingPage_SetStreamButton_Pause_streaming 
                 : Properties.Resources.StreamingPage_SetStreamButton_Begin_streaming;
             PlayButton.Content = Streaming ? new ImageAwesome { Icon = FontAwesomeIcon.Pause } :
