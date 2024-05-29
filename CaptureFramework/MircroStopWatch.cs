@@ -161,7 +161,7 @@ public class MicroTimer {
                                          elapsedMicroseconds,
                                          timerLateBy,
                                          callbackFunctionExecutionTime);
-            MicroTimerElapsed(this, microTimerEventArgs);
+            MicroTimerElapsed?.Invoke(this, microTimerEventArgs);
         }
 
         microStopwatch.Stop();

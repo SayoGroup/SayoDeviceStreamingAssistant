@@ -57,6 +57,7 @@
   <PropertyGroup>
     <PostBuildEvent>if not exist "$(ProjectDir)$(OutDir)dll" mkdir "$(ProjectDir)$(OutDir)dll"
 move "$(ProjectDir)$(OutDir)*.dll" "$(ProjectDir)$(OutDir)dll\"
+move "$(ProjectDir)$(OutDir)dll\opencv_ffmpeg*" "$(ProjectDir)$(OutDir)"
 del "$(ProjectDir)$(OutDir)*.pdb"</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
@@ -178,6 +179,9 @@ del "$(ProjectDir)$(OutDir)*.pdb"</PostBuildEvent>
     </PackageReference>
     <PackageReference Include="MongoDB.Bson">
       <Version>2.25.0</Version>
+    </PackageReference>
+    <PackageReference Include="OpenCV.Net">
+      <Version>3.4.2</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />
