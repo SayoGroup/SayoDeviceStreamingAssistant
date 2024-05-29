@@ -201,6 +201,11 @@ namespace SayoDeviceStreamingAssistant.Sources {
                 case 2: //"Media"
                     if (File.Exists(Source) == false) break;
                     video = Capture.CreateFileCapture(Source);
+                    if (video == null) {
+                        System.Windows.MessageBox.Show("Failed to open video file.\nDoesn't support HVC1 yet.");
+                        Source = "";
+                        break;
+                    }
                     //video.Open(Source);
                     readRawFrame = (onFrameReady) => {
                         var res = video.GrabFrame();
