@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using HidSharp;
 using OpenCV.Net;
@@ -158,6 +159,9 @@ namespace SayoDeviceStreamingAssistant.Sources {
         private readonly ConcurrentDictionary<uint, HidDevice> devices = new ConcurrentDictionary<uint, HidDevice>();
         private readonly ConcurrentDictionary<uint, HidStream> streams = new ConcurrentDictionary<uint, HidStream>();
         private readonly ConcurrentDictionary<uint, byte[]> buffers = new ConcurrentDictionary<uint, byte[]>();
+        //private readonly ConcurrentDictionary<uint, Mat> canvas = new ConcurrentDictionary<uint, Mat>();
+        private bool canvasDirty;
+        private byte[] canvas;
         public event Action<bool> OnDeviceConnectionChanged;
 
         public bool Connected => devices.Count > 0;
@@ -184,8 +188,22 @@ namespace SayoDeviceStreamingAssistant.Sources {
             var buffer = new byte[device.GetMaxOutputReportLength()];
             buffers[usage] = buffer;
             OnDeviceConnectionChanged?.Invoke(true);
+            // if (usage == 0xFF020002 && imgSendThread == null) {
+            //     imgSendThread = new Thread(() => {
+            //         SendImageThreadHandle(usage);
+            //     }) {
+            //         IsBackground = true,
+            //         Priority = ThreadPriority.Lowest,
+            //     };
+            //     imgSendThread.Start();
+            // }
         }
         private void RemoveDevice(uint usage) {
+            // if(usage == 0xFF020002) {
+            //     imgSendThread?.Abort();
+            //     imgSendThread = null;
+            // }
+            
             if (streams.TryGetValue(usage, out var stream)) {
                 stream.Close();
                 streams.TryRemove(usage,out var _);
@@ -205,7 +223,8 @@ namespace SayoDeviceStreamingAssistant.Sources {
             if (devices.TryGetValue(0xFF020002, out var streamingDevice)) device = streamingDevice;
             return device.GetProductName();
         }
-
+        
+        private Thread imgSendThread;
         private ScreenInfoPacket screenInfoPacket;
         public ScreenInfoPacket GetScreenInfo() {
             if (screenInfoPacket != null)
@@ -240,13 +259,89 @@ namespace SayoDeviceStreamingAssistant.Sources {
                 });
                 task.Wait();
                 //Console.WriteLine(task.Result?.RefreshRate.ToString()??"null");
-                return screenInfoPacket = task.Result;
+                screenInfoPacket = task.Result;
+                //screenInfoPacket.RefreshRate = 180;
+                //canvas[usage] = new Mat(screenInfoPacket.Height, screenInfoPacket.Width, Depth.U8, 2);
+                canvas = new byte[screenInfoPacket.Height * screenInfoPacket.Width * 2];
+                if (imgSendThread == null) {
+                    imgSendThread = new Thread(() => {
+                        SendImageThreadHandle(usage);
+                    }) {
+                        IsBackground = true,
+                        Priority = ThreadPriority.Lowest,
+                    };
+                    imgSendThread.Start();
+                }
+                
+                return screenInfoPacket;
             } catch (Exception e){
                 //Console.WriteLine(e);
                 return null;
             }
         }
 
+        private void SendImageThreadHandle(uint usage) {
+            // var image = canvas;
+            // var buffer = buffers[usage];
+            // var stream = streams[usage];
+
+            while (true) {
+                if (canvas == null || 
+                    !buffers.ContainsKey(usage) || buffers[usage] == null ||
+                    !streams.ContainsKey(usage) || streams[usage] == null ||
+                    !canvasDirty) {
+                    Thread.Sleep(0);
+                    //Thread.SpinWait(10);
+                    continue;
+                }
+                try
+                {
+                    var len = canvas.Length;
+                    var sw = Stopwatch.StartNew();
+                    for (int j = 0; j < len;) {
+                        var pixelCount = Math.Min(buffers[usage].Length - 12, len - j);
+                        buffers[usage][8] = (byte)(j & 0xFF);
+                        buffers[usage][9] = (byte)((j >> 8) & 0xFF);
+                        buffers[usage][10] = (byte)((j >> 16) & 0xFF);
+                        buffers[usage][11] = (byte)((j >> 24) & 0xFF);
+                        //Array.Copy(BitConverter.GetBytes(j), 0, _buffer, 8, 4);
+                        Array.Copy(canvas, j, buffers[usage], 12, pixelCount);
+                        //Marshal.Copy(image, 12 + j, buffer,  pixelCount);
+                        //Array.Copy(rgb565, j, _buffer, 12, pixelCount);
+                        SetHidMessageHeader(
+                            buffer: buffers[usage],
+                            echo: SayoHidPacketBase.ApplicationEcho,
+                            flag: 0x7296,
+                            cmd: 0x25,
+                            index: 0,
+                            len: (ushort)(pixelCount + 4));
+                        try {
+                            streams[usage].Write(buffers[usage], 0, pixelCount + 12);
+                        }
+                        catch {
+                            //break;
+                        }
+
+                        j += pixelCount;
+                    }
+
+                    ImageSendElapsedMs = sw.Elapsed.TotalMilliseconds;
+                    sw.Stop();
+                    fpsCounter.Enqueue(DateTime.Now);
+                    while (fpsCounter.Count > 30)
+                        fpsCounter.Dequeue();
+                    SendImageRate = (fpsCounter.Count - 1) / (fpsCounter.Last() - fpsCounter.First()).TotalSeconds;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+                canvasDirty = false;
+            }
+            
+        }
+        
         public async void SendImageAsync(Mat image) {
             await Task.Run(() => SendImage(image));
         }
@@ -256,40 +351,45 @@ namespace SayoDeviceStreamingAssistant.Sources {
 
         public double ImageSendElapsedMs { get; private set; }
         public double SendImageRate { get; private set; }
-
+        
         private readonly Queue<DateTime> fpsCounter = new Queue<DateTime>();
         public void SendImage(Mat image) {
             try {
-                var buffer = buffers[0xFF020002];
-                var stream = streams[0xFF020002];
-                var sw = Stopwatch.StartNew();
-                sw.Start();
-                var len = image.Cols * image.Rows * 2;
-                for (int j = 0; j < len;) {
-                    var pixelCount = Math.Min(buffer.Length - 12, len - j);
-                    buffer[8] = (byte)(j & 0xFF);
-                    buffer[9] = (byte)((j >> 8) & 0xFF);
-                    buffer[10] = (byte)((j >> 16) & 0xFF);
-                    buffer[11] = (byte)((j >> 24) & 0xFF);
-                    //Array.Copy(BitConverter.GetBytes(j), 0, _buffer, 8, 4);
-                    Marshal.Copy(image.Data + j, buffer, 12, pixelCount);
-                    //Array.Copy(rgb565, j, _buffer, 12, pixelCount);
-                    SetHidMessageHeader(
-                        buffer: buffer,
-                        echo: SayoHidPacketBase.ApplicationEcho,
-                        flag: 0x7296,
-                        cmd: 0x25,
-                        index: 0,
-                        len: (ushort)(pixelCount + 4));
-                    stream.Write(buffer, 0, pixelCount + 12);
-                    j += pixelCount;
-                }
-                ImageSendElapsedMs = sw.Elapsed.TotalMilliseconds;
-                sw.Stop();
-                fpsCounter.Enqueue(DateTime.Now);
-                while (fpsCounter.Count > 30) 
-                    fpsCounter.Dequeue();
-                SendImageRate = (fpsCounter.Count - 1) / (fpsCounter.Last() - fpsCounter.First()).TotalSeconds;
+                Marshal.Copy(image.Data, canvas, 0, canvas.Length);
+                canvasDirty = true;
+                // var buffer = buffers[0xFF020002];
+                // var stream = streams[0xFF020002];
+                // var len = image.Cols * image.Rows * 2;
+                //
+                // if (!Monitor.TryEnter(stream)) return;
+                // var sw = Stopwatch.StartNew();
+                // for (int j = 0; j < len;) {
+                //     var pixelCount = Math.Min(buffer.Length - 12, len - j);
+                //     buffer[8] = (byte)(j & 0xFF);
+                //     buffer[9] = (byte)((j >> 8) & 0xFF);
+                //     buffer[10] = (byte)((j >> 16) & 0xFF);
+                //     buffer[11] = (byte)((j >> 24) & 0xFF);
+                //     //Array.Copy(BitConverter.GetBytes(j), 0, _buffer, 8, 4);
+                //     Marshal.Copy(image.Data + j, buffer, 12, pixelCount);
+                //     //Array.Copy(rgb565, j, _buffer, 12, pixelCount);
+                //     SetHidMessageHeader(
+                //         buffer: buffer,
+                //         echo: SayoHidPacketBase.ApplicationEcho,
+                //         flag: 0x7296,
+                //         cmd: 0x25,
+                //         index: 0, 
+                //         len: (ushort)(pixelCount + 4));
+                //     stream.Write(buffer, 0, pixelCount + 12);
+                //     j += pixelCount;
+                // }
+                // ImageSendElapsedMs = sw.Elapsed.TotalMilliseconds;
+                // sw.Stop();
+                // fpsCounter.Enqueue(DateTime.Now);
+                // while (fpsCounter.Count > 30) 
+                //     fpsCounter.Dequeue();
+                // SendImageRate = (fpsCounter.Count - 1) / (fpsCounter.Last() - fpsCounter.First()).TotalSeconds;
+                // Monitor.Exit(stream);
+
             } catch {
                 //Console.WriteLine(e);
             }

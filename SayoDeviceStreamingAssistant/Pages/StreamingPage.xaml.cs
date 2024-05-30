@@ -7,6 +7,7 @@ using System.Windows.Threading;
 using FontAwesome.WPF;
 using OpenCV.Net;
 using SayoDeviceStreamingAssistant.Sources;
+using SharpDX;
 using Point = OpenCV.Net.Point;
 using Window = System.Windows.Window;
 
@@ -17,7 +18,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
     public partial class StreamingPage {
         private DeviceInfo bindDeviceInfo;
         private WriteableBitmap previewBitmap;
-        private readonly Mat previewMat = new Mat(80,160, Depth.U8, 2);
+        private Mat previewMat;
         private bool newFrame;
         private readonly DispatcherTimer previewTimer = new DispatcherTimer();
         public StreamingPage() {
@@ -31,6 +32,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
         public void ShowPage(DeviceInfo deviceInfo) {
             this.bindDeviceInfo = deviceInfo;
             var screenSize = bindDeviceInfo.ScreenMat.Size;
+            previewMat = new Mat(screenSize.Height, screenSize.Width, Depth.U8, 2);
             previewBitmap = new WriteableBitmap(screenSize.Width, screenSize.Height, 96, 96, PixelFormats.Bgr565, null);
             Preview.Source = previewBitmap;
             SourceCombo.SelectedIndex = SourcesManagePage.FrameSources.IndexOf(bindDeviceInfo.FrameSource);
@@ -51,6 +53,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
             bindDeviceInfo = null;
         }
         private void OnBindDeviceFrameReady(Mat frame) {
+            //frame.DrawToBgr565(previewMat, MatExtension.GetDefaultRect(frame.Size, previewMat.Size));
             CV.Copy(frame,previewMat);
             newFrame = true;
         }
