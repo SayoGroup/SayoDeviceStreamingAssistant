@@ -265,7 +265,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
                 canvas = new byte[screenInfoPacket.Height * screenInfoPacket.Width * 2];
                 if (imgSendThread == null) {
                     imgSendThread = new Thread(() => {
-                        SendImageThreadHandle(usage);
+                        SendImageThreadHandle();
                     }) {
                         IsBackground = true,
                         Priority = ThreadPriority.Lowest,
@@ -280,14 +280,15 @@ namespace SayoDeviceStreamingAssistant.Sources {
             }
         }
 
-        private void SendImageThreadHandle(uint usage) {
+        private void SendImageThreadHandle() {
             // var image = canvas;
             // var buffer = buffers[usage];
             // var stream = streams[usage];
-
+            
             while (true) {
                 try
                 {
+                    var usage = devices.ContainsKey(0xFF020002) ? 0xFF020002 : 0xFF010002;
                     if (!canvasDirty) {
                         Thread.Sleep(0);
                         //Thread.SpinWait(10);
