@@ -286,16 +286,13 @@ namespace SayoDeviceStreamingAssistant.Sources {
             // var stream = streams[usage];
 
             while (true) {
-                if (canvas == null || 
-                    !buffers.ContainsKey(usage) || buffers[usage] == null ||
-                    !streams.ContainsKey(usage) || streams[usage] == null ||
-                    !canvasDirty) {
-                    Thread.Sleep(0);
-                    //Thread.SpinWait(10);
-                    continue;
-                }
                 try
                 {
+                    if (!canvasDirty) {
+                        Thread.Sleep(0);
+                        //Thread.SpinWait(10);
+                        continue;
+                    }
                     var len = canvas.Length;
                     var sw = Stopwatch.StartNew();
                     for (int j = 0; j < len;) {
@@ -331,13 +328,14 @@ namespace SayoDeviceStreamingAssistant.Sources {
                     while (fpsCounter.Count > 30)
                         fpsCounter.Dequeue();
                     SendImageRate = (fpsCounter.Count - 1) / (fpsCounter.Last() - fpsCounter.First()).TotalSeconds;
+                    canvasDirty = false;
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
-                    throw;
+                    Thread.Sleep(100);
+                    //Console.WriteLine(e);
                 }
-                canvasDirty = false;
+                
             }
             
         }
