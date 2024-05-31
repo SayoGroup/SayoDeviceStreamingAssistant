@@ -330,6 +330,16 @@ namespace SayoDeviceStreamingAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t keep up! Try to switch USB port or higher pulling rate..
+        /// </summary>
+        public static string StreamingPage_UpdatePreview_Can_t_keep_up__Try_to_switch_USB_port_or_higher_pulling_rate_ {
+            get {
+                return ResourceManager.GetString("StreamingPage_UpdatePreview_Can_t_keep_up__Try_to_switch_USB_port_or_higher_pulli" +
+                        "ng_rate_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No frame source has been selected.&amp;#xD;&amp;#xA;Quick start:.
         /// </summary>
         public static string Tips0_Content {

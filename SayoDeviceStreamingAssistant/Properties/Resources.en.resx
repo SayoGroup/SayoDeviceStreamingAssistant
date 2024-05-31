@@ -227,4 +227,7 @@ Quick start:</value>
   <data name="FPSLabel.ToolTip" xml:space="preserve">
     <value>Current/max fps. Max fps limited by device and source.</value>
   </data>
+  <data name="StreamingPage_UpdatePreview_Can_t_keep_up__Try_to_switch_USB_port_or_higher_pulling_rate_" xml:space="preserve">
+    <value>Can't keep up! Try to switch USB port or higher pulling rate.</value>
+  </data>
 </root>

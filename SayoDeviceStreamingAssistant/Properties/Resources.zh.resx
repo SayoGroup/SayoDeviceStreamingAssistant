@@ -226,4 +226,7 @@
   <data name="FPSLabel.ToolTip" xml:space="preserve">
     <value>当前/最大刷新率，最大刷新率由设备和源刷新率限制</value>
   </data>
+  <data name="StreamingPage_UpdatePreview_Can_t_keep_up__Try_to_switch_USB_port_or_higher_pulling_rate_" xml:space="preserve">
+    <value>发送时间过长! 尝试更换USB接口或提高回报速率</value>
+  </data>
 </root>
