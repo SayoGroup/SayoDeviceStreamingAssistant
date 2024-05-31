@@ -54,15 +54,15 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 if (frameSource == null || onFrameReady == null)
                     return false;
                 return Array.Find(onFrameReady.GetInvocationList(),
-                    (i) => i.Equals((OnFrameReadyDelegate)Device.SendImageAsync)) != null;
+                    (i) => i.Equals((OnFrameReadyDelegate)Device.SendImage)) != null;
             }
             set {
                 if (frameSource == null || Streaming == value)
                     return;
                 if (value) {
-                    OnFrameReady += Device.SendImageAsync;
+                    OnFrameReady += Device.SendImage;
                 } else {
-                    OnFrameReady -= Device.SendImageAsync;
+                    OnFrameReady -= Device.SendImage;
                 }
                 Dispatcher.Invoke(UpdateStatus);
             }
@@ -150,7 +150,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
 
             if (onFrameReady == null) return;
             foreach (var cb in onFrameReady.GetInvocationList()) {
-                if ((OnFrameReadyDelegate)cb != Device.SendImageAsync)
+                if ((OnFrameReadyDelegate)cb != Device.SendImage)
                     cb.DynamicInvoke(ScreenMat);
             }
         }

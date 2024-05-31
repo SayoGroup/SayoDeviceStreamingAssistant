@@ -75,14 +75,15 @@ namespace SayoDeviceStreamingAssistant.Pages {
             FPSLabel.Content = $"{bindDeviceInfo.SendImageRate:F2}/{fps} FPS";
             FrameTimeLabel.Content = $"Capture: {frameTime}ms";
             SendImageElapsedLabel.Content = $"Send: {bindDeviceInfo.SendImageElapsed:F2}ms";
-            var sendingOvertime = bindDeviceInfo.SendImageElapsed > 1e3 / bindDeviceInfo.Device.GetScreenInfo().RefreshRate;
             var currentOvertimeFlag = SendImageElapsedLabel.Foreground == Brushes.Orange;
-            if (sendingOvertime ^ currentOvertimeFlag) {
-                SendImageElapsedLabel.Foreground = sendingOvertime ? Brushes.Orange : Brushes.DarkGray;
-                SendImageElapsedLabel.ToolTip = sendingOvertime ? 
-                    Properties.Resources.SendImageElapsedLabel_ToolTip + "\n" + Properties.Resources.StreamingPage_UpdatePreview_Can_t_keep_up__Try_to_switch_USB_port_or_higher_pulling_rate_ 
-                    : Properties.Resources.SendImageElapsedLabel_ToolTip;
-            }
+            var sendingOvertime = bindDeviceInfo.SendImageElapsed > 1e3 * (currentOvertimeFlag ? 0.9 : 1) /
+                bindDeviceInfo.Device.GetScreenInfo().RefreshRate;
+            if (sendingOvertime == currentOvertimeFlag) return;
+            SendImageElapsedLabel.Foreground = sendingOvertime ? Brushes.Orange : Brushes.DarkGray;
+            SendImageElapsedLabel.ToolTip = sendingOvertime ? 
+                Properties.Resources.SendImageElapsedLabel_ToolTip + "\n" + 
+                Properties.Resources.StreamingPage_UpdatePreview_Can_t_keep_up__Try_to_switch_USB_port_or_higher_pulling_rate_ 
+                : Properties.Resources.SendImageElapsedLabel_ToolTip;
         }
         private void SourceCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             var newSource = SourceCombo.SelectedItem as FrameSource;

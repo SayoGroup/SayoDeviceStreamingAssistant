@@ -266,6 +266,9 @@ namespace SayoDeviceStreamingAssistant.Sources {
             }
         }
 
+        public double ImageSendElapsedMs { get; private set; }
+        public double SendImageRate { get; private set; }
+        private readonly Queue<DateTime> fpsCounter = new Queue<DateTime>();
         private void SendImageThreadHandle() {
             var sw = new Stopwatch();
             while (!quit) {
@@ -291,27 +294,12 @@ namespace SayoDeviceStreamingAssistant.Sources {
             }
         }
         
-        public async void SendImageAsync(Mat image) {
-            await Task.Run(() => SendImage(image));
-        }
-        // public async void SendImageAsync(byte[] rgb565) {
-        //     await Task.Run(() => SendImage(rgb565));
-        // }
-
-        public double ImageSendElapsedMs { get; private set; }
-        public double SendImageRate { get; private set; }
-        
-        private readonly Queue<DateTime> fpsCounter = new Queue<DateTime>();
         public void SendImage(Mat image) {
-            try {
-                Marshal.Copy(image.Data, canvas, 0, canvas.Length);
-                canvasDirtyEvent.Set();
-            } catch {
-                //Console.WriteLine(e);
-            }
+            Marshal.Copy(image.Data, canvas, 0, canvas.Length);
+            canvasDirtyEvent.Set();
         }
 
-        public void SendImage(byte[] rgb565, uint usage) {
+        private void SendImage(byte[] rgb565, uint usage) {
             try {
                 var buffer = buffers[usage];
                 var stream = streams[usage];
