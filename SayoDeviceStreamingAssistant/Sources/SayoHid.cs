@@ -161,6 +161,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
         private readonly ConcurrentDictionary<uint, byte[]> buffers = new ConcurrentDictionary<uint, byte[]>();
         //private readonly ConcurrentDictionary<uint, Mat> canvas = new ConcurrentDictionary<uint, Mat>();
         private bool canvasDirty;
+        private readonly ManualResetEvent canvasDirtyEvent = new ManualResetEvent(false);
         private byte[] canvas;
         public event Action<bool> OnDeviceConnectionChanged;
 
@@ -290,9 +291,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
                 {
                     var usage = devices.ContainsKey(0xFF020002) ? 0xFF020002 : 0xFF010002;
                     if (!canvasDirty) {
-                        Thread.Sleep(0);
-                        //Thread.SpinWait(10);
-                        continue;
+                        canvasDirtyEvent.WaitOne();
                     }
                     var len = canvas.Length;
                     var sw = Stopwatch.StartNew();
@@ -302,10 +301,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
                         buffers[usage][9] = (byte)((j >> 8) & 0xFF);
                         buffers[usage][10] = (byte)((j >> 16) & 0xFF);
                         buffers[usage][11] = (byte)((j >> 24) & 0xFF);
-                        //Array.Copy(BitConverter.GetBytes(j), 0, _buffer, 8, 4);
                         Array.Copy(canvas, j, buffers[usage], 12, pixelCount);
-                        //Marshal.Copy(image, 12 + j, buffer,  pixelCount);
-                        //Array.Copy(rgb565, j, _buffer, 12, pixelCount);
                         SetHidMessageHeader(
                             buffer: buffers[usage],
                             echo: SayoHidPacketBase.ApplicationEcho,
@@ -329,14 +325,14 @@ namespace SayoDeviceStreamingAssistant.Sources {
                     while (fpsCounter.Count > 30)
                         fpsCounter.Dequeue();
                     SendImageRate = (fpsCounter.Count - 1) / (fpsCounter.Last() - fpsCounter.First()).TotalSeconds;
-                    canvasDirty = false;
                 }
                 catch (Exception e)
                 {
                     Thread.Sleep(100);
                     //Console.WriteLine(e);
                 }
-                
+                canvasDirty = false;
+                canvasDirtyEvent.Reset();
             }
             
         }
@@ -356,6 +352,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
             try {
                 Marshal.Copy(image.Data, canvas, 0, canvas.Length);
                 canvasDirty = true;
+                canvasDirtyEvent.Set();
                 // var buffer = buffers[0xFF020002];
                 // var stream = streams[0xFF020002];
                 // var len = image.Cols * image.Rows * 2;
