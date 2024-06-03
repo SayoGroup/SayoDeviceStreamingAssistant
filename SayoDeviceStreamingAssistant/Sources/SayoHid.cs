@@ -246,9 +246,9 @@ namespace SayoDeviceStreamingAssistant.Sources {
                         var readBuffer = new byte[1024];
                         var readTask = stream.ReadAsync(readBuffer, 0, 1024);
                         _ = Task.WaitAny(readTask, Task.Delay(1000)) == 1;
-                        for (int i=0;i<8;++i)
-                            Console.Write($"0x{readBuffer[i]:x2} ");
-                        Console.WriteLine();
+                        // for (int i=0;i<8;++i)
+                        //     Console.Write($"0x{readBuffer[i]:x2} ");
+                        // Console.WriteLine();
                         var screenInfo = ScreenInfoPacket.FromBytes(readBuffer);
                         if (screenInfo != null) {
                             return screenInfo;

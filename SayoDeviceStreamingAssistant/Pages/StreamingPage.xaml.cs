@@ -129,7 +129,12 @@ namespace SayoDeviceStreamingAssistant.Pages {
             rect.Height = (int)(rect.Height * deltaScale);
             rect.X = (int)(rect.X - cursorVec.X * (deltaScale - 1));
             rect.Y = (int)(rect.Y - cursorVec.Y * (deltaScale - 1));
+            if (mouseDownFrameRect != null) {
+                mouseDownFrameRect = rect;
+                mouseDownPose = e.GetPosition(Preview);   
+            }
             bindDeviceInfo.FrameRect = rect;
+            
             //bindDeviceInfo.PeekFrame();
         }
 
@@ -151,10 +156,12 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 return;
             var rect = mouseDownFrameRect.Value;
             var pos = e.GetPosition(Preview);
-            var delta = new Point((int)(pos.X - mouseDownPose.Value.X), (int)(pos.Y - mouseDownPose.Value.Y));
-            rect.X += delta.X / 2;
-            rect.Y += delta.Y / 2;
+            var dx = pos.X - mouseDownPose.Value.X;
+            var dy = pos.Y - mouseDownPose.Value.Y;
+            rect.X += (int)dx / 2;
+            rect.Y += (int)dy / 2;
             bindDeviceInfo.FrameRect = rect;
+            //mouseDownPose = pos;
             //bindDeviceInfo.PeekFrame();
         }
 
