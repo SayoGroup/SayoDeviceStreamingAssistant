@@ -6,7 +6,7 @@ using FontAwesome.WPF;
 using OpenCV.Net;
 using SayoDeviceStreamingAssistant.Sources;
 using static SayoDeviceStreamingAssistant.Sources.FrameSource;
-using Rect = OpenCV.Net.Rect;
+using Rect = Windows.Foundation.Rect;
 
 namespace SayoDeviceStreamingAssistant.Pages {
     public partial class DeviceInfo : IDisposable {

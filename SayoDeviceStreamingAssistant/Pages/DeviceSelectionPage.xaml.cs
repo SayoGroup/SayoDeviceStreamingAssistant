@@ -6,12 +6,13 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using OpenCV.Net;
 using SayoDeviceStreamingAssistant.Sources;
+using Rect = Windows.Foundation.Rect;
 
 namespace SayoDeviceStreamingAssistant.Pages {
     internal class DeviceConfig {
         public Guid Source;
         //source id, rect
-        public Dictionary<Guid, Rect> Rects;
+        public Dictionary<Guid, Windows.Foundation.Rect> Rects;
         
         public BsonDocument ToBsonDocument() {
             var bson = new BsonDocument {
@@ -66,7 +67,8 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 deviceInfo.UpdateStatus();
             }
         }
-        public void UpdateDeviceList() {
+
+        private void UpdateDeviceList() {
             var devices = SayoHidDevice.Devices;
             foreach (var kv in devices) {
                 var serialNumber = kv.Key;

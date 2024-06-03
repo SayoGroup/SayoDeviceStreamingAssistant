@@ -11,7 +11,7 @@ namespace SayoDeviceStreamingAssistant.Pages
     /// <summary>
     /// Settings.xaml 的交互逻辑
     /// </summary>
-    public partial class Settings : Page, IDisposable {
+    public partial class Settings : IDisposable {
         public static Settings Instance;
         
         public bool ShowUnsupportedDevice => ShowUnsupportedDeviceCheckBox.IsChecked ?? true;

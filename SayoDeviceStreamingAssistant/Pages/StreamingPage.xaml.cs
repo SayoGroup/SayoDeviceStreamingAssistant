@@ -7,8 +7,8 @@ using System.Windows.Threading;
 using FontAwesome.WPF;
 using OpenCV.Net;
 using SayoDeviceStreamingAssistant.Sources;
-using SharpDX;
 using Point = OpenCV.Net.Point;
+using Rect = Windows.Foundation.Rect;
 using Window = System.Windows.Window;
 
 namespace SayoDeviceStreamingAssistant.Pages {
@@ -117,18 +117,18 @@ namespace SayoDeviceStreamingAssistant.Pages {
         }
 
         private void Preview_MouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e) {
-            var mousePos = new Point((int)e.GetPosition(Preview).X / 2, (int)e.GetPosition(Preview).Y / 2);
+            var mousePos = new Point2d(e.GetPosition(Preview).X / 2.0, e.GetPosition(Preview).Y / 2.0);
             var deltaScale = e.Delta > 0 ? 1.1 : 0.9;
 
             if (bindDeviceInfo.FrameRect == null)
                 return;
             var rect = bindDeviceInfo.FrameRect.Value;
 
-            var cursorVec = new Point(mousePos.X - rect.X, mousePos.Y - rect.Y);
-            rect.Width = (int)(rect.Width * deltaScale);
-            rect.Height = (int)(rect.Height * deltaScale);
-            rect.X = (int)(rect.X - cursorVec.X * (deltaScale - 1));
-            rect.Y = (int)(rect.Y - cursorVec.Y * (deltaScale - 1));
+            var cursorVec = new Point2d(mousePos.X - rect.X, mousePos.Y - rect.Y);
+            rect.Width *= deltaScale;
+            rect.Height *= deltaScale;
+            rect.X -= cursorVec.X * (deltaScale - 1.0);
+            rect.Y -= cursorVec.Y * (deltaScale - 1.0);
             if (mouseDownFrameRect != null) {
                 mouseDownFrameRect = rect;
                 mouseDownPose = e.GetPosition(Preview);   
@@ -139,7 +139,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
         }
 
         private System.Windows.Point? mouseDownPose;
-        private OpenCV.Net.Rect? mouseDownFrameRect;
+        private Rect? mouseDownFrameRect;
         private void Preview_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
             mouseDownPose = e.GetPosition(Preview);
             mouseDownFrameRect = bindDeviceInfo.FrameRect;
@@ -158,8 +158,8 @@ namespace SayoDeviceStreamingAssistant.Pages {
             var pos = e.GetPosition(Preview);
             var dx = pos.X - mouseDownPose.Value.X;
             var dy = pos.Y - mouseDownPose.Value.Y;
-            rect.X += (int)dx / 2;
-            rect.Y += (int)dy / 2;
+            rect.X += dx / 2.0;
+            rect.Y += dy / 2.0;
             bindDeviceInfo.FrameRect = rect;
             //mouseDownPose = pos;
             //bindDeviceInfo.PeekFrame();

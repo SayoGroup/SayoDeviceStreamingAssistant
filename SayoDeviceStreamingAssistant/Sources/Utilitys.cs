@@ -1,54 +1,69 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using OpenCV.Net;
+using Mat = OpenCV.Net.Mat;
+using RectInt = OpenCV.Net.Rect;
+using RectDouble = Windows.Foundation.Rect;
+using SizeInt = OpenCV.Net.Size;
+using SizeDouble = Windows.Foundation.Size;
 
 namespace SayoDeviceStreamingAssistant.Sources {
     internal static class MatExtension {
-        public static Rect GetDefaultRect(Size srcSize, Size dstSize) {
-            Rect rect;
+        public static RectDouble GetDefaultRect(SizeInt srcSize, SizeInt dstSize) {
+            RectDouble rect;
             var ratio = (double)srcSize.Width / srcSize.Height;
             if (ratio > 2) {
                 var space = dstSize.Height - dstSize.Width / ratio;
-                rect = new Rect(0, (int)Math.Round(space / 2), dstSize.Width,
-                    (int)Math.Round(dstSize.Width / ratio));
+                rect = new RectDouble(0, space / 2.0, dstSize.Width,
+                    dstSize.Width / ratio);
             } else {
                 var space = dstSize.Width - dstSize.Height * ratio;
-                rect = new Rect((int)Math.Round(space / 2), 0,
-                    (int)Math.Round(dstSize.Height * ratio), dstSize.Height);
+                rect = new RectDouble(space / 2.0, 0,
+                    dstSize.Height * ratio, dstSize.Height);
             }
             return rect;
         }
-        public static void DrawToBgr565(this Mat src, Mat dst, Rect rect) {
+        
+        private static readonly Dictionary<SizeInt,Mat> Bgr565MatCache = new Dictionary<SizeInt, Mat>();
+        public static void DrawToBgr565(this Mat src, Mat dst, RectDouble dstRect) {
             if (src == null || dst == null || src.Cols == 0 || src.Rows == 0)
                 return;
+            var rect = dstRect.ToCvRect();
             if (rect.X >= dst.Cols || rect.Y >= dst.Rows || rect.X + rect.Width <= 0 || rect.Y + rect.Height <= 0)
                 return;
-            Rect roiRect;
-            roiRect.X = rect.X < 0 ? 0 : rect.X;
-            roiRect.Y = rect.Y < 0 ? 0 : rect.Y;
-            roiRect.Width = rect.X + rect.Width > dst.Cols ? dst.Cols - roiRect.X : rect.X + rect.Width - roiRect.X;
-            roiRect.Height = rect.Y + rect.Height > dst.Rows ? dst.Rows - roiRect.Y : rect.Y + rect.Height - roiRect.Y;
+            RectInt roiDst;
+            roiDst.X = rect.X < 0 ? 0 : rect.X;
+            roiDst.Y = rect.Y < 0 ? 0 : rect.Y;
+            roiDst.Width = rect.X + rect.Width > dst.Cols ? dst.Cols - roiDst.X : rect.X + rect.Width - roiDst.X;
+            roiDst.Height = rect.Y + rect.Height > dst.Rows ? dst.Rows - roiDst.Y : rect.Y + rect.Height - roiDst.Y;
 
             Vector2 scale;
             scale.X = (float)rect.Width / src.Cols;
             scale.Y = (float)rect.Height / src.Rows;
 
-            Rect roi;
-            roi.X = (int)((roiRect.X - rect.X) / scale.X);
-            roi.Y = (int)((roiRect.Y - rect.Y) / scale.Y);
-            roi.Width = (int)(roiRect.Width / scale.X);
-            roi.Height = (int)(roiRect.Height / scale.Y);
+            RectInt roiSrc;
+            roiSrc.X = (int)((roiDst.X - rect.X) / scale.X);
+            roiSrc.Y = (int)((roiDst.Y - rect.Y) / scale.Y);
+            roiSrc.Width = (int)(roiDst.Width / scale.X);
+            roiSrc.Height = (int)(roiDst.Height / scale.Y);
+            
 
-            var roiMat = Resize(src.GetSubRect(roi), new Size(roiRect.Width, roiRect.Height));
+            var roiMat = Resize(src.GetSubRect(roiSrc), new SizeInt(roiDst.Width, roiDst.Height));
             //Cv2.ImShow("roi", roiMat);
-            var ccRoi = new Mat(roiMat.Size, Depth.U8, 2);
+            if (!Bgr565MatCache.ContainsKey(roiMat.Size)) {
+                if(Bgr565MatCache.Count > 8)
+                    Bgr565MatCache.Clear();
+                Bgr565MatCache[roiMat.Size] = new Mat(roiMat.Size, Depth.U8, 2);
+            }
+            var ccRoi = Bgr565MatCache[roiMat.Size];
             CV.CvtColor(roiMat, ccRoi, roiMat.Channels == 4 ? ColorConversion.Bgra2Bgr565 : ColorConversion.Bgr2Bgr565);
-            CV.Copy(ccRoi, dst.GetSubRect(roiRect));
+            CV.Copy(ccRoi, dst.GetSubRect(roiDst));
         }
 
         private static Mat _mat640P;
-        private static object _resizeLock = new object();
+        private static readonly object ResizeLock = new object();
         private static Mat Resize(Mat mat, Size size) {
             var srcPixelCount = mat.Cols * mat.Rows;
             var dstPixelCount = size.Width * size.Height;
@@ -56,7 +71,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
             var deltaPixelCount = srcPixelCount - dstPixelCount;
             var res = new Mat(size, mat.Depth, mat.Channels);
             if (scale < 1 && deltaPixelCount > 1e6) {
-                lock (_resizeLock) {
+                lock (ResizeLock) {
                     if(_mat640P == null || _mat640P.Depth != mat.Depth || _mat640P.Channels != mat.Channels)
                         _mat640P = new Mat(640, 480, mat.Depth, mat.Channels);
                     CV.Resize(mat,_mat640P);
@@ -68,7 +83,16 @@ namespace SayoDeviceStreamingAssistant.Sources {
             return res;
         }
     }
-
+    
+    static class BasicConverter {
+        public static Windows.Foundation.Rect ToWinRect(this OpenCV.Net.Rect cvRect) {
+            return new Windows.Foundation.Rect(cvRect.X, cvRect.Y, cvRect.Width, cvRect.Height);
+        }
+        public static OpenCV.Net.Rect ToCvRect(this Windows.Foundation.Rect winRect) {
+            return new OpenCV.Net.Rect((int)winRect.X, (int)winRect.Y, (int)winRect.Width, (int)winRect.Height);
+        }
+    }
+    
     static class ByteReader {
         public static ushort ReadUInt16(this byte[] bytes, ref int offset) {
             offset += 2;

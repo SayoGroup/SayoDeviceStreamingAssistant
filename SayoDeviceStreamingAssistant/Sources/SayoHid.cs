@@ -172,7 +172,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
         private readonly ManualResetEvent canvasDirtyEvent = new ManualResetEvent(false);
         private byte[] canvas;
         public event Action<bool> OnDeviceConnectionChanged;
-        bool quit = false;
+        private bool quit;
         public bool Connected => devices.Count > 0;
         public bool? SupportStreaming {
             get {
@@ -263,9 +263,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
                 //canvas[usage] = new Mat(screenInfoPacket.Height, screenInfoPacket.Width, Depth.U8, 2);
                 canvas = new byte[screenInfoPacket.Height * screenInfoPacket.Width * 2];
                 if (imgSendThread == null) {
-                    imgSendThread = new Thread(() => {
-                        SendImageThreadHandle();
-                    }) {
+                    imgSendThread = new Thread(SendImageThreadHandle) {
                         IsBackground = true,
                         Priority = ThreadPriority.Lowest,
                     };
@@ -274,7 +272,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
                 
                 return screenInfoPacket;
             } catch (Exception e){
-                //Console.WriteLine(e);
+                Console.WriteLine(e);
                 return null;
             }
         }
