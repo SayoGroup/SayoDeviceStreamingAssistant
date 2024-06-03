@@ -216,9 +216,10 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 new ImageAwesome { Icon = FontAwesomeIcon.Play };
             ((ImageAwesome)PlayButton.Content).Foreground = Streaming ? Brushes.Red : Brushes.Green;
 
-            if (ScreenMat == null && Device.SupportStreaming == true) {
-                var screenInfo = Device.GetScreenInfo();
-                if (screenInfo != null) {
+            if (ScreenMat == null) {
+                
+                if (Device.SupportStreaming == true) {
+                    var screenInfo = Device.GetScreenInfo();
                     ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, Depth.U8, 2);
                     var screenInfoStr = $"{screenInfo.Width}x{screenInfo.Height}@{screenInfo.RefreshRate}Hz";
                     labelScreenInfo.Content = screenInfoStr;

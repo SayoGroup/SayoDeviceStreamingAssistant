@@ -139,21 +139,31 @@ namespace SayoDeviceStreamingAssistant.Sources {
                 }
             }
         }
-        
-        private static void SetHidMessageHeader(IList<byte> buffer, byte echo, ushort flag, byte cmd, byte index, ushort len) {
-            len += 4;
-            buffer[0] = (byte)(buffer.Count == 64 ? 0x21 : 0x22);
+
+        private static void SetHidMessageHeader(byte[] buffer, byte echo, byte cmd, byte index, int payloadLen) {
+            var len = payloadLen + 4;
+            buffer[0] = (byte)(buffer.Length == 64 ? 0x21 : 0x22);
             buffer[1] = echo;
-            buffer[2] = (byte)(flag & 0xFF);
-            buffer[3] = (byte)(flag >> 8);
+            buffer[2] = 0;
+            buffer[3] = 0;
             buffer[4] = (byte)(len & 0xFF);
             buffer[5] = (byte)(len >> 8);
             buffer[6] = cmd;
             buffer[7] = index;
+            ushort hash = 0;
+            for (var i = 0; i < len + 4; i += 2) {
+                hash += BitConverter.ToUInt16(buffer, i);
+            }
+            buffer[2] = (byte)(hash & 0xFF);
+            buffer[3] = (byte)(hash >> 8);
+            //buffer[2] = 0x96;
+            //buffer[3] = 0x72;
         }
     }
     
     public partial class SayoHidDevice {
+        private const uint Usage1024 = 0xFF120002;
+        private const uint Usage64 = 0xFF110002;
         public string SerialNumber { get; private set; }
         //usage, device
         private readonly ConcurrentDictionary<uint, HidDevice> devices = new ConcurrentDictionary<uint, HidDevice>();
@@ -168,7 +178,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
             get {
                 var screenInfo = GetScreenInfo();
                 var hardwareSupport = screenInfo != null && screenInfo.Width != 0 && screenInfo.Height != 0;
-                var softwareSupport = devices.ContainsKey(0xFF020002);
+                var softwareSupport = devices.ContainsKey(Usage1024);
                 if(hardwareSupport && softwareSupport) return true;
                 if(hardwareSupport) return null;
                 return false;
@@ -206,7 +216,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
         public string GetProductName() {
             if(devices.Count == 0) return "Not Connected";
             var device = devices.First().Value;
-            if (devices.TryGetValue(0xFF020002, out var streamingDevice)) device = streamingDevice;
+            if (devices.TryGetValue(Usage1024, out var streamingDevice)) device = streamingDevice;
             return device.GetProductName();
         }
         
@@ -215,27 +225,30 @@ namespace SayoDeviceStreamingAssistant.Sources {
         public ScreenInfoPacket GetScreenInfo() {
             if (screenInfoPacket != null)
                 return screenInfoPacket;
-            if (!devices.ContainsKey(0xFF020002) && !devices.ContainsKey(0xFF010002)) return null;
-            var usage = devices.ContainsKey(0xFF020002) ? 0xFF020002 : 0xFF010002;
+            if (!devices.ContainsKey(Usage1024) && !devices.ContainsKey(Usage64)) return null;
+            var usage = devices.ContainsKey(Usage1024) ? Usage1024 : Usage64;
             try {
                 var buffer = buffers[usage];
                 var stream = streams[usage];
                 SetHidMessageHeader(
                     buffer: buffer,
                     echo: SayoHidPacketBase.ApplicationEcho,
-                    flag: 0x7296,
                     cmd: ScreenInfoPacket.Cmd,
                     index: 0,
-                    len: 0);
+                    payloadLen:0);
                 //ScreenInfoPacket screenInfo;
                 stream.Write(buffer, 0, 8);
                 var task = Task.Run(() => {
                     var sw = new Stopwatch();
                     sw.Start();
+                    sw.Start();
                     while (sw.ElapsedMilliseconds < 1000) {
                         var readBuffer = new byte[1024];
                         var readTask = stream.ReadAsync(readBuffer, 0, 1024);
                         _ = Task.WaitAny(readTask, Task.Delay(1000)) == 1;
+                        for (int i=0;i<8;++i)
+                            Console.Write($"0x{readBuffer[i]:x2} ");
+                        Console.WriteLine();
                         var screenInfo = ScreenInfoPacket.FromBytes(readBuffer);
                         if (screenInfo != null) {
                             return screenInfo;
@@ -274,7 +287,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
             while (!quit) {
                 try
                 {
-                    var usage = devices.ContainsKey(0xFF020002) ? 0xFF020002 : 0xFF010002;
+                    var usage = devices.ContainsKey(Usage1024) ? Usage1024 : Usage64;
                     canvasDirtyEvent.WaitOne();
                     sw.Restart();
                     SendImage(canvas, usage);
@@ -310,10 +323,9 @@ namespace SayoDeviceStreamingAssistant.Sources {
                     SetHidMessageHeader(
                         buffer: buffer,
                         echo: SayoHidPacketBase.ApplicationEcho,
-                        flag: 0x7296,
                         cmd: 0x25,
                         index: 0,
-                        len: (ushort)(pixelCount + 4));
+                        payloadLen: pixelCount + 4);
                     stream.Write(buffer, 0, pixelCount + 12);
                     j += pixelCount;
                 }
