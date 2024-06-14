@@ -84,6 +84,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 if (frameSource == null) return;
                 frameRects[frameSource.Guid] = value.Value;
                 rectDirty = true;
+                scaleAbilityChecked = false;
             }
         }
 
@@ -119,6 +120,17 @@ namespace SayoDeviceStreamingAssistant.Pages {
             
         }
 
+        public bool CanScaleUpSource { get; private set; }
+        public bool CanScaleDownSource { get; private set; }
+        private bool scaleAbilityChecked = false;
+        private void CheckSourceCanScale(Mat src, Mat dst, Rect rect) {
+            if (scaleAbilityChecked) return;
+            var roiDst = dst.GetRoiRectAsDst(rect);
+            var roiSrc = src.GetRoiRectAsSrc(rect, roiDst);
+            CanScaleDownSource = !(roiDst.Width < 2 || roiDst.Height < 2);
+            CanScaleUpSource = !(roiSrc.Width < 2 || roiSrc.Height < 2);
+            scaleAbilityChecked = true;
+        }
 
         public double SendImageElapsed => Device.ImageSendElapsedMs;
         public double SendImageRate => Device.SendImageRate;
@@ -134,6 +146,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 rectDirty = false;
             }
             frame.DrawToBgr565(ScreenMat, FrameRect.Value);
+            CheckSourceCanScale(frame, ScreenMat, FrameRect.Value);
             onFrameReady?.Invoke(ScreenMat);
         }
         

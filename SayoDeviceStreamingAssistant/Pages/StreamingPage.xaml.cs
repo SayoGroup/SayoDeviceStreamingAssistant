@@ -119,6 +119,10 @@ namespace SayoDeviceStreamingAssistant.Pages {
         private void Preview_MouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e) {
             var mousePos = new Point2d(e.GetPosition(Preview).X / 2.0, e.GetPosition(Preview).Y / 2.0);
             var deltaScale = e.Delta > 0 ? 1.1 : 0.9;
+            if (!bindDeviceInfo.CanScaleDownSource && e.Delta < 0)
+                return;
+            if (!bindDeviceInfo.CanScaleUpSource && e.Delta > 0)
+                return;
 
             if (bindDeviceInfo.FrameRect == null)
                 return;

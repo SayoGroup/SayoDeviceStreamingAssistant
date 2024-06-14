@@ -26,19 +26,17 @@ namespace SayoDeviceStreamingAssistant.Sources {
             return rect;
         }
         
-        private static readonly Dictionary<SizeInt,Mat> Bgr565MatCache = new Dictionary<SizeInt, Mat>();
-        public static void DrawToBgr565(this Mat src, Mat dst, RectDouble dstRect) {
-            if (src == null || dst == null || src.Cols == 0 || src.Rows == 0)
-                return;
-            var rect = dstRect.ToCvRect();
-            if (rect.X >= dst.Cols || rect.Y >= dst.Rows || rect.X + rect.Width <= 0 || rect.Y + rect.Height <= 0)
-                return;
+        public static RectInt GetRoiRectAsDst(this Mat src, RectDouble dRect) {
+            var rect = dRect.ToCvRect();
             RectInt roiDst;
             roiDst.X = rect.X < 0 ? 0 : rect.X;
             roiDst.Y = rect.Y < 0 ? 0 : rect.Y;
-            roiDst.Width = rect.X + rect.Width > dst.Cols ? dst.Cols - roiDst.X : rect.X + rect.Width - roiDst.X;
-            roiDst.Height = rect.Y + rect.Height > dst.Rows ? dst.Rows - roiDst.Y : rect.Y + rect.Height - roiDst.Y;
-
+            roiDst.Width = rect.X + rect.Width > src.Cols ? src.Cols - roiDst.X : rect.X + rect.Width - roiDst.X;
+            roiDst.Height = rect.Y + rect.Height > src.Rows ? src.Rows - roiDst.Y : rect.Y + rect.Height - roiDst.Y;
+            return roiDst;
+        }
+        public static RectInt GetRoiRectAsSrc(this Mat src, RectDouble dRect, RectInt roiDst) {
+            var rect = dRect.ToCvRect();
             Vector2 scale;
             scale.X = (float)rect.Width / src.Cols;
             scale.Y = (float)rect.Height / src.Rows;
@@ -48,7 +46,19 @@ namespace SayoDeviceStreamingAssistant.Sources {
             roiSrc.Y = (int)((roiDst.Y - rect.Y) / scale.Y);
             roiSrc.Width = (int)(roiDst.Width / scale.X);
             roiSrc.Height = (int)(roiDst.Height / scale.Y);
+            return roiSrc;
+        }
+        
+        private static readonly Dictionary<SizeInt,Mat> Bgr565MatCache = new Dictionary<SizeInt, Mat>();
+        public static void DrawToBgr565(this Mat src, Mat dst, RectDouble dstRect) {
+            if (src == null || dst == null || src.Cols == 0 || src.Rows == 0)
+                return;
+            var rect = dstRect.ToCvRect();
+            if (rect.X >= dst.Cols || rect.Y >= dst.Rows || rect.X + rect.Width <= 0 || rect.Y + rect.Height <= 0)
+                return;
             
+            var roiDst = dst.GetRoiRectAsDst(dstRect);
+            var roiSrc = src.GetRoiRectAsSrc(dstRect, roiDst);
 
             var roiMat = Resize(src.GetSubRect(roiSrc), new SizeInt(roiDst.Width, roiDst.Height));
             //Cv2.ImShow("roi", roiMat);
