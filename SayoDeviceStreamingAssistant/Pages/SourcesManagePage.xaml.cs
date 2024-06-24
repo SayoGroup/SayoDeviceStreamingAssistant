@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using CaptureFramework;
 using Microsoft.Win32;
 using MongoDB.Bson;
 using OpenCvSharp;
@@ -23,25 +25,29 @@ namespace SayoDeviceStreamingAssistant.Pages {
     /// </summary>
     public partial class SourcesManagePage : IDisposable {
         private const string SourcesJsonFile = "./content/sources.json";
+
         private static readonly List<string> SourceTypes = new List<string> {
             Properties.Resources.SourcesManagePage_SetContentUiByType_Monitor,
             Properties.Resources.SourcesManagePage_SetContentUiByType_Window,
             Properties.Resources.SourcesManagePage_SourceTypes_Media,
+            "Camera"
         };
+
         public static readonly ObservableCollection<FrameSource> FrameSources = new ObservableCollection<FrameSource>();
         private static readonly ObservableCollection<WindowInfo> Windows = new ObservableCollection<WindowInfo>();
         private static readonly ObservableCollection<MonitorInfo> Monitors = new ObservableCollection<MonitorInfo>();
+        private static readonly ObservableCollection<CameraInfo> Cameras = new ObservableCollection<CameraInfo>();
         private static Timer _contentUpdateTimer;
 
         private WriteableBitmap previewBitmap;
-        private Mat previewMat = new Mat(new Size(160, 80), MatType.CV_8UC4);//new Mat(80, 160, Depth.U8, 2);
+        private Mat previewMat = new Mat(new Size(160, 80), MatType.CV_8UC4); //new Mat(80, 160, Depth.U8, 2);
         private bool newFrame;
         private DispatcherTimer previewTimer = new DispatcherTimer();
 
         public FrameSource selectedSource { get; private set; }
 
         private FrameSource SelectedSource {
-            get  {
+            get {
                 ClearPreview();
                 return selectedSource;
             }
@@ -68,10 +74,12 @@ namespace SayoDeviceStreamingAssistant.Pages {
             foreach (var source in FrameSources) {
                 sources.Add(source.ToBsonDocument());
             }
+
             return new BsonDocument {
-                {"Sources", sources}
+                { "Sources", sources }
             }.ToJson();
         }
+
         private static void FromJson(string json) {
             var doc = BsonDocument.Parse(json);
             var sources = doc["Sources"].AsBsonArray;
@@ -80,19 +88,17 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 FrameSources.Add(frameSource);
             }
         }
-        
+
         public SourcesManagePage() {
             InitializeComponent();
-            if(File.Exists(SourcesJsonFile))
+            if (File.Exists(SourcesJsonFile))
                 FromJson(File.ReadAllText(SourcesJsonFile));
-            
+
             SourceType.ItemsSource = SourceTypes;
             SourcesList.ItemsSource = FrameSources;
             SourceConfigPanel.Visibility = Visibility.Collapsed;
-            
-            previewTimer.Tick += (sender, e) => {
-                UpdatePreview();
-            };
+
+            previewTimer.Tick += (sender, e) => { UpdatePreview(); };
             previewTimer.Interval = TimeSpan.FromMilliseconds(1e3 / 60);
             previewTimer.Start();
             previewBitmap = new WriteableBitmap(previewMat.Cols, previewMat.Rows, 96, 96, PixelFormats.Bgr565, null);
@@ -101,61 +107,75 @@ namespace SayoDeviceStreamingAssistant.Pages {
 
         private void UpdateContent(object sender) {
             if (Dispatcher.HasShutdownStarted) return;
-                    var monitors = MonitorEnumerationHelper.GetMonitors();
-                    var monitorInfos = monitors as MonitorInfo[] ?? monitors.ToArray();
-                    foreach (var monitor in monitorInfos) {
-                        if (Monitors.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
-                            Dispatcher.Invoke(() => Monitors.Add(monitor));
-                        }
-                    }
-                    foreach (var monitor in Monitors.ToArray()) {
-                        if (monitorInfos.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
-                            Dispatcher.Invoke(() => Monitors.Remove(monitor));
-                        }
-                    }
-                
-                    var windows = WindowEnumerationHelper.GetWindows();
-                    // Console.WriteLine("---------------------------------");
-                    // foreach (var window in windows) {
-                    //     Console.WriteLine(window.Name);
-                    // }
+            var monitors = MonitorEnumerationHelper.GetMonitors();
+            var monitorInfos = monitors as MonitorInfo[] ?? monitors.ToArray();
+            foreach (var monitor in monitorInfos) {
+                if (Monitors.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
+                    Dispatcher.Invoke(() => Monitors.Add(monitor));
+                }
+            }
+
+            foreach (var monitor in Monitors.ToArray()) {
+                if (monitorInfos.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
+                    Dispatcher.Invoke(() => Monitors.Remove(monitor));
+                }
+            }
+
+            var windows = WindowEnumerationHelper.GetWindows();
+            // Console.WriteLine("---------------------------------");
+            // foreach (var window in windows) {
+            //     Console.WriteLine(window.Name);
+            // }
 
 
-                    foreach (var wnd in windows)
-                    {
-                        var old = Windows.ToList().Find((p) => p.hWnd == wnd.hWnd);
-                        if (old != null)
-                        {
-                            old.Title = wnd.Title;
-                            old.proc = wnd.proc;
-                        } else
-                        {
-                            Dispatcher.Invoke(() => Windows.Add(wnd));
-                        }
-                    }
+            foreach (var wnd in windows) {
+                var old = Windows.ToList().Find((p) => p.hWnd == wnd.hWnd);
+                if (old != null) {
+                    old.Title = wnd.Title;
+                    old.proc = wnd.proc;
+                }
+                else {
+                    Dispatcher.Invoke(() => Windows.Add(wnd));
+                }
+            }
 
-                    foreach (var wnd in Windows.ToArray())
-                    {
-                        if (windows.Find((p) => p.hWnd == wnd.hWnd) == null)
-                        {
-                            Dispatcher.Invoke(() =>
-                            {
-                                var source = selectedSource?.Source;
-                                Windows.Remove(wnd);
-                                if (source != null)
-                                    SourceContentCombo.Text = source;
-                            });
-                        }
-                    }
+            foreach (var wnd in Windows.ToArray()) {
+                if (windows.Find((p) => p.hWnd == wnd.hWnd) == null) {
+                    Dispatcher.Invoke(() => {
+                        var source = selectedSource?.Source;
+                        Windows.Remove(wnd);
+                        if (source != null)
+                            SourceContentCombo.Text = source;
+                    });
+                }
+            }
+            
+            //get all cameras
+            var cameras = CameraHelper.EnumCameras();
+            foreach (var camera in cameras) {
+                if (Cameras.ToList().Find((c) => c.DeviceName == camera.DeviceName) == null) {
+                    Dispatcher.Invoke(() => Cameras.Add(camera));
+                }
+            }
+
+            foreach (var camera in Cameras.ToArray()) {
+                if (cameras.ToList().Find((c) => c.DeviceName == camera.DeviceName) == null) {
+                    Dispatcher.Invoke(() => Cameras.Remove(camera));
+                }
+            }
+            
+            
+            
         }
 
         public void Dispose() {
-            if(!Directory.Exists("./content"))
+            if (!Directory.Exists("./content"))
                 Directory.CreateDirectory("./content");
             File.WriteAllText(SourcesJsonFile, ToJson());
             foreach (var source in FrameSources) {
                 source.Dispose();
             }
+
             _contentUpdateTimer?.Dispose();
             _contentUpdateTimer = null;
             previewTimer.Stop();
@@ -184,6 +204,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
             SourceType.SelectedIndex = 0;
             SourceContentCombo.SelectedIndex = 0;
         }
+
         private void DeleteButton_Click(object sender, RoutedEventArgs e) {
             var source = (FrameSource)SourcesList.SelectedItem;
             if (source == null) return;
@@ -201,6 +222,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 SourceConfigPanel.Visibility = Visibility.Collapsed;
                 return;
             }
+
             SourceConfigPanel.Visibility = Visibility.Visible;
             SelectedSource = source;
         }
@@ -225,7 +247,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
             SelecteFileButton.Visibility = Visibility.Collapsed;
             labelContent.Visibility = Visibility.Collapsed;
 
-            if (type < 0 || type > 2) return;
+            if (type < 0 || type > 3) return;
 
             labelContent.Visibility = Visibility.Visible;
             switch (type) {
@@ -247,6 +269,12 @@ namespace SayoDeviceStreamingAssistant.Pages {
                     labelContent.Content = Properties.Resources.SourcesManagePage_SetContentUiByType_Video_path;
                     SourceContentText.Text = selectedSource.Source;
                     break;
+                case 3: //"Camera"
+                    SourceContentCombo.Visibility = Visibility.Visible;
+                    labelContent.Content = "Camera";
+                    SourceContentCombo.ItemsSource = Cameras;
+                    SourceContentCombo.Text = selectedSource?.Source;
+                    break;
             }
         }
 
@@ -255,7 +283,10 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 selectedSource.Source = mon.Name;
             else if (SourceContentCombo.SelectedItem is WindowInfo win)
                 selectedSource.Source = win.Name;
+            else if (SourceContentCombo.SelectedItem is CameraInfo cam)
+                selectedSource.Source = cam.Name;
         }
+
         private void SourceContentCombo_TextInput(object sender, TextCompositionEventArgs e) {
             var text = SourceContentCombo.Text + e.Text;
             if (text != SelectedSource.Source)
@@ -272,7 +303,8 @@ namespace SayoDeviceStreamingAssistant.Pages {
             var openFileDialog = new OpenFileDialog {
                 Title = Properties.Resources.SourcesManagePage_SelectFileButton_Click_Select_video_file,
                 // 设置文件类型过滤器
-                Filter = "Video (*.avi; *.mp4; *.mkv; *.mov; *.wmv; *.flv; *.rmvb)|*.avi;*.mp4;*.mkv;*.mov;*.wmv;*.flv;*.rmvb|All (*.*)|*.*"
+                Filter =
+                    "Video (*.avi; *.mp4; *.mkv; *.mov; *.wmv; *.flv; *.rmvb)|*.avi;*.mp4;*.mkv;*.mov;*.wmv;*.flv;*.rmvb|All (*.*)|*.*"
             };
 
             //openFileDialog.Multiselect = true;
@@ -286,11 +318,14 @@ namespace SayoDeviceStreamingAssistant.Pages {
             previewMat.SetTo(Scalar.Black);
             newFrame = true;
         }
+
         private void OnFrameReady(Mat frame) {
             frame.DrawToBgr565(previewMat, MatExtension.GetDefaultRect(frame.Size(), previewMat.Size()));
             newFrame = true;
         }
+
         DateTime lastUpdate = DateTime.Now;
+
         private void UpdatePreview() {
             if (previewMat == null || previewBitmap == null) return;
             if (!newFrame) {
@@ -298,6 +333,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
                     ClearPreview();
                 return;
             }
+
             var len = previewMat.Rows * previewMat.Cols * 2;
             previewBitmap.Lock();
             WinApi.CopyMemory(previewBitmap.BackBuffer, previewMat.Data, (uint)len);
@@ -306,6 +342,5 @@ namespace SayoDeviceStreamingAssistant.Pages {
             newFrame = false;
             lastUpdate = DateTime.Now;
         }
-
     }
 }

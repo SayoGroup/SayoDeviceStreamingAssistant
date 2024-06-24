@@ -184,6 +184,9 @@
     <PackageReference Include="OpenCvSharp4.runtime.win">
       <Version>4.10.0.20240616</Version>
     </PackageReference>
+    <PackageReference Include="System.Management">
+      <Version>8.0.0</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

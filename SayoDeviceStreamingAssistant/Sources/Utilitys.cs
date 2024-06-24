@@ -60,7 +60,10 @@ namespace SayoDeviceStreamingAssistant.Sources {
             var roiDst = dst.GetRoiRectAsDst(dstRect);
             var roiSrc = src.GetRoiRectAsSrc(dstRect, roiDst);
 
-            var roiMat = new Mat(src, roiSrc).Resize(new SizeInt(roiDst.Width, roiDst.Height));
+            //var roiMat = new Mat(src, roiSrc).Resize(new SizeInt(roiDst.Width, roiDst.Height));
+            
+            var roiMat = Resize(new Mat(src,roiSrc), new SizeInt(roiDst.Width, roiDst.Height));
+            
             //Resize(new Mat(src,roiSrc), new SizeInt(roiDst.Width, roiDst.Height));
             //Cv2.ImShow("roi", roiMat);
             if (!Bgr565MatCache.ContainsKey(roiMat.Size())) {
@@ -76,26 +79,29 @@ namespace SayoDeviceStreamingAssistant.Sources {
             //CV.Copy(ccRoi, dst.GetSubRect(roiDst));
         }
 
-        // private static Mat _mat640P;
-        // private static readonly object ResizeLock = new object();
-        // private static Mat Resize(Mat mat, Size size) {
-        //     var srcPixelCount = mat.Cols * mat.Rows;
-        //     var dstPixelCount = size.Width * size.Height;
-        //     var scale = Math.Sqrt((double)dstPixelCount / srcPixelCount);
-        //     var deltaPixelCount = srcPixelCount - dstPixelCount;
-        //     var res = new Mat(size, mat.Depth, mat.Channels);
-        //     if (scale < 1 && deltaPixelCount > 1e6) {
-        //         lock (ResizeLock) {
-        //             if(_mat640P == null || _mat640P.Depth != mat.Depth || _mat640P.Channels != mat.Channels)
-        //                 _mat640P = new Mat(640, 480, mat.Depth, mat.Channels);
-        //             CV.Resize(mat,_mat640P);
-        //             CV.Resize(_mat640P, res, SubPixelInterpolation.Area);
-        //         }
-        //         return res;
-        //     }
-        //     CV.Resize(mat, res, SubPixelInterpolation.Area);
-        //     return res;
-        // }
+        private static Mat _mat480P;
+        private static readonly object ResizeLock = new object();
+        private static Mat Resize(Mat mat, Size size) {
+            var srcPixelCount = mat.Cols * mat.Rows;
+            var dstPixelCount = size.Width * size.Height;
+            var scale = Math.Sqrt((double)dstPixelCount / srcPixelCount);
+            var deltaPixelCount = srcPixelCount - dstPixelCount;
+            var res = new Mat(size, mat.Type());//new Mat(size, mat.Depth, mat.Channels);
+            if (scale < 1 && deltaPixelCount > 1e6) {
+                lock (ResizeLock) {
+                    if (_mat480P == null || _mat480P.Depth() != mat.Depth() || _mat480P.Channels() != mat.Channels())
+                        _mat480P = new Mat(new Size(1280, 720), mat.Type());//new Mat(640, 480, mat.Depth, mat.Channels);
+                    _mat480P = mat.Resize(_mat480P.Size());
+                    //CV.Resize(mat,_mat480P);
+                    res = _mat480P.Resize(res.Size(), 0, 0, InterpolationFlags.Area);
+                    //CV.Resize(_mat480P, res, SubPixelInterpolation.Area);
+                }
+                return res;
+            }
+            //CV.Resize(mat, res, SubPixelInterpolation.Area);
+            res = mat.Resize(res.Size(), 0, 0, InterpolationFlags.Area);
+            return res;
+        }
     }
     
     static class BasicConverter {

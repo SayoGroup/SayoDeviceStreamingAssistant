@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using CaptureFramework;
 using MongoDB.Bson;
 using OpenCvSharp;
 
@@ -33,9 +34,9 @@ namespace SayoDeviceStreamingAssistant.Sources {
                 if (value == type) return;
                 type = value;
                 OnPropertyChanged(nameof(Type));
-                if (!Initialized) return;
+                if (!initialized) return;
                 Dispose();
-                initTimer = new Timer((state) => Init(), null, 0, 1000);
+                StartInitTimer();
             }
         }
         private string source = "";
@@ -87,6 +88,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
         private void SetFps() {
             Fps = video?.Fps ?? 
                   (onFrameListeners.Any() ? onFrameListeners.Values.Select((i)=>i.Item1).Max() : 60);
+            if (Fps < 1) Fps = 60;
             readFrameTimer.Interval = (long)Math.Round(1e6 / Fps);
         }
 
@@ -102,7 +104,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
         public FrameSource(string name, Guid? guid = null) {
             this.Guid = guid ?? Guid.NewGuid();
             Name = name;
-            initTimer = new Timer((state) => Init(), null, 0, 1000);
+            StartInitTimer();
             readFrameTimer.Interval = (long)Math.Round(1e6 / 60);
             readFrameTimer.MicroTimerElapsed += (o, e) => {
                 var sw = Stopwatch.StartNew();
@@ -134,12 +136,22 @@ namespace SayoDeviceStreamingAssistant.Sources {
         }
 
         public void ReInit() {
-            if (!Initialized) return;
+            if (!initialized) return;
             Dispose();
-            initTimer = new Timer((state) => Init(), null, 0, 1000);
+            StartInitTimer();
         }
-
-        private bool Initialized => initTimer == null;
+        
+        private void StartInitTimer() {
+            if (initTimer != null) {
+                initTimer.Dispose();
+                initTimer = null;
+            }
+            initTimer = new Timer((state) => {
+                initialized = Init();
+            }, null, 0, 1000);
+        }
+        
+        private bool initialized = false;
         private Timer initTimer;
         private bool initializing;
         private readonly Stopwatch sinceInitialized = new Stopwatch();
@@ -147,7 +159,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
             if (initializing) return false;
             initializing = true;
             if (readRawFrame != null) return initializing = false;
-            if (Type < 0 || Type > 2) return initializing = false;
+            if (Type < 0 || Type > 3) return initializing = false;
             if (string.IsNullOrEmpty(Source)) return initializing = false;
             switch (Type) {
                 case 0: //"Monitor"
@@ -200,13 +212,39 @@ namespace SayoDeviceStreamingAssistant.Sources {
                     break;
                 case 2: //"Media"
                     if (File.Exists(Source) == false) break;
-                    video = new VideoCapture(Source);
+                    video = VideoCapture.FromFile(Source);
                     if (video == null) {
-                        System.Windows.MessageBox.Show("Failed to open video file.\nDoesn't support HVC1 yet.");
+                        //System.Windows.MessageBox.Show("Failed to open video file.\nDoesn't support HVC1 yet.");
                         Source = "";
                         break;
                     }
                     //video.Open(Source);
+                    readRawFrame = (onFrameReady) => {
+                        var res = video.Grab();
+                        if (!res) return false;
+                        onFrameReady(video.RetrieveMat());
+                        return true;
+                    };
+                    break;
+                case 3: //"Camera"
+                    CameraHelper.GetCameraDetails(Source, out var index, out var width, out var height, out var fps);
+                    if (index == -1) {
+                        //System.Windows.MessageBox.Show("Failed to open camera.");
+                        Source = "";
+                        break;
+                    }
+                    
+                    video = VideoCapture.FromCamera(index);
+                    if (video == null) {
+                        //System.Windows.MessageBox.Show("Failed to open camera.");
+                        Source = "";
+                        break;
+                    }
+
+                    video.Set(VideoCaptureProperties.FrameHeight, height);
+                    video.Set(VideoCaptureProperties.FrameWidth, width);
+                    video.Set(VideoCaptureProperties.Fps, fps);
+                    Console.WriteLine(video.FrameWidth + "x" + video.FrameHeight + " " + video.Fps + "fps");
                     readRawFrame = (onFrameReady) => {
                         var res = video.Grab();
                         if (!res) return false;
@@ -232,13 +270,17 @@ namespace SayoDeviceStreamingAssistant.Sources {
             readFrameTimer.Enabled = false;
             capture?.Dispose();
             capture = null;
-            initTimer = new Timer((state) => Init(), null, 0, 1000);
+            StartInitTimer();
         }
 
         public void Dispose() {
             initTimer?.Dispose();
             initTimer = null;
-            for (; reading;) Thread.Sleep(1);
+            initialized = false;
+            for (; reading;) {
+                //Console.WriteLine("wait for reading... dispose");
+                Thread.Sleep(1);
+            }
             readRawFrame = null;
             readFrameTimer.Enabled = false;
             readFrameTimer?.Stop();
@@ -250,11 +292,12 @@ namespace SayoDeviceStreamingAssistant.Sources {
 
         private bool reading;
         private bool ReadFrame() {
-            if (reading || !Initialized || readRawFrame == null) 
+            if (reading || !initialized || readRawFrame == null) 
                 return false;
             reading = true;
-
-            if (video != null && video.PosFrames >=
+            
+            
+            if (video != null && video.CaptureType == CaptureType.File && video.PosFrames >=
                 video.FrameCount)
                 video.PosFrames = 0;
             
@@ -277,8 +320,8 @@ namespace SayoDeviceStreamingAssistant.Sources {
                 reading = false;
                 return false;
             }
-            // if (FrameCount % 30 == 0)
-            //     GC.Collect();
+            if (FrameCount % 30 == 0)
+                GC.Collect();
             reading = false;
             return true;
         }
