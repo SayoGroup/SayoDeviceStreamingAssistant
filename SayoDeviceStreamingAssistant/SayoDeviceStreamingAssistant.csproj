@@ -55,10 +55,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>if not exist "$(ProjectDir)$(OutDir)dll" mkdir "$(ProjectDir)$(OutDir)dll"
-move "$(ProjectDir)$(OutDir)*.dll" "$(ProjectDir)$(OutDir)dll\"
-move "$(ProjectDir)$(OutDir)dll\opencv_ffmpeg*" "$(ProjectDir)$(OutDir)"
-del "$(ProjectDir)$(OutDir)*.pdb"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -180,8 +178,11 @@ del "$(ProjectDir)$(OutDir)*.pdb"</PostBuildEvent>
     <PackageReference Include="MongoDB.Bson">
       <Version>2.25.0</Version>
     </PackageReference>
-    <PackageReference Include="OpenCV.Net">
-      <Version>3.4.2</Version>
+    <PackageReference Include="OpenCvSharp4">
+      <Version>4.10.0.20240616</Version>
+    </PackageReference>
+    <PackageReference Include="OpenCvSharp4.runtime.win">
+      <Version>4.10.0.20240616</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />

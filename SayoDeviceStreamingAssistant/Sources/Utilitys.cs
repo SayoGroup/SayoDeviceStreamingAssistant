@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using OpenCV.Net;
-using Mat = OpenCV.Net.Mat;
-using RectInt = OpenCV.Net.Rect;
+using OpenCvSharp;
+using Mat = OpenCvSharp.Mat;
+using RectInt =OpenCvSharp.Rect;
 using RectDouble = Windows.Foundation.Rect;
-using SizeInt = OpenCV.Net.Size;
+using SizeInt = OpenCvSharp.Size;
 using SizeDouble = Windows.Foundation.Size;
 
 namespace SayoDeviceStreamingAssistant.Sources {
@@ -60,46 +60,50 @@ namespace SayoDeviceStreamingAssistant.Sources {
             var roiDst = dst.GetRoiRectAsDst(dstRect);
             var roiSrc = src.GetRoiRectAsSrc(dstRect, roiDst);
 
-            var roiMat = Resize(src.GetSubRect(roiSrc), new SizeInt(roiDst.Width, roiDst.Height));
+            var roiMat = new Mat(src, roiSrc).Resize(new SizeInt(roiDst.Width, roiDst.Height));
+            //Resize(new Mat(src,roiSrc), new SizeInt(roiDst.Width, roiDst.Height));
             //Cv2.ImShow("roi", roiMat);
-            if (!Bgr565MatCache.ContainsKey(roiMat.Size)) {
+            if (!Bgr565MatCache.ContainsKey(roiMat.Size())) {
                 if(Bgr565MatCache.Count > 8)
                     Bgr565MatCache.Clear();
-                Bgr565MatCache[roiMat.Size] = new Mat(roiMat.Size, Depth.U8, 2);
+                Bgr565MatCache[roiMat.Size()] = new Mat(roiMat.Size(), MatType.CV_8UC2);
+                 //new Mat(roiMat.Size, Depth.U8, 2);
             }
-            var ccRoi = Bgr565MatCache[roiMat.Size];
-            CV.CvtColor(roiMat, ccRoi, roiMat.Channels == 4 ? ColorConversion.Bgra2Bgr565 : ColorConversion.Bgr2Bgr565);
-            CV.Copy(ccRoi, dst.GetSubRect(roiDst));
+            //var ccRoi = Bgr565MatCache[roiMat.Size()];
+            var ccRoi = roiMat.CvtColor(roiMat.Channels() == 4 ? ColorConversionCodes.BGRA2BGR565 : ColorConversionCodes.BGR2BGR565);
+            //CV.CvtColor(roiMat, ccRoi, roiMat.Channels == 4 ? ColorConversion.Bgra2Bgr565 : ColorConversion.Bgr2Bgr565);
+            ccRoi.CopyTo(new Mat(dst, roiDst));
+            //CV.Copy(ccRoi, dst.GetSubRect(roiDst));
         }
 
-        private static Mat _mat640P;
-        private static readonly object ResizeLock = new object();
-        private static Mat Resize(Mat mat, Size size) {
-            var srcPixelCount = mat.Cols * mat.Rows;
-            var dstPixelCount = size.Width * size.Height;
-            var scale = Math.Sqrt((double)dstPixelCount / srcPixelCount);
-            var deltaPixelCount = srcPixelCount - dstPixelCount;
-            var res = new Mat(size, mat.Depth, mat.Channels);
-            if (scale < 1 && deltaPixelCount > 1e6) {
-                lock (ResizeLock) {
-                    if(_mat640P == null || _mat640P.Depth != mat.Depth || _mat640P.Channels != mat.Channels)
-                        _mat640P = new Mat(640, 480, mat.Depth, mat.Channels);
-                    CV.Resize(mat,_mat640P);
-                    CV.Resize(_mat640P, res, SubPixelInterpolation.Area);
-                }
-                return res;
-            }
-            CV.Resize(mat, res, SubPixelInterpolation.Area);
-            return res;
-        }
+        // private static Mat _mat640P;
+        // private static readonly object ResizeLock = new object();
+        // private static Mat Resize(Mat mat, Size size) {
+        //     var srcPixelCount = mat.Cols * mat.Rows;
+        //     var dstPixelCount = size.Width * size.Height;
+        //     var scale = Math.Sqrt((double)dstPixelCount / srcPixelCount);
+        //     var deltaPixelCount = srcPixelCount - dstPixelCount;
+        //     var res = new Mat(size, mat.Depth, mat.Channels);
+        //     if (scale < 1 && deltaPixelCount > 1e6) {
+        //         lock (ResizeLock) {
+        //             if(_mat640P == null || _mat640P.Depth != mat.Depth || _mat640P.Channels != mat.Channels)
+        //                 _mat640P = new Mat(640, 480, mat.Depth, mat.Channels);
+        //             CV.Resize(mat,_mat640P);
+        //             CV.Resize(_mat640P, res, SubPixelInterpolation.Area);
+        //         }
+        //         return res;
+        //     }
+        //     CV.Resize(mat, res, SubPixelInterpolation.Area);
+        //     return res;
+        // }
     }
     
     static class BasicConverter {
-        public static Windows.Foundation.Rect ToWinRect(this OpenCV.Net.Rect cvRect) {
+        public static Windows.Foundation.Rect ToWinRect(this OpenCvSharp.Rect cvRect) {
             return new Windows.Foundation.Rect(cvRect.X, cvRect.Y, cvRect.Width, cvRect.Height);
         }
-        public static OpenCV.Net.Rect ToCvRect(this Windows.Foundation.Rect winRect) {
-            return new OpenCV.Net.Rect((int)winRect.X, (int)winRect.Y, (int)winRect.Width, (int)winRect.Height);
+        public static OpenCvSharp.Rect ToCvRect(this Windows.Foundation.Rect winRect) {
+            return new OpenCvSharp.Rect((int)winRect.X, (int)winRect.Y, (int)winRect.Width, (int)winRect.Height);
         }
     }
     

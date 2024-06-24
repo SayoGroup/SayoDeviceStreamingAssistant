@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 using FontAwesome.WPF;
-using OpenCV.Net;
+using OpenCvSharp;
 using SayoDeviceStreamingAssistant.Sources;
 using static SayoDeviceStreamingAssistant.Sources.FrameSource;
+using FrameSource = SayoDeviceStreamingAssistant.Sources.FrameSource;
 using Rect = Windows.Foundation.Rect;
+using Size = OpenCvSharp.Size;
 
 namespace SayoDeviceStreamingAssistant.Pages {
     public partial class DeviceInfo : IDisposable {
@@ -142,7 +144,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 return;
             }
             if (rectDirty) {
-                ScreenMat.Set(new Scalar(0, 0, 0));
+                ScreenMat.SetTo(Scalar.Black);
                 rectDirty = false;
             }
             frame.DrawToBgr565(ScreenMat, FrameRect.Value);
@@ -158,7 +160,8 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 FrameRect = GetDefaultRect();
                 return;
             }
-            ScreenMat.Set(new Scalar(0, 0, 0));
+
+            ScreenMat.SetTo(Scalar.Black);
             frame.DrawToBgr565(ScreenMat, FrameRect.Value);
 
             if (onFrameReady == null) return;
@@ -171,7 +174,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
         public Rect? GetDefaultRect() {
             var srcSize = frameSource?.GetContentRawSize();
             if (srcSize == null || srcSize.Value.Width == 0 || srcSize.Value.Height == 0) return null;
-            var dstSize = ScreenMat.Size;
+            var dstSize = ScreenMat.Size();
             return MatExtension.GetDefaultRect(srcSize.Value, dstSize);
         }
 
@@ -233,7 +236,8 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 
                 if (Device.SupportStreaming == true) {
                     var screenInfo = Device.GetScreenInfo();
-                    ScreenMat = new Mat(screenInfo.Height, screenInfo.Width, Depth.U8, 2);
+                    ScreenMat = new Mat(new Size(screenInfo.Width, screenInfo.Height), MatType.CV_8UC2);
+                    //new Mat(screenInfo.Height, screenInfo.Width, Depth.U8, 2);
                     var screenInfoStr = $"{screenInfo.Width}x{screenInfo.Height}@{screenInfo.RefreshRate}Hz";
                     labelScreenInfo.Content = screenInfoStr;
                 } else

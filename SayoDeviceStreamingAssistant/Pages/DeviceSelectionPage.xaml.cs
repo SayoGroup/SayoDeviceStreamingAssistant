@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using OpenCV.Net;
+using OpenCvSharp;
 using SayoDeviceStreamingAssistant.Sources;
 using Rect = Windows.Foundation.Rect;
 

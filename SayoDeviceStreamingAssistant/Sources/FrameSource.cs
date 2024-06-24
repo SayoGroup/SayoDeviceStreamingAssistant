@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using MongoDB.Bson;
-using OpenCV.Net;
+using OpenCvSharp;
 
 namespace SayoDeviceStreamingAssistant.Sources {
     public class FrameSource : IDisposable, INotifyPropertyChanged {
@@ -85,18 +85,18 @@ namespace SayoDeviceStreamingAssistant.Sources {
         public double Fps { get; private set; } = 60;
 
         private void SetFps() {
-            Fps = video?.GetProperty(CaptureProperty.Fps) ?? 
+            Fps = video?.Fps ?? 
                   (onFrameListeners.Any() ? onFrameListeners.Values.Select((i)=>i.Item1).Max() : 60);
             readFrameTimer.Interval = (long)Math.Round(1e6 / Fps);
         }
 
         public uint FrameCount { get; private set; }
 
-        private Mat rawFrame = new Mat(10,10, Depth.U8, 4);
+        private Mat rawFrame = new Mat(new Size(10, 10), MatType.CV_8UC4);//new Mat(10,10, Depth.U8, 4);
         private readonly MicroTimer readFrameTimer = new MicroTimer();
 
         private CaptureFramework.CaptureFramework capture;
-        private Capture video;
+        private VideoCapture video;
         private Func<Func<Mat,bool>,bool> readRawFrame;
 
         public FrameSource(string name, Guid? guid = null) {
@@ -163,7 +163,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
                     break;
                 case 1://"Window"
                     //just grab window from SourcesManager -> -- best way --
-                    //not best way, because when a window just closed, it will not be removed instantly from SourcesManager
+                    //not the best way, because when a window just closed, it will not be removed instantly from SourcesManager
                     //var wndInfo = SourcesManagePage.GetWindowInfo(Source);
                     //if (wndInfo != null) {
                     //    capture = new CaptureFramework.CaptureFramework(wndInfo.hWnd, CaptureFramework.CaptureFramework.SourceType.Window);
@@ -200,7 +200,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
                     break;
                 case 2: //"Media"
                     if (File.Exists(Source) == false) break;
-                    video = Capture.CreateFileCapture(Source);
+                    video = new VideoCapture(Source);
                     if (video == null) {
                         System.Windows.MessageBox.Show("Failed to open video file.\nDoesn't support HVC1 yet.");
                         Source = "";
@@ -208,9 +208,9 @@ namespace SayoDeviceStreamingAssistant.Sources {
                     }
                     //video.Open(Source);
                     readRawFrame = (onFrameReady) => {
-                        var res = video.GrabFrame();
+                        var res = video.Grab();
                         if (!res) return false;
-                        onFrameReady(video.RetrieveFrame().GetMat());
+                        onFrameReady(video.RetrieveMat());
                         return true;
                     };
                     break;
@@ -254,9 +254,9 @@ namespace SayoDeviceStreamingAssistant.Sources {
                 return false;
             reading = true;
 
-            if (video != null && video.GetProperty(CaptureProperty.PosFrames) >=
-                video.GetProperty(CaptureProperty.FrameCount))
-                video.SetProperty(CaptureProperty.PosFrames, 0);
+            if (video != null && video.PosFrames >=
+                video.FrameCount)
+                video.PosFrames = 0;
             
             var res = readRawFrame((mat) => {
                 rawFrame = mat;
@@ -292,7 +292,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
         private Size? GetVideoSize() {
             if (video == null)
                 return null;
-            return new Size((int)video.GetProperty(CaptureProperty.FrameWidth), (int)video.GetProperty(CaptureProperty.FrameHeight));
+            return new Size((int)video.FrameWidth, (int)video.FrameHeight);
         }
     }
 }

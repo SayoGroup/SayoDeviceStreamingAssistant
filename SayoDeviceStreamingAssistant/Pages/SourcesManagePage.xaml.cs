@@ -12,8 +12,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using MongoDB.Bson;
-using OpenCV.Net;
+using OpenCvSharp;
 using SayoDeviceStreamingAssistant.Sources;
+using FrameSource = SayoDeviceStreamingAssistant.Sources.FrameSource;
+using Size = OpenCvSharp.Size;
 
 namespace SayoDeviceStreamingAssistant.Pages {
     /// <summary>
@@ -32,7 +34,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
         private static Timer _contentUpdateTimer;
 
         private WriteableBitmap previewBitmap;
-        private Mat previewMat = new Mat(80, 160, Depth.U8, 2);
+        private Mat previewMat = new Mat(new Size(160, 80), MatType.CV_8UC4);//new Mat(80, 160, Depth.U8, 2);
         private bool newFrame;
         private DispatcherTimer previewTimer = new DispatcherTimer();
 
@@ -281,11 +283,11 @@ namespace SayoDeviceStreamingAssistant.Pages {
         }
 
         private void ClearPreview() {
-            previewMat.Set(new Scalar(0, 0, 0));
+            previewMat.SetTo(Scalar.Black);
             newFrame = true;
         }
         private void OnFrameReady(Mat frame) {
-            frame.DrawToBgr565(previewMat, MatExtension.GetDefaultRect(frame.Size, previewMat.Size));
+            frame.DrawToBgr565(previewMat, MatExtension.GetDefaultRect(frame.Size(), previewMat.Size()));
             newFrame = true;
         }
         DateTime lastUpdate = DateTime.Now;

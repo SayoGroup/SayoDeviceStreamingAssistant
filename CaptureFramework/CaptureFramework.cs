@@ -8,7 +8,7 @@ using Windows.Graphics.DirectX;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.UI.Composition;
 using Composition.WindowsRuntimeHelpers;
-using OpenCV.Net;
+using OpenCvSharp;
 using SharpDX.DXGI;
 using D3D11 = SharpDX.Direct3D11;
 
@@ -154,7 +154,7 @@ namespace CaptureFramework {
             return compositor.CreateCompositionSurfaceForSwapChain(_swapChain);
         }
 
-        private Mat scaleMat = new Mat(640, 1280, Depth.U8, 4);
+        private Mat scaleMat = new Mat(new Size(1280, 640), MatType.CV_8UC4);//new Mat(640, 1280, Depth.U8, 4);
         private bool reading = false;
         public bool ReadFrame(Func<Mat,bool> onFrameReady) {
             if (!dispatcher.CheckAccess()) {
@@ -206,17 +206,25 @@ namespace CaptureFramework {
                         D3D11.MapFlags.None);
 
                     //bitmap has 32 bytes(8 pixels) alignment
-                    var wrapMat = new Mat(_stagingTexture.Description.Height,
-                        data.RowPitch/4, Depth.U8, 4,
-                        data.DataPointer);
+                    // var wrapMat = new Mat(_stagingTexture.Description.Height,
+                    //     data.RowPitch / 4, MatType.CV_8UC4, data.DataPointer);
+                    var wrapMat = Mat.FromPixelData(_stagingTexture.Description.Height,
+                        data.RowPitch / 4, MatType.CV_8UC4, data.DataPointer);
+                    //imshow
+                    //OpenCvSharp.Window.ShowImages(wrapMat);
+                    // Cv2.ImShow("debug", wrapMat);
+                    // Cv2.WaitKey(1);
                     
+                    //var wrapMat = new Mat(_stagingTexture.Description.Height,
+                    //    data.RowPitch/4, Depth.U8, 4,
+                    //    data.DataPointer);
+
                     //cut the mat to the correct size
                     //res = bmat.Clone();
                     onFrameReady?.Invoke(wrapMat);
                     //CV.Copy(bmat.GetRows(0, _lastSize.Height).GetCols(0, _lastSize.Width),mat);
                     //mat = bmat.GetRows(0, _lastSize.Height).GetCols(0, _lastSize.Width);
                     //new Mat(bmat, new Rect(0, 0, _lastSize.Width, _lastSize.Height)).CopyTo(mat);
-                    wrapMat.Close();
                     wrapMat.Dispose();
                     _d3dDevice.ImmediateContext.UnmapSubresource(_stagingTexture, 0);
                 }
