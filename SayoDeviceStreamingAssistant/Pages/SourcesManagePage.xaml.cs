@@ -199,6 +199,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
         private void AddNewButton_Click(object sender, RoutedEventArgs e) {
             var newSource = new FrameSource(string.Format(
                 Properties.Resources.SourcesManagePage_AddNewButton_Click_Source__0_, FrameSources.Count));
+            newSource.Type = 2;
             FrameSources.Add(newSource);
             SourcesList.SelectedIndex = FrameSources.IndexOf(newSource);
             SourceType.SelectedIndex = 2;
