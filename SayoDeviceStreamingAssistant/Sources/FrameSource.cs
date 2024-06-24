@@ -76,9 +76,9 @@ namespace SayoDeviceStreamingAssistant.Sources {
                 //Console.WriteLine("set timer enabled: " + value);
                 if (!value) readFrameTimer.Stop();
                 else readFrameTimer.Enabled = true;
-                if (capture == null) return;
-                if (value) capture.Init();
-                else capture.Dispose();
+                // if (capture == null) return;
+                // if (value) capture.Init();
+                // else capture.Dispose();
 
             }
         }
@@ -97,7 +97,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
         private Mat rawFrame = new Mat(new Size(10, 10), MatType.CV_8UC4);//new Mat(10,10, Depth.U8, 4);
         private readonly MicroTimer readFrameTimer = new MicroTimer();
 
-        private CaptureFramework.CaptureFramework capture;
+        //private CaptureFramework.CaptureFramework capture;
         private VideoCapture video;
         private Func<Func<Mat,bool>,bool> readRawFrame;
 
@@ -142,6 +142,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
         }
         
         private void StartInitTimer() {
+            Console.WriteLine("StartInitTimer");
             if (initTimer != null) {
                 initTimer.Dispose();
                 initTimer = null;
@@ -149,6 +150,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
             initTimer = new Timer((state) => {
                 initialized = Init();
             }, null, 0, 1000);
+            Console.WriteLine("StartInitTimer end");
         }
         
         private bool initialized = false;
@@ -159,57 +161,60 @@ namespace SayoDeviceStreamingAssistant.Sources {
             if (initializing) return false;
             initializing = true;
             if (readRawFrame != null) return initializing = false;
-            if (Type < 0 || Type > 3) return initializing = false;
+            if (Type < 2 || Type > 3) return initializing = false;
             if (string.IsNullOrEmpty(Source)) return initializing = false;
+            
+            Console.WriteLine($"Init FrameSource {Name} {Source} {Type}");
+            
             switch (Type) {
-                case 0: //"Monitor"
-                    var monitors = MonitorEnumerationHelper.GetMonitors();
-                    var monitor = monitors.FirstOrDefault(m => m.DeviceName == Source);
-                    if (monitor == null)
-                        break;
-                    capture = new CaptureFramework.CaptureFramework(monitor.Hmon, CaptureFramework.CaptureFramework.SourceType.Monitor);
-                    capture.ItemDestroyed += Capture_ItemDestroyed;
-                    if (Enabled) capture.Init();
-                    readRawFrame = capture.ReadFrame;
-                    
-                    break;
-                case 1://"Window"
-                    //just grab window from SourcesManager -> -- best way --
-                    //not the best way, because when a window just closed, it will not be removed instantly from SourcesManager
-                    //var wndInfo = SourcesManagePage.GetWindowInfo(Source);
-                    //if (wndInfo != null) {
-                    //    capture = new CaptureFramework.CaptureFramework(wndInfo.hWnd, CaptureFramework.CaptureFramework.SourceType.Window);
-                    //    capture.ItemeDestroyed += Capture_ItemDestroyed;
-                    //    if (Enabled) capture.Init();
-                    //    readRawFrame = capture.ReadFrame;
-                    //    break;
-                    //}
-                    
-                    //ops, try to find window by process name and title,
-                    //theatrically this success only if SourcesManager has not been initialized
-                    foreach (var wnd in WindowEnumerationHelper.GetWindows()) {
-                        if (wnd.Name != Source) continue;
-                        capture = new CaptureFramework.CaptureFramework(wnd.hWnd, CaptureFramework.CaptureFramework.SourceType.Window);
-                        capture.ItemDestroyed += Capture_ItemDestroyed;
-                        if (Enabled) capture.Init();
-                        readRawFrame = capture.ReadFrame;
-                        break;
-                    }
-                    if (readRawFrame != null) break;
-                    
-                    //ops, try to only match process name
-                    var processName = Source.Split(':')[0];
-                    var process = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(processName));
-                    if (process.Length == 0)
-                        break;
-                    foreach (var p in process) {
-                        if (!WindowEnumerationHelper.IsWindowValidForCapture(p.MainWindowHandle)) continue;
-                        capture = new CaptureFramework.CaptureFramework(p.MainWindowHandle, CaptureFramework.CaptureFramework.SourceType.Window);
-                        capture.ItemDestroyed += Capture_ItemDestroyed;
-                        if (Enabled) capture.Init();
-                        readRawFrame = capture.ReadFrame;
-                    }
-                    break;
+                // case 0: //"Monitor"
+                //     var monitors = MonitorEnumerationHelper.GetMonitors();
+                //     var monitor = monitors.FirstOrDefault(m => m.DeviceName == Source);
+                //     if (monitor == null)
+                //         break;
+                //     capture = new CaptureFramework.CaptureFramework(monitor.Hmon, CaptureFramework.CaptureFramework.SourceType.Monitor);
+                //     capture.ItemDestroyed += Capture_ItemDestroyed;
+                //     if (Enabled) capture.Init();
+                //     readRawFrame = capture.ReadFrame;
+                //     
+                //     break;
+                // case 1://"Window"
+                //     //just grab window from SourcesManager -> -- best way --
+                //     //not the best way, because when a window just closed, it will not be removed instantly from SourcesManager
+                //     //var wndInfo = SourcesManagePage.GetWindowInfo(Source);
+                //     //if (wndInfo != null) {
+                //     //    capture = new CaptureFramework.CaptureFramework(wndInfo.hWnd, CaptureFramework.CaptureFramework.SourceType.Window);
+                //     //    capture.ItemeDestroyed += Capture_ItemDestroyed;
+                //     //    if (Enabled) capture.Init();
+                //     //    readRawFrame = capture.ReadFrame;
+                //     //    break;
+                //     //}
+                //     
+                //     //ops, try to find window by process name and title,
+                //     //theatrically this success only if SourcesManager has not been initialized
+                //     foreach (var wnd in WindowEnumerationHelper.GetWindows()) {
+                //         if (wnd.Name != Source) continue;
+                //         capture = new CaptureFramework.CaptureFramework(wnd.hWnd, CaptureFramework.CaptureFramework.SourceType.Window);
+                //         capture.ItemDestroyed += Capture_ItemDestroyed;
+                //         if (Enabled) capture.Init();
+                //         readRawFrame = capture.ReadFrame;
+                //         break;
+                //     }
+                //     if (readRawFrame != null) break;
+                //     
+                //     //ops, try to only match process name
+                //     var processName = Source.Split(':')[0];
+                //     var process = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(processName));
+                //     if (process.Length == 0)
+                //         break;
+                //     foreach (var p in process) {
+                //         if (!WindowEnumerationHelper.IsWindowValidForCapture(p.MainWindowHandle)) continue;
+                //         capture = new CaptureFramework.CaptureFramework(p.MainWindowHandle, CaptureFramework.CaptureFramework.SourceType.Window);
+                //         capture.ItemDestroyed += Capture_ItemDestroyed;
+                //         if (Enabled) capture.Init();
+                //         readRawFrame = capture.ReadFrame;
+                //     }
+                //     break;
                 case 2: //"Media"
                     if (File.Exists(Source) == false) break;
                     video = VideoCapture.FromFile(Source);
@@ -246,6 +251,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
                     video.Set(VideoCaptureProperties.Fps, fps);
                     Console.WriteLine(video.FrameWidth + "x" + video.FrameHeight + " " + video.Fps + "fps");
                     readRawFrame = (onFrameReady) => {
+                        //Console.WriteLine("Read camera frame");
                         var res = video.Grab();
                         if (!res) return false;
                         onFrameReady(video.RetrieveMat());
@@ -268,24 +274,25 @@ namespace SayoDeviceStreamingAssistant.Sources {
         private void Capture_ItemDestroyed() {
             readRawFrame = null;
             readFrameTimer.Enabled = false;
-            capture?.Dispose();
-            capture = null;
+            // capture?.Dispose();
+            // capture = null;
             StartInitTimer();
         }
 
         public void Dispose() {
+            Console.WriteLine("Dispose FrameSource");
             initTimer?.Dispose();
             initTimer = null;
             initialized = false;
             for (; reading;) {
-                //Console.WriteLine("wait for reading... dispose");
+                Console.WriteLine("wait for reading... dispose");
                 Thread.Sleep(1);
             }
             readRawFrame = null;
             readFrameTimer.Enabled = false;
             readFrameTimer?.Stop();
-            capture?.Dispose();
-            capture = null;
+            // capture?.Dispose();
+            // capture = null;
             video?.Dispose();
             video = null;
         }
@@ -330,7 +337,8 @@ namespace SayoDeviceStreamingAssistant.Sources {
         }
 
         public Size? GetContentRawSize() {
-            return capture?.GetSourceSize() ?? GetVideoSize();
+            //return capture?.GetSourceSize() ?? GetVideoSize();
+            return GetVideoSize();
         }
         private Size? GetVideoSize() {
             if (video == null)

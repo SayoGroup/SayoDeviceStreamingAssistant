@@ -8,9 +8,10 @@ using FontAwesome.WPF;
 using OpenCvSharp;
 using SayoDeviceStreamingAssistant.Sources;
 using FrameSource = SayoDeviceStreamingAssistant.Sources.FrameSource;
-using Point = OpenCvSharp.Point;
-using Rect = Windows.Foundation.Rect;
-using Size = OpenCvSharp.Size;
+using RectInt =OpenCvSharp.Rect;
+using RectDouble = OpenCvSharp.Rect2d;
+using SizeInt = OpenCvSharp.Size;
+using SizeDouble = OpenCvSharp.Size2d;
 using Window = System.Windows.Window;
 
 namespace SayoDeviceStreamingAssistant.Pages {
@@ -34,7 +35,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
         public void ShowPage(DeviceInfo deviceInfo) {
             this.bindDeviceInfo = deviceInfo;
             var screenSize = bindDeviceInfo.ScreenMat.Size();
-            previewMat = new Mat(new Size((int)screenSize.Width, (int)screenSize.Height), MatType.CV_8UC2);//new Mat(screenSize.Height, screenSize.Width, Depth.U8, 2);
+            previewMat = new Mat(new SizeInt((int)screenSize.Width, (int)screenSize.Height), MatType.CV_8UC2);//new Mat(screenSize.Height, screenSize.Width, Depth.U8, 2);
             previewBitmap = new WriteableBitmap(screenSize.Width, screenSize.Height, 96, 96, PixelFormats.Bgr565, null);
             Preview.Source = previewBitmap;
             SourceCombo.SelectedIndex = SourcesManagePage.FrameSources.IndexOf(bindDeviceInfo.FrameSource);
@@ -146,7 +147,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
         }
 
         private System.Windows.Point? mouseDownPose;
-        private Rect? mouseDownFrameRect;
+        private RectDouble? mouseDownFrameRect;
         private void Preview_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
             mouseDownPose = e.GetPosition(Preview);
             mouseDownFrameRect = bindDeviceInfo.FrameRect;

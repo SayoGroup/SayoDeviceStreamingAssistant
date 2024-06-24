@@ -27,20 +27,20 @@ namespace SayoDeviceStreamingAssistant.Pages {
         private const string SourcesJsonFile = "./content/sources.json";
 
         private static readonly List<string> SourceTypes = new List<string> {
-            Properties.Resources.SourcesManagePage_SetContentUiByType_Monitor,
-            Properties.Resources.SourcesManagePage_SetContentUiByType_Window,
+            //Properties.Resources.SourcesManagePage_SetContentUiByType_Monitor,
+            //Properties.Resources.SourcesManagePage_SetContentUiByType_Window,
             Properties.Resources.SourcesManagePage_SourceTypes_Media,
             "Camera"
         };
 
         public static readonly ObservableCollection<FrameSource> FrameSources = new ObservableCollection<FrameSource>();
-        private static readonly ObservableCollection<WindowInfo> Windows = new ObservableCollection<WindowInfo>();
-        private static readonly ObservableCollection<MonitorInfo> Monitors = new ObservableCollection<MonitorInfo>();
+        //private static readonly ObservableCollection<WindowInfo> Windows = new ObservableCollection<WindowInfo>();
+        //private static readonly ObservableCollection<MonitorInfo> Monitors = new ObservableCollection<MonitorInfo>();
         private static readonly ObservableCollection<CameraInfo> Cameras = new ObservableCollection<CameraInfo>();
         private static Timer _contentUpdateTimer;
 
         private WriteableBitmap previewBitmap;
-        private Mat previewMat = new Mat(new Size(160, 80), MatType.CV_8UC4); //new Mat(80, 160, Depth.U8, 2);
+        private Mat previewMat = new Mat(new Size(160, 80), MatType.CV_8UC2); //new Mat(80, 160, Depth.U8, 2);
         private bool newFrame;
         private DispatcherTimer previewTimer = new DispatcherTimer();
 
@@ -57,7 +57,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 selectedSource = value;
                 if (selectedSource == null) return;
                 SourceName.Text = selectedSource.Name;
-                SourceType.SelectedIndex = selectedSource.Type;
+                SourceType.SelectedIndex = selectedSource.Type - 2;
                 SetContentUiByType(selectedSource.Type);
                 if (selectedSource != null)
                     selectedSource.AddFrameListener(OnFrameReady, 60);
@@ -65,9 +65,9 @@ namespace SayoDeviceStreamingAssistant.Pages {
             }
         }
 
-        public static WindowInfo GetWindowInfo(string source) {
-            return Windows.ToList().Find((w) => w.Name == source);
-        }
+        // public static WindowInfo GetWindowInfo(string source) {
+        //     return Windows.ToList().Find((w) => w.Name == source);
+        // }
 
         private string ToJson() {
             var sources = new BsonArray();
@@ -107,48 +107,48 @@ namespace SayoDeviceStreamingAssistant.Pages {
 
         private void UpdateContent(object sender) {
             if (Dispatcher.HasShutdownStarted) return;
-            var monitors = MonitorEnumerationHelper.GetMonitors();
-            var monitorInfos = monitors as MonitorInfo[] ?? monitors.ToArray();
-            foreach (var monitor in monitorInfos) {
-                if (Monitors.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
-                    Dispatcher.Invoke(() => Monitors.Add(monitor));
-                }
-            }
-
-            foreach (var monitor in Monitors.ToArray()) {
-                if (monitorInfos.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
-                    Dispatcher.Invoke(() => Monitors.Remove(monitor));
-                }
-            }
-
-            var windows = WindowEnumerationHelper.GetWindows();
-            // Console.WriteLine("---------------------------------");
-            // foreach (var window in windows) {
-            //     Console.WriteLine(window.Name);
+            // var monitors = MonitorEnumerationHelper.GetMonitors();
+            // var monitorInfos = monitors as MonitorInfo[] ?? monitors.ToArray();
+            // foreach (var monitor in monitorInfos) {
+            //     if (Monitors.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
+            //         Dispatcher.Invoke(() => Monitors.Add(monitor));
+            //     }
             // }
-
-
-            foreach (var wnd in windows) {
-                var old = Windows.ToList().Find((p) => p.hWnd == wnd.hWnd);
-                if (old != null) {
-                    old.Title = wnd.Title;
-                    old.proc = wnd.proc;
-                }
-                else {
-                    Dispatcher.Invoke(() => Windows.Add(wnd));
-                }
-            }
-
-            foreach (var wnd in Windows.ToArray()) {
-                if (windows.Find((p) => p.hWnd == wnd.hWnd) == null) {
-                    Dispatcher.Invoke(() => {
-                        var source = selectedSource?.Source;
-                        Windows.Remove(wnd);
-                        if (source != null)
-                            SourceContentCombo.Text = source;
-                    });
-                }
-            }
+            //
+            // foreach (var monitor in Monitors.ToArray()) {
+            //     if (monitorInfos.ToList().Find((m) => m.DeviceName == monitor.DeviceName) == null) {
+            //         Dispatcher.Invoke(() => Monitors.Remove(monitor));
+            //     }
+            // }
+            //
+            // var windows = WindowEnumerationHelper.GetWindows();
+            // // Console.WriteLine("---------------------------------");
+            // // foreach (var window in windows) {
+            // //     Console.WriteLine(window.Name);
+            // // }
+            //
+            //
+            // foreach (var wnd in windows) {
+            //     var old = Windows.ToList().Find((p) => p.hWnd == wnd.hWnd);
+            //     if (old != null) {
+            //         old.Title = wnd.Title;
+            //         old.proc = wnd.proc;
+            //     }
+            //     else {
+            //         Dispatcher.Invoke(() => Windows.Add(wnd));
+            //     }
+            // }
+            //
+            // foreach (var wnd in Windows.ToArray()) {
+            //     if (windows.Find((p) => p.hWnd == wnd.hWnd) == null) {
+            //         Dispatcher.Invoke(() => {
+            //             var source = selectedSource?.Source;
+            //             Windows.Remove(wnd);
+            //             if (source != null)
+            //                 SourceContentCombo.Text = source;
+            //         });
+            //     }
+            // }
             
             //get all cameras
             var cameras = CameraHelper.EnumCameras();
@@ -233,7 +233,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
         }
 
         private void SourceType_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            var type = SourceType.SelectedIndex;
+            var type = SourceType.SelectedIndex + 2;
             if (SelectedSource == null) return;
             if (SelectedSource.Type != type)
                 SelectedSource.Source = null;
@@ -247,22 +247,22 @@ namespace SayoDeviceStreamingAssistant.Pages {
             SelecteFileButton.Visibility = Visibility.Collapsed;
             labelContent.Visibility = Visibility.Collapsed;
 
-            if (type < 0 || type > 3) return;
+            if (type < 2 || type > 3) return;
 
             labelContent.Visibility = Visibility.Visible;
             switch (type) {
-                case 0: //"Monitor"
-                    SourceContentCombo.Visibility = Visibility.Visible;
-                    labelContent.Content = Properties.Resources.SourcesManagePage_SetContentUiByType_Monitor;
-                    SourceContentCombo.ItemsSource = Monitors;
-                    SourceContentCombo.Text = selectedSource?.Source;
-                    break;
-                case 1: //"Window"
-                    SourceContentCombo.Visibility = Visibility.Visible;
-                    labelContent.Content = Properties.Resources.SourcesManagePage_SetContentUiByType_Window;
-                    SourceContentCombo.ItemsSource = Windows;
-                    SourceContentCombo.Text = selectedSource?.Source;
-                    break;
+                // case 0: //"Monitor"
+                //     SourceContentCombo.Visibility = Visibility.Visible;
+                //     labelContent.Content = Properties.Resources.SourcesManagePage_SetContentUiByType_Monitor;
+                //     SourceContentCombo.ItemsSource = Monitors;
+                //     SourceContentCombo.Text = selectedSource?.Source;
+                //     break;
+                // case 1: //"Window"
+                //     SourceContentCombo.Visibility = Visibility.Visible;
+                //     labelContent.Content = Properties.Resources.SourcesManagePage_SetContentUiByType_Window;
+                //     SourceContentCombo.ItemsSource = Windows;
+                //     SourceContentCombo.Text = selectedSource?.Source;
+                //     break;
                 case 2: //"Media"
                     SourceContentText.Visibility = Visibility.Visible;
                     SelecteFileButton.Visibility = Visibility.Visible;
@@ -279,11 +279,12 @@ namespace SayoDeviceStreamingAssistant.Pages {
         }
 
         private void SourceContentCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            if (SourceContentCombo.SelectedItem is MonitorInfo mon)
-                selectedSource.Source = mon.Name;
-            else if (SourceContentCombo.SelectedItem is WindowInfo win)
-                selectedSource.Source = win.Name;
-            else if (SourceContentCombo.SelectedItem is CameraInfo cam)
+            // if (SourceContentCombo.SelectedItem is MonitorInfo mon)
+            //     selectedSource.Source = mon.Name;
+            // else if (SourceContentCombo.SelectedItem is WindowInfo win)
+            //     selectedSource.Source = win.Name;
+            // else
+            if (SourceContentCombo.SelectedItem is CameraInfo cam)
                 selectedSource.Source = cam.Name;
         }
 
@@ -320,6 +321,8 @@ namespace SayoDeviceStreamingAssistant.Pages {
         }
 
         private void OnFrameReady(Mat frame) {
+            // Cv2.ImShow("frame", frame);
+            // Cv2.WaitKey(1);
             frame.DrawToBgr565(previewMat, MatExtension.GetDefaultRect(frame.Size(), previewMat.Size()));
             newFrame = true;
         }
@@ -333,7 +336,8 @@ namespace SayoDeviceStreamingAssistant.Pages {
                     ClearPreview();
                 return;
             }
-
+            // Cv2.ImShow("preview", previewMat);
+            // Cv2.WaitKey(1);
             var len = previewMat.Rows * previewMat.Cols * 2;
             previewBitmap.Lock();
             WinApi.CopyMemory(previewBitmap.BackBuffer, previewMat.Data, (uint)len);

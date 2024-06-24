@@ -6,13 +6,16 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using OpenCvSharp;
 using SayoDeviceStreamingAssistant.Sources;
-using Rect = Windows.Foundation.Rect;
+using RectInt =OpenCvSharp.Rect;
+using RectDouble = OpenCvSharp.Rect2d;
+using SizeInt = OpenCvSharp.Size;
+using SizeDouble = OpenCvSharp.Size2d;
 
 namespace SayoDeviceStreamingAssistant.Pages {
     internal class DeviceConfig {
         public Guid Source;
         //source id, rect
-        public Dictionary<Guid, Windows.Foundation.Rect> Rects;
+        public Dictionary<Guid, RectDouble> Rects;
         
         public BsonDocument ToBsonDocument() {
             var bson = new BsonDocument {
@@ -33,7 +36,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 Source = Guid.Parse(doc["Source"].AsString),
                 Rects = doc["Rects"].AsBsonDocument.ToDictionary(
                     kv => Guid.Parse(kv.Name), 
-                    kv => BsonSerializer.Deserialize<Rect>(kv.Value.AsBsonDocument))
+                    kv => BsonSerializer.Deserialize<RectDouble>(kv.Value.AsBsonDocument))
             };
         }
     }

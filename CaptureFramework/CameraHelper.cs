@@ -2,11 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using Windows.Devices.Enumeration;
-using Windows.Media.Capture;
 using DirectShowLib;
-using OpenCvSharp.Flann;
 
 namespace CaptureFramework {
     public class CameraInfo {

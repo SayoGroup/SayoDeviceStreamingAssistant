@@ -7,8 +7,10 @@ using OpenCvSharp;
 using SayoDeviceStreamingAssistant.Sources;
 using static SayoDeviceStreamingAssistant.Sources.FrameSource;
 using FrameSource = SayoDeviceStreamingAssistant.Sources.FrameSource;
-using Rect = Windows.Foundation.Rect;
-using Size = OpenCvSharp.Size;
+using RectInt =OpenCvSharp.Rect;
+using RectDouble = OpenCvSharp.Rect2d;
+using SizeInt = OpenCvSharp.Size;
+using SizeDouble = OpenCvSharp.Size2d;
 
 namespace SayoDeviceStreamingAssistant.Pages {
     public partial class DeviceInfo : IDisposable {
@@ -71,11 +73,11 @@ namespace SayoDeviceStreamingAssistant.Pages {
         }
 
         public Mat ScreenMat;
-        private readonly Dictionary<Guid,Rect> frameRects = new Dictionary<Guid, Rect>();
+        private readonly Dictionary<Guid, RectDouble> frameRects = new Dictionary<Guid, RectDouble>();
         
         
         private bool rectDirty = true;
-        public Rect? FrameRect {
+        public RectDouble? FrameRect {
             get {
                 if(frameSource == null) return null;
                 if (!frameRects.ContainsKey(frameSource.Guid)) return null;
@@ -90,10 +92,10 @@ namespace SayoDeviceStreamingAssistant.Pages {
             }
         }
 
-        public Dictionary<Guid, Rect> GetSourceRects() {
+        public Dictionary<Guid, RectDouble> GetSourceRects() {
             return frameRects;
         }
-        public void SetSourceRects(Dictionary<Guid, Rect> rects) {
+        public void SetSourceRects(Dictionary<Guid, RectDouble> rects) {
             frameRects.Clear();
             foreach (var kv in rects) {
                 frameRects[kv.Key] = kv.Value;
@@ -125,7 +127,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
         public bool CanScaleUpSource { get; private set; }
         public bool CanScaleDownSource { get; private set; }
         private bool scaleAbilityChecked = false;
-        private void CheckSourceCanScale(Mat src, Mat dst, Rect rect) {
+        private void CheckSourceCanScale(Mat src, Mat dst, RectDouble rect) {
             if (scaleAbilityChecked) return;
             var roiDst = dst.GetRoiRectAsDst(rect);
             var roiSrc = src.GetRoiRectAsSrc(rect, roiDst);
@@ -171,7 +173,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
             }
         }
         
-        public Rect? GetDefaultRect() {
+        public RectDouble? GetDefaultRect() {
             var srcSize = frameSource?.GetContentRawSize();
             if (srcSize == null || srcSize.Value.Width == 0 || srcSize.Value.Height == 0) return null;
             var dstSize = ScreenMat.Size();
@@ -236,7 +238,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 
                 if (Device.SupportStreaming == true) {
                     var screenInfo = Device.GetScreenInfo();
-                    ScreenMat = new Mat(new Size(screenInfo.Width, screenInfo.Height), MatType.CV_8UC2);
+                    ScreenMat = new Mat(new SizeInt(screenInfo.Width, screenInfo.Height), MatType.CV_8UC2);
                     //new Mat(screenInfo.Height, screenInfo.Width, Depth.U8, 2);
                     var screenInfoStr = $"{screenInfo.Width}x{screenInfo.Height}@{screenInfo.RefreshRate}Hz";
                     labelScreenInfo.Content = screenInfoStr;

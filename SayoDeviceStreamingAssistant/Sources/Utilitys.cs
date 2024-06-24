@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 using OpenCvSharp;
 using Mat = OpenCvSharp.Mat;
 using RectInt =OpenCvSharp.Rect;
-using RectDouble = Windows.Foundation.Rect;
+using RectDouble = OpenCvSharp.Rect2d;
 using SizeInt = OpenCvSharp.Size;
-using SizeDouble = Windows.Foundation.Size;
+using SizeDouble = OpenCvSharp.Size2d;
 
 namespace SayoDeviceStreamingAssistant.Sources {
     internal static class MatExtension {
@@ -27,7 +27,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
         }
         
         public static RectInt GetRoiRectAsDst(this Mat src, RectDouble dRect) {
-            var rect = dRect.ToCvRect();
+            var rect = dRect.ToIntRect();
             RectInt roiDst;
             roiDst.X = rect.X < 0 ? 0 : rect.X;
             roiDst.Y = rect.Y < 0 ? 0 : rect.Y;
@@ -36,7 +36,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
             return roiDst;
         }
         public static RectInt GetRoiRectAsSrc(this Mat src, RectDouble dRect, RectInt roiDst) {
-            var rect = dRect.ToCvRect();
+            var rect = dRect.ToIntRect();
             Vector2 scale;
             scale.X = (float)rect.Width / src.Cols;
             scale.Y = (float)rect.Height / src.Rows;
@@ -53,7 +53,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
         public static void DrawToBgr565(this Mat src, Mat dst, RectDouble dstRect) {
             if (src == null || dst == null || src.Cols == 0 || src.Rows == 0)
                 return;
-            var rect = dstRect.ToCvRect();
+            var rect = dstRect.ToIntRect();
             if (rect.X >= dst.Cols || rect.Y >= dst.Rows || rect.X + rect.Width <= 0 || rect.Y + rect.Height <= 0)
                 return;
             
@@ -63,6 +63,7 @@ namespace SayoDeviceStreamingAssistant.Sources {
             //var roiMat = new Mat(src, roiSrc).Resize(new SizeInt(roiDst.Width, roiDst.Height));
             
             var roiMat = Resize(new Mat(src,roiSrc), new SizeInt(roiDst.Width, roiDst.Height));
+            //Cv2.ImShow("roiMat", roiMat);
             
             //Resize(new Mat(src,roiSrc), new SizeInt(roiDst.Width, roiDst.Height));
             //Cv2.ImShow("roi", roiMat);
@@ -73,7 +74,9 @@ namespace SayoDeviceStreamingAssistant.Sources {
                  //new Mat(roiMat.Size, Depth.U8, 2);
             }
             //var ccRoi = Bgr565MatCache[roiMat.Size()];
+            
             var ccRoi = roiMat.CvtColor(roiMat.Channels() == 4 ? ColorConversionCodes.BGRA2BGR565 : ColorConversionCodes.BGR2BGR565);
+            
             //CV.CvtColor(roiMat, ccRoi, roiMat.Channels == 4 ? ColorConversion.Bgra2Bgr565 : ColorConversion.Bgr2Bgr565);
             ccRoi.CopyTo(new Mat(dst, roiDst));
             //CV.Copy(ccRoi, dst.GetSubRect(roiDst));
@@ -105,11 +108,11 @@ namespace SayoDeviceStreamingAssistant.Sources {
     }
     
     static class BasicConverter {
-        public static Windows.Foundation.Rect ToWinRect(this OpenCvSharp.Rect cvRect) {
-            return new Windows.Foundation.Rect(cvRect.X, cvRect.Y, cvRect.Width, cvRect.Height);
+        public static RectDouble ToDoubleRect(this RectInt cvRect) {
+            return new RectDouble(cvRect.X, cvRect.Y, cvRect.Width, cvRect.Height);
         }
-        public static OpenCvSharp.Rect ToCvRect(this Windows.Foundation.Rect winRect) {
-            return new OpenCvSharp.Rect((int)winRect.X, (int)winRect.Y, (int)winRect.Width, (int)winRect.Height);
+        public static RectInt ToIntRect(this RectDouble winRect) {
+            return new RectInt((int)winRect.X, (int)winRect.Y, (int)winRect.Width, (int)winRect.Height);
         }
     }
     
