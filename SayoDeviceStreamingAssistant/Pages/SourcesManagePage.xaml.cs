@@ -201,7 +201,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 Properties.Resources.SourcesManagePage_AddNewButton_Click_Source__0_, FrameSources.Count));
             FrameSources.Add(newSource);
             SourcesList.SelectedIndex = FrameSources.IndexOf(newSource);
-            SourceType.SelectedIndex = 0;
+            SourceType.SelectedIndex = 2;
             SourceContentCombo.SelectedIndex = 0;
         }
 
@@ -222,7 +222,6 @@ namespace SayoDeviceStreamingAssistant.Pages {
                 SourceConfigPanel.Visibility = Visibility.Collapsed;
                 return;
             }
-
             SourceConfigPanel.Visibility = Visibility.Visible;
             SelectedSource = source;
         }
