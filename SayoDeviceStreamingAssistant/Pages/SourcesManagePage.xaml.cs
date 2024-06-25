@@ -40,7 +40,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
         private static Timer _contentUpdateTimer;
 
         private WriteableBitmap previewBitmap;
-        private Mat previewMat = new Mat(new Size(160, 80), MatType.CV_8UC4); //new Mat(80, 160, Depth.U8, 2);
+        private Mat previewMat = new Mat(new Size(160, 80), MatType.CV_8UC2); //new Mat(80, 160, Depth.U8, 2);
         private bool newFrame;
         private DispatcherTimer previewTimer = new DispatcherTimer();
 
