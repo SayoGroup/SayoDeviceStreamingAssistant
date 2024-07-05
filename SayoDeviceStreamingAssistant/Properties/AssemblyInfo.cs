@@ -8,9 +8,9 @@ using System.Windows;
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
 [assembly: AssemblyTitle("SayoDeviceStreamingAssistant")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("SayoDeviceStreamingAssistant")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("SayoDevice")]
 [assembly: AssemblyProduct("SayoDeviceStreamingAssistant")]
 [assembly: AssemblyCopyright("Copyright ©  2024")]
 [assembly: AssemblyTrademark("")]
