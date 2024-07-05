@@ -84,6 +84,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
             var doc = BsonDocument.Parse(json);
             var sources = doc["Sources"].AsBsonArray;
             foreach (var source in sources) {
+                if (source["Type"].AsInt32 != 2 && source["Type"].AsInt32 != 3) continue;
                 var frameSource = FrameSource.FromBsonDocument(source as BsonDocument);
                 FrameSources.Add(frameSource);
             }
