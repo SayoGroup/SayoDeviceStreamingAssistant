@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using HidSharp;
-using OpenCV.Net;
+using OpenCvSharp;
 
 namespace SayoDeviceStreamingAssistant.Sources {
     public class SayoHidPacketBase {

@@ -5,10 +5,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using FontAwesome.WPF;
-using OpenCV.Net;
+using OpenCvSharp;
 using SayoDeviceStreamingAssistant.Sources;
-using Point = OpenCV.Net.Point;
+using FrameSource = SayoDeviceStreamingAssistant.Sources.FrameSource;
+using Point = OpenCvSharp.Point;
 using Rect = Windows.Foundation.Rect;
+using Size = OpenCvSharp.Size;
 using Window = System.Windows.Window;
 
 namespace SayoDeviceStreamingAssistant.Pages {
@@ -31,8 +33,8 @@ namespace SayoDeviceStreamingAssistant.Pages {
 
         public void ShowPage(DeviceInfo deviceInfo) {
             this.bindDeviceInfo = deviceInfo;
-            var screenSize = bindDeviceInfo.ScreenMat.Size;
-            previewMat = new Mat(screenSize.Height, screenSize.Width, Depth.U8, 2);
+            var screenSize = bindDeviceInfo.ScreenMat.Size();
+            previewMat = new Mat(new Size((int)screenSize.Width, (int)screenSize.Height), MatType.CV_8UC2);//new Mat(screenSize.Height, screenSize.Width, Depth.U8, 2);
             previewBitmap = new WriteableBitmap(screenSize.Width, screenSize.Height, 96, 96, PixelFormats.Bgr565, null);
             Preview.Source = previewBitmap;
             SourceCombo.SelectedIndex = SourcesManagePage.FrameSources.IndexOf(bindDeviceInfo.FrameSource);
@@ -54,7 +56,8 @@ namespace SayoDeviceStreamingAssistant.Pages {
         }
         private void OnBindDeviceFrameReady(Mat frame) {
             //frame.DrawToBgr565(previewMat, MatExtension.GetDefaultRect(frame.Size, previewMat.Size));
-            CV.Copy(frame,previewMat);
+            frame.CopyTo(previewMat);
+            //CV.Copy(frame,previewMat);
             newFrame = true;
         }
         private void UpdatePreview() {
@@ -97,7 +100,7 @@ namespace SayoDeviceStreamingAssistant.Pages {
             }
             Preview.Visibility = Visibility.Visible;
             previewTimer.Interval = TimeSpan.FromMilliseconds(1e3 / bindDeviceInfo.FrameSource.Fps);
-            previewMat.Set(new Scalar(0, 0, 0));
+            previewMat.SetTo(Scalar.Black);
             newFrame = true;
             previewTimer.Start();
         }
