@@ -13,15 +13,16 @@ namespace SayoDeviceStreamingAssistant.Sources {
     internal static class MatExtension {
         public static RectDouble GetDefaultRect(SizeInt srcSize, SizeInt dstSize) {
             RectDouble rect;
-            var ratio = (double)srcSize.Width / srcSize.Height;
-            if (ratio > 2) {
-                var space = dstSize.Height - dstSize.Width / ratio;
-                rect = new RectDouble(0, space / 2.0, dstSize.Width,
-                    dstSize.Width / ratio);
+            var srcRatio = (double)srcSize.Width / srcSize.Height;
+            var dstRatio = (double)dstSize.Width / dstSize.Height;
+            if (srcRatio > dstRatio) {
+                var space = dstSize.Height - dstSize.Width / srcRatio;
+                rect = new RectDouble(0, space / dstRatio, dstSize.Width,
+                    dstSize.Width / srcRatio);
             } else {
-                var space = dstSize.Width - dstSize.Height * ratio;
-                rect = new RectDouble(space / 2.0, 0,
-                    dstSize.Height * ratio, dstSize.Height);
+                var space = dstSize.Width - dstSize.Height * srcRatio;
+                rect = new RectDouble(space / dstRatio, 0,
+                    dstSize.Height * srcRatio, dstSize.Height);
             }
             return rect;
         }
