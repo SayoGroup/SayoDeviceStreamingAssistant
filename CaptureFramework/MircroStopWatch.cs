@@ -147,7 +147,8 @@ public class MicroTimer {
 
             while ((elapsedMicroseconds = microStopwatch.ElapsedMicroseconds)
                     < nextNotification) {
-                System.Threading.Thread.SpinWait(10);
+                // System.Threading.Thread.SpinWait(10);
+                System.Threading.Thread.Sleep(2);
             }
 
             long timerLateBy = elapsedMicroseconds - nextNotification;
